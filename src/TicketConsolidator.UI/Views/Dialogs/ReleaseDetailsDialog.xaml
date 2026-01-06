@@ -1,0 +1,64 @@
+<Window x:Class="TicketConsolidator.UI.Views.Dialogs.ReleaseDetailsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Release Details" Height="450" Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+<materialDesign:Card UniformCornerRadius="10" Background="White" Margin="10" Padding="20">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Text="Release Details" 
+                   Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
+                   Foreground="#1976D2" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,0,0,20"/>
+
+        <!-- Form -->
+        <StackPanel Grid.Row="1" Margin="10">
+            <!-- Build Number -->
+            <TextBox x:Name="BuildNumberBox"
+                     materialDesign:HintAssist.Hint="Build Number (e.g. 10.0.123)"
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     Margin="0,0,0,20"/>
+
+            <!-- Solution Path -->
+            <TextBox x:Name="SolutionPathBox"
+                     materialDesign:HintAssist.Hint="Solution Path (Release Folder)"
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     Margin="0,0,0,20"/>
+
+            <!-- Username -->
+            <TextBox x:Name="UsernameBox"
+                     materialDesign:HintAssist.Hint="Your Name (Signature)"
+                     Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                     Margin="0,0,0,10"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button x:Name="CancelBtn" 
+                    Content="CANCEL" 
+                    Style="{StaticResource MaterialDesignFlatButton}" 
+                    Click="CancelBtn_Click"
+                    Margin="0,0,10,0"/>
+            
+            <Button x:Name="GenerateBtn" 
+                    Content="GENERATE EMAIL" 
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    Background="#1976D2"
+                    Foreground="White"
+                    Click="GenerateBtn_Click"/>
+        </StackPanel>
+    </Grid>
+</materialDesign:Card>
+</Window>

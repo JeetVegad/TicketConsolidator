@@ -1,0 +1,461 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms; // For IBrowserFile
+using TicketConsolidator.Application.DTOs;
+using TicketConsolidator.Application.Interfaces;
+using TicketConsolidator.Infrastructure.Services; // For SettingsService
+
+namespace TicketConsolidator.Web.Services
+{
+    public class TicketService
+    {
+        private readonly IEmailService _emailService;
+        private readonly ISqlParserService _parserService;
+        private readonly IScriptValidatorService _validatorService;
+        private readonly IConsolidationService _consolidationService;
+        private readonly ILoggerService _logger;
+        private readonly SettingsService _settingsService;
+
+        // State Validation & UI Updates
+        public event Action OnChange;
+        private void NotifyStateChanged() => OnChange?.Invoke();
+
+        // State Properties
+        public bool IsBusy { get; private set; }
+        public string StatusMessage { get; private set; } = "Idle";
+        public int ProgressValue { get; private set; }
+        
+        // Data Collections
+        public List<SqlScript> TableScripts { get; private set; } = new List<SqlScript>();
+        public List<SqlScript> SpScripts { get; private set; } = new List<SqlScript>();
+        public List<SqlScript> DataScripts { get; private set; } = new List<SqlScript>();
+
+        // Metadata
+        public string LastConsolidatedPath { get; private set; }
+        public string LastRunId { get; private set; }
+        public string TicketsCount { get; private set; } = "0/0";
+
+        private CancellationTokenSource _cancellationTokenSource;
+
+        public TicketService(
+            IEmailService emailService,
+            ISqlParserService parserService,
+            IScriptValidatorService validatorService,
+            IConsolidationService consolidationService,
+            ILoggerService logger,
+            SettingsService settingsService)
+        {
+            _emailService = emailService;
+            _parserService = parserService;
+            _validatorService = validatorService;
+            _consolidationService = consolidationService;
+            _logger = logger;
+            _settingsService = settingsService;
+        }
+
+        public void Clear()
+        {
+            TableScripts.Clear();
+            SpScripts.Clear();
+            DataScripts.Clear();
+            StatusMessage = "Idle";
+            ProgressValue = 0;
+            TicketsCount = "0/0";
+            LastConsolidatedPath = null;
+            NotifyStateChanged();
+        }
+
+        public async Task StartScanAsync(string ticketInput)
+        {
+            if (string.IsNullOrWhiteSpace(ticketInput)) return;
+            if (IsBusy) return;
+
+            IsBusy = true;
+            NotifyStateChanged();
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            var token = _cancellationTokenSource.Token;
+
+            try
+            {
+                StatusMessage = "Initializing Scan...";
+                ProgressValue = 5;
+                NotifyStateChanged();
+
+                string runId = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                _logger.StartSession($"Scan Run [ID: {runId}]");
+
+                 var tickets = ticketInput.Split(new[] { ',', ';', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Select(t => t.Trim())
+                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                .ToList();
+
+                // 1. Scan Emails
+                StatusMessage = "Scanning Emails...";
+                ProgressValue = 10;
+                NotifyStateChanged();
+
+                string folderName = _settingsService.CurrentTargetFolder ?? "Inbox";
+                var emails = await _emailService.GetEmailsByTicketNumbersAsync(tickets, folderName, token);
+
+                ProgressValue = 40;
+                StatusMessage = $"Found {emails.Count} emails. Parsing...";
+                NotifyStateChanged();
+
+                // Missing Tickets Check
+                var foundTickets = new HashSet<string>(emails.SelectMany(e => e.MatchedTickets), StringComparer.OrdinalIgnoreCase);
+                var missingTickets = tickets.Except(foundTickets).ToList();
+                if (missingTickets.Any())
+                {
+                    _logger.LogWarning($"Missing Tickets: {string.Join(", ", missingTickets)}");
+                }
+
+                // 2. Parse Scripts
+                // We use a simplified logic here compared to WPF: we just add valid scripts.
+                // Duplicate checking logic can be added later if needed.
+                
+                var newScripts = new List<SqlScript>();
+
+                await Task.Run(() => 
+                {
+                    foreach (var email in emails)
+                    {
+                        if (token.IsCancellationRequested) break;
+
+                        foreach (var path in email.AttachmentPaths)
+                        {
+                            if (System.IO.File.Exists(path))
+                            {
+                                string content = System.IO.File.ReadAllText(path);
+                                string fileName = System.IO.Path.GetFileName(path);
+                                string realTicket = tickets.FirstOrDefault(t => fileName.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0) ?? "Unknown";
+
+                                // Parse
+                                var parsed = _parserService.ParseScript(content, fileName, realTicket);
+                                
+                                // Fallback
+                                if (parsed.Count == 0)
+                                {
+                                    parsed.Add(new SqlScript 
+                                    { 
+                                        TicketNumber = realTicket, 
+                                        Content = content, 
+                                        SourceFileName = fileName,
+                                        Type = DetectScriptType(fileName)
+                                    });
+                                }
+
+                                // Apply Summary
+                                string summary = email.TicketSummaries != null && email.TicketSummaries.TryGetValue(realTicket, out var s) ? s : "No Summary Found";
+                                foreach(var sc in parsed) sc.Summary = summary;
+
+                                newScripts.AddRange(parsed);
+                            }
+                        }
+                    }
+                });
+
+                ProgressValue = 80;
+                StatusMessage = "Updating List...";
+                NotifyStateChanged();
+
+                // Add to Collections
+                foreach(var script in newScripts)
+                {
+                    switch(script.Type)
+                    {
+                        case ScriptType.Table: TableScripts.Add(script); break;
+                        case ScriptType.StoredProcedure: SpScripts.Add(script); break;
+                        case ScriptType.Data: DataScripts.Add(script); break;
+                    }
+                }
+
+                ProgressValue = 100;
+                TicketsCount = $"{foundTickets.Count}/{tickets.Count}";
+                StatusMessage = $"Scan Complete. Loaded {newScripts.Count} scripts.";
+                NotifyStateChanged();
+
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error: {ex.Message}";
+                _logger.LogError($"Scan Error: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+                NotifyStateChanged();
+            }
+        }
+
+        public async Task ConsolidateAsync()
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            StatusMessage = "Consolidating...";
+            NotifyStateChanged();
+
+            try
+            {
+                var allScripts = new List<SqlScript>();
+                allScripts.AddRange(SpScripts);
+                allScripts.AddRange(DataScripts);
+                allScripts.AddRange(TableScripts);
+
+                string baseDir = _settingsService.ConsolidatedScriptsPath;
+                string runId = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string outputDir = System.IO.Path.Combine(baseDir, $"Run_{runId}");
+
+                if (!System.IO.Directory.Exists(outputDir)) System.IO.Directory.CreateDirectory(outputDir);
+
+                LastConsolidatedPath = outputDir;
+                LastRunId = runId;
+
+                // Group by Context & Logic from ViewModel
+                var contextGroups = allScripts.GroupBy(s => GetScriptContext(s));
+
+                foreach (var group in contextGroups)
+                {
+                    string context = group.Key;
+                    var dataScripts = group.Where(s => s.Type == ScriptType.Data || s.Type == ScriptType.Table).ToList();
+                    var spScripts = group.Where(s => s.Type == ScriptType.StoredProcedure).ToList();
+
+                    if (dataScripts.Any()) 
+                        await ProcessConsolidationGroup(dataScripts, "DATA", outputDir, context, "01");
+                    
+                    if (spScripts.Any())
+                        await ProcessConsolidationGroup(spScripts, "SP", outputDir, context, "02");
+                }
+
+                StatusMessage = "Consolidation Complete!";
+                NotifyStateChanged();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Consolidation Failed: {ex.Message}";
+                NotifyStateChanged();
+            }
+            finally
+            {
+                IsBusy = false;
+                NotifyStateChanged();
+            }
+        }
+
+        private async Task ProcessConsolidationGroup(List<SqlScript> scripts, string typeSuffix, string outputDir, string context, string prefix)
+        {
+            string fileName = $"{prefix}_{context}_{typeSuffix}.sql";
+            string contextDir = System.IO.Path.Combine(outputDir, context);
+            if (!System.IO.Directory.Exists(contextDir)) System.IO.Directory.CreateDirectory(contextDir);
+
+            string fullPath = System.IO.Path.Combine(contextDir, fileName);
+            string content = _consolidationService.ConsolidateScripts(scripts);
+            
+            await _consolidationService.SaveConsolidatedFileAsync(content, fullPath);
+        }
+
+        public async Task CreateReleaseEmailAsync(string buildNum, string solPath, string userName)
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            StatusMessage = "Creating Release Email...";
+            NotifyStateChanged();
+
+            try
+            {
+                 var allScripts = TableScripts.Concat(SpScripts).Concat(DataScripts).ToList();
+                 var uniqueTickets = allScripts.Select(s => s.TicketNumber).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                 // Summary Map
+                 var summaryMap = new Dictionary<string, string>();
+                 foreach(var t in uniqueTickets)
+                 {
+                     var s = allScripts.FirstOrDefault(x => x.TicketNumber == t && !string.IsNullOrEmpty(x.Summary) && !x.Summary.StartsWith("Manual"));
+                     if (s == null) s = allScripts.FirstOrDefault(x => x.TicketNumber == t);
+                     summaryMap[t] = s?.Summary ?? "No Summary Found";
+                 }
+
+                 // Get Files
+                 string[] files = System.IO.Directory.GetFiles(LastConsolidatedPath, "*.*");
+                 var fileList = files.Select(f => System.IO.Path.GetFileName(f)).ToList();
+                 var attachmentPaths = files.ToList();
+
+                 var sb = new System.Text.StringBuilder();
+                 sb.AppendLine("<html><body>");
+                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>");
+                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {buildNum}]:</b></p>");
+                 
+                 sb.AppendLine("<ul>");
+                 foreach(var f in fileList)
+                     sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f} (Database Scripts)</li>");
+                 sb.AppendLine("</ul>");
+
+                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>");
+                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{solPath}'>{solPath}</a></p>");
+
+                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>");
+                 sb.AppendLine("<ul>");
+                 foreach(var f in fileList) sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                 sb.AppendLine("</ul>");
+
+                 sb.AppendLine("<br/>");
+                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>");
+                 
+                 sb.AppendLine("<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:80%'>");
+                 sb.AppendLine("<tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>");
+                 
+                 foreach(var t in uniqueTickets)
+                 {
+                     sb.AppendLine("<tr>");
+                     sb.AppendLine($"<td style='padding:4px'><b>{t.ToUpperInvariant()}</b></td>");
+                     sb.AppendLine($"<td style='padding:4px'>{summaryMap[t]}</td>");
+                     sb.AppendLine("</tr>");
+                 }
+                 sb.AppendLine("</table>");
+
+                 sb.AppendLine("<br/>");
+                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{userName}</p>");
+                 sb.AppendLine("</body></html>");
+
+                 await _emailService.CreateDraftEmailAsync(
+                     $"Product Release Notification [Build {buildNum}]", 
+                     sb.ToString(), 
+                     attachmentPaths);
+
+                 StatusMessage = "Email Draft Created.";
+                 _logger.LogSuccess("Release Email Draft created.");
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Email Failed: {ex.Message}";
+                _logger.LogError($"Email Failed: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+                NotifyStateChanged();
+            }
+        }
+
+        public async Task UploadFilesAsync(List<string> filePaths)
+        {
+            if (IsBusy) return;
+            IsBusy = true;
+            StatusMessage = "Processing uploaded files...";
+            NotifyStateChanged();
+
+            try 
+            {
+                var newScripts = new List<SqlScript>();
+                
+                await Task.Run(() => 
+                {
+                    foreach (var path in filePaths)
+                    {
+                        if (!System.IO.File.Exists(path)) continue;
+                        
+                        string fileName = System.IO.Path.GetFileName(path);
+                        string content = System.IO.File.ReadAllText(path);
+
+                        // 1. Detect Type
+                        var scriptType = DetectScriptType(fileName);
+
+                        // 2. Parse (Consolidated check or regular)
+                        var ticketNumber = "Manual"; 
+                        if (fileName.StartsWith("Consolidated", StringComparison.OrdinalIgnoreCase))
+                            ticketNumber = "ConsolidatedScript";
+                        else
+                        {
+                            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"([A-Za-z]+-\d+|\d{3,})");
+                            if (match.Success) ticketNumber = match.Value;
+                        }
+
+                        // Parse
+                        var parsed = _parserService.ParseScript(content, fileName, ticketNumber);
+
+                        if (parsed.Count == 0)
+                        {
+                            parsed.Add(new SqlScript
+                            {
+                                TicketNumber = ticketNumber,
+                                Content = content,
+                                SourceFileName = fileName,
+                                Type = scriptType,
+                                Summary = "Manual Upload"
+                            });
+                        }
+
+                        newScripts.AddRange(parsed);
+                    }
+                });
+
+                // Add to Collections
+                foreach(var script in newScripts)
+                {
+                    switch(script.Type)
+                    {
+                         case ScriptType.Table: TableScripts.Add(script); break;
+                         case ScriptType.StoredProcedure: SpScripts.Add(script); break;
+                         case ScriptType.Data: DataScripts.Add(script); break;
+                    }
+                }
+                
+                StatusMessage = "Upload Complete.";
+                _logger.LogSuccess($"Processed {filePaths.Count} files.");
+            }
+            catch(Exception ex)
+            {
+                StatusMessage = $"Upload Error: {ex.Message}";
+                _logger.LogError($"Upload Error: {ex.Message}");
+            }
+            finally
+            {
+                IsBusy = false;
+                NotifyStateChanged();
+            }
+        }
+
+        // Helper Methods
+        private ScriptType DetectScriptType(string fileName)
+        {
+             if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(SP|StoredProcedure)(?:[_\-\.\s]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                 fileName.EndsWith(".sp.sql", StringComparison.OrdinalIgnoreCase))
+             {
+                 return ScriptType.StoredProcedure;
+             }
+             if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(Data|Insert)(?:[_\-\.\s]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                 fileName.EndsWith(".data.sql", StringComparison.OrdinalIgnoreCase))
+             {
+                 return ScriptType.Data;
+             }
+             return ScriptType.Table;
+        }
+
+        private string GetScriptContext(SqlScript script)
+        {
+             if (string.IsNullOrWhiteSpace(script.SourceFileName)) return "HALOCOREDB";
+
+             string fileNameNoExt = System.IO.Path.GetFileNameWithoutExtension(script.SourceFileName);
+             string cleanName = fileNameNoExt;
+             if (!string.IsNullOrEmpty(script.TicketNumber))
+             {
+                 cleanName = cleanName.Replace(script.TicketNumber, "", StringComparison.OrdinalIgnoreCase);
+             }
+
+             var parts = cleanName.Split(new[] { '_', '-', ' ', '.' }, StringSplitOptions.RemoveEmptyEntries);
+             var ignoredKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+             {
+                 "SP", "Data", "Table", "Tables", "Tb", "Tbl", "StoredProcedure", "Insert", "Update", "Script", "Stored", "Procedure", "Engage", "Ticket",
+                 "CR", "PR", "INC", "TASK", "US", "Bug", "Feat", "Feature", "Fix", "Hotfix"
+             };
+
+             var contextParts = parts.Where(p => !ignoredKeywords.Contains(p) && !p.All(char.IsDigit)).ToList();
+             if (contextParts.Count == 0) return "HALOCOREDB";
+
+             return string.Join("_", contextParts).ToUpperInvariant();
+        }
+    }
+}

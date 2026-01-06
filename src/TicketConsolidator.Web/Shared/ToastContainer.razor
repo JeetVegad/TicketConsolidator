@@ -1,0 +1,71 @@
+@using TicketConsolidator.Web.Services
+@inject ToastService ToastService
+@implements IDisposable
+
+<div class="toast-container">
+    @foreach (var toast in ToastService.Toasts)
+    {
+        <div class="toast-message @toast.Level.ToString().ToLower() animate-pop" @key="toast.Id">
+            <div class="toast-icon">
+                @switch(toast.Level)
+                {
+                    case ToastLevel.Success: <text>✅</text>; break;
+                    case ToastLevel.Error: <text>❌</text>; break;
+                    case ToastLevel.Warning: <text>⚠️</text>; break;
+                    default: <text>ℹ️</text>; break;
+                }
+            </div>
+            <div class="toast-text">@toast.Message</div>
+        </div>
+    }
+</div>
+
+<style>
+    .toast-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        pointer-events: none; /* Allow clicks through empty space */
+        width: 350px;
+        max-width: 90vw;
+    }
+
+    .toast-message {
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius-md);
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .toast-message.success { border-left-color: var(--success); }
+    .toast-message.error { border-left-color: var(--error); }
+    .toast-message.warning { border-left-color: var(--warning); }
+    
+    .toast-icon { font-size: 1.25rem; flex-shrink: 0; }
+    .toast-text { flex: 1; word-wrap: break-word; }
+</style>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ToastService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnChange -= StateHasChanged;
+    }
+}

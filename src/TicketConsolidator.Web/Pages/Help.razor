@@ -1,0 +1,143 @@
+@page "/help"
+
+<PageTitle>Help | TicketConsolidator</PageTitle>
+
+<div class="help-container animate-fade-in">
+    <div class="glass-panel content-card">
+        <h2 class="page-title">Help & Documentation</h2>
+        
+        <div class="help-section">
+            <h3>Overview</h3>
+            <p>TicketConsolidator helps you package SQL scripts from Outlook emails into a release-ready format.</p>
+        </div>
+
+        <div class="help-section">
+            <h3>How to Use</h3>
+            <ol class="steps-list">
+                <li class="animate-slide-right" style="animation-delay: 0.1s">
+                    <span class="step-marker animate-pulse">1</span>
+                    <div class="step-content">
+                        <strong>Find Scripts:</strong> Enter a Ticket Number (e.g. <code>12345</code> or <code>ABC-123</code>) and click "Scan".
+                        <p class="step-desc">The app searches your configured Outlook folder for emails with that ticket number and extracts attached SQL files.</p>
+                    </div>
+                </li>
+                <li class="animate-slide-right" style="animation-delay: 0.2s">
+                    <span class="step-marker animate-pulse">2</span>
+                    <div class="step-content">
+                        <strong>Review & Reorder:</strong> The extracted scripts appear in lists (Tables, PROCs, Data).
+                        <p class="step-desc">Drag and drop or use arrows to reorder them if execution order matters.</p>
+                    </div>
+                </li>
+                <li class="animate-slide-right" style="animation-delay: 0.3s">
+                    <span class="step-marker animate-pulse">3</span>
+                    <div class="step-content">
+                        <strong>Manual Upload:</strong> Drag scripts directly from your desktop into the upload zone effectively adding them to the list.
+                    </div>
+                </li>
+                <li class="animate-slide-right" style="animation-delay: 0.4s">
+                    <span class="step-marker animate-pulse">4</span>
+                    <div class="step-content">
+                        <strong>Consolidate:</strong> Click "Consolidate & Save" to merge all scripts into one master SQL file.
+                    </div>
+                </li>
+                <li class="animate-slide-right" style="animation-delay: 0.5s">
+                    <span class="step-marker animate-pulse">5</span>
+                    <div class="step-content">
+                        <strong>Release:</strong> Click "Create Release Email" to generate a draft email in Outlook with the consolidated scripts attached.
+                    </div>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="help-section">
+             <h3>Troubleshooting</h3>
+             <ul class="trouble-list">
+                 <li><strong>Outlook Error:</strong> Ensure default Outlook (Desktop) is running. "New Outlook" (Web wrapper) is not supported.</li>
+                 <li><strong>Scan Failed:</strong> Check "Settings" to ensure the Target Folder name matches your Outlook folder exactly.</li>
+             </ul>
+        </div>
+        
+        <div class="footer-info">
+            <p>Version 2.0.0 (Blazor Edition)</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .help-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-top: 2rem;
+    }
+    
+    .content-card { padding: 3rem; }
+    
+    .help-section { margin-bottom: 2.5rem; }
+    
+    h3 { 
+        color: var(--primary); 
+        border-bottom: 1px solid rgba(255,255,255,0.1); 
+        padding-bottom: 0.5rem; 
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    p { line-height: 1.6; color: var(--text-primary); }
+    
+    .steps-list { 
+        padding-left: 0; 
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .steps-list li { 
+        display: flex;
+        gap: 1rem;
+        color: var(--text-primary);
+        opacity: 0; /* Starts hidden for animation */
+    }
+    
+    .step-marker {
+        background: var(--primary);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+    
+    .step-content { flex: 1; padding-top: 0.25rem; }
+    
+    .steps-list strong { color: #a5b4fc; } /* Lighter accent */
+    
+    .step-desc { 
+        margin-top: 0.25rem; 
+        font-size: 0.9rem; 
+        color: var(--text-secondary); 
+    }
+    
+    .trouble-list li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .trouble-list strong { color: #f87171; }
+    
+    .footer-info {
+        border-top: 1px solid rgba(255,255,255,0.05);
+        padding-top: 1rem;
+        text-align: center;
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.3);
+    }
+    
+    code { 
+        background: rgba(0,0,0,0.3); 
+        padding: 0.1rem 0.4rem; 
+        border-radius: 4px; 
+        font-family: monospace;
+    }
+</style>

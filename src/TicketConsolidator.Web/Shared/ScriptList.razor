@@ -1,0 +1,231 @@
+@using TicketConsolidator.Application.DTOs
+@namespace TicketConsolidator.Web.Components
+
+<div class="script-list-container glass-card animate-slide-up">
+    <div class="list-header">
+        <h3 class="list-title">@Title <span class="badge @(Scripts.Count > 0 ? "badge-active" : "")">@Scripts.Count</span></h3>
+    </div>
+    
+    <div class="list-content custom-scroll">
+        @if (Scripts == null || Scripts.Count == 0)
+        {
+            <div class="empty-state animate-fade-in">
+                <span class="empty-icon">📂</span>
+                <span>No scripts</span>
+            </div>
+        }
+        else
+        {
+            <div class="list-items-wrapper">
+                @for (int i = 0; i < Scripts.Count; i++)
+                {
+                    var script = Scripts[i];
+                    var index = i;
+                    <div class="script-item-row animate-slide-right" style="animation-delay: @(index * 0.05)s">
+                        <div class="item-content">
+                            <span class="item-ticket">@script.TicketNumber</span>
+                            <span class="item-name" title="@script.SourceFileName">@System.IO.Path.GetFileName(script.SourceFileName)</span>
+                        </div>
+                        
+                        <div class="item-actions">
+                             <button class="action-btn up" @onclick="() => MoveUp.InvokeAsync(script)" disabled="@(index == 0)" title="Move Up">
+                                 <span class="btn-icon">▲</span>
+                             </button>
+                             <button class="action-btn down" @onclick="() => MoveDown.InvokeAsync(script)" disabled="@(index == Scripts.Count - 1)" title="Move Down">
+                                 <span class="btn-icon">▼</span>
+                             </button>
+                             <div class="action-separator"></div>
+                             <button class="action-btn danger" @onclick="() => Remove.InvokeAsync(script)" title="Remove">
+                                 <span class="btn-icon">✖</span>
+                             </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .script-list-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        /* Glass Card overrides handled by glass.css, but ensure flex here */
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(0,0,0,0.2);
+    }
+    
+    .list-title {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        background: rgba(255,255,255,0.1);
+        color: var(--text-secondary);
+        padding: 0.15rem 0.6rem;
+        border-radius: var(--radius-pill);
+        transition: all 0.3s;
+    }
+    
+    .badge-active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 0 10px var(--primary-glow);
+    }
+    
+    .list-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+    
+    .list-items-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .script-item-row {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius-md);
+        padding: 0.6rem 0.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .script-item-row:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(3px);
+        box-shadow: -2px 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .item-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        overflow: hidden;
+    }
+    
+    .item-ticket {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+    
+    .item-name {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 500;
+    }
+
+    /* Spacious Actions */
+    .item-actions {
+        display: flex;
+        gap: 0.4rem; /* More space */
+        align-items: center;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    
+    .script-item-row:hover .item-actions {
+        opacity: 1;
+    }
+    
+    .action-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .action-btn:disabled {
+        opacity: 0.2;
+        cursor: default;
+    }
+
+    .action-separator {
+        width: 1px;
+        height: 16px;
+        background: rgba(255,255,255,0.1);
+        margin: 0 0.2rem;
+    }
+
+    .up:hover:not(:disabled) { color: #34d399; border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.1); }
+    .down:hover:not(:disabled) { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.1); }
+    .danger:hover:not(:disabled) { color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1); }
+    
+    .btn-icon {
+        font-size: 0.7rem; /* Crisp arrows */
+        font-weight: 700;
+    }
+    
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        gap: 0.5rem;
+        opacity: 0.5;
+    }
+    .empty-icon { font-size: 1.5rem; }
+    
+    /* Keyframe Animations */
+    .animate-slide-up { animation: slideUp 0.4s ease-out; }
+    .animate-slide-right { animation: slideRight 0.3s ease-out backwards; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    
+    @@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @@keyframes slideRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+</style>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public List<SqlScript> Scripts { get; set; } = new List<SqlScript>();
+    [Parameter] public EventCallback<SqlScript> MoveUp { get; set; }
+    [Parameter] public EventCallback<SqlScript> MoveDown { get; set; }
+    [Parameter] public EventCallback<SqlScript> Remove { get; set; }
+}

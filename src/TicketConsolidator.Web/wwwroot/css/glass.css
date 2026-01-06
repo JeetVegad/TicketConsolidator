@@ -1,0 +1,168 @@
+/* Glass Components - Ultra Smooth & Pro */
+
+/* Panel: Deep Blur & Subtle Border */
+.glass-panel {
+    background: var(--bg-glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: var(--glass-shadow);
+    transition: background var(--trans-smooth), border-color var(--trans-smooth);
+}
+
+/* Card: Interactive & Float */
+.glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(12px);
+    transition: all var(--trans-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Input: Frosty Focus Flow */
+.glass-input {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    padding: 0 0.8rem;
+    border-radius: var(--radius-md);
+    transition: all var(--trans-fast);
+    width: 100%;
+    font-size: 0.9em;
+    height: 34px;
+    /* Pro Compact */
+    backdrop-filter: blur(8px);
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+    transform: translateY(-1px);
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Primary Button: Liquid Gradient */
+.glass-button {
+    background: linear-gradient(135deg, var(--primary), #6d28d9);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 1rem;
+    height: 34px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all var(--trans-fast);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.glass-button:hover:not(:disabled)::before {
+    left: 100%;
+}
+
+.glass-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.glass-button:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+}
+
+.glass-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+    filter: grayscale(1);
+    box-shadow: none;
+}
+
+/* Secondary Button: Ghost Glow */
+.glass-button-secondary {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 0 0.8rem;
+    height: 32px;
+    /* Differentiate size */
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all var(--trans-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glass-button-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+    }
+}
+
+.animate-enter {
+    animation: slideUpFade 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

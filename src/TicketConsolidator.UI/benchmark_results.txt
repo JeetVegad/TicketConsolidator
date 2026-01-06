@@ -1,0 +1,2 @@
+InfoDialog (50 runs): 257ms
+Average: 5.14ms

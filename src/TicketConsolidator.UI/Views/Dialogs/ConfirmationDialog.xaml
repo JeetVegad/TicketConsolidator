@@ -1,0 +1,83 @@
+<UserControl x:Class="TicketConsolidator.UI.Views.Dialogs.ConfirmationDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="450"
+             Width="400"
+             Background="Transparent"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Regular"
+             TextElement.FontSize="13"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <materialDesign:Card UniformCornerRadius="12" Background="White" Padding="25" materialDesign:ShadowAssist.ShadowDepth="Depth0">
+        <materialDesign:Card.CacheMode>
+            <BitmapCache EnableClearType="True" SnapsToDevicePixels="True"/>
+        </materialDesign:Card.CacheMode>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Icon -->
+            <materialDesign:PackIcon Kind="QuestionMarkCircle" 
+                                     Foreground="#FFA000" 
+                                     Width="48" Height="48" 
+                                     HorizontalAlignment="Center" 
+                                     Margin="0,0,0,15"/>
+
+            <!-- Title -->
+            <TextBlock Grid.Row="1" 
+                       Text="{Binding Title}" 
+                       FontSize="18" 
+                       FontWeight="Bold" 
+                       Foreground="#FFA000" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,15"/>
+
+            <!-- Message -->
+            <TextBlock Grid.Row="2" 
+                       Text="{Binding Message}" 
+                       TextWrapping="Wrap" 
+                       FontSize="13"
+                       Foreground="#424242"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       Margin="0,0,0,25"/>
+
+            <!-- Action Buttons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        CommandParameter="False"
+                        Content="NO" 
+                        Style="{StaticResource MaterialDesignOutlinedButton}" 
+                        Foreground="#D32F2F" 
+                        BorderBrush="#D32F2F"
+                        FontWeight="Bold"
+                        FontSize="13" 
+                        Margin="0,0,15,0"
+                        Width="100"
+                        materialDesign:ButtonAssist.CornerRadius="4"/>
+
+                <Button Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        CommandParameter="True"
+                        Content="YES" 
+                        Style="{StaticResource MaterialDesignRaisedButton}" 
+                        Background="#2E7D32"
+                        Foreground="White" 
+                        FontWeight="Bold"
+                        FontSize="13" 
+                        Width="100"
+                        materialDesign:ButtonAssist.CornerRadius="4"/>
+            </StackPanel>
+        </Grid>
+    </materialDesign:Card>
+</UserControl>

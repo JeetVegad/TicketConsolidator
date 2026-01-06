@@ -1,0 +1,155 @@
+@page "/settings"
+@using TicketConsolidator.Infrastructure.Services
+@using TicketConsolidator.Application.Interfaces
+@inject SettingsService SettingsService
+@inject ILoggerService Logger
+
+<PageTitle>Settings | TicketConsolidator</PageTitle>
+
+<div class="settings-container animate-fade-in">
+    <div class="glass-panel content-card">
+        <h2 class="page-title">Application Settings</h2>
+        
+        <div class="settings-group">
+            <h3 class="group-title">Outlook Integration</h3>
+            <div class="input-row">
+                <label>Target Folder Name</label>
+                <input class="glass-input" @bind="OutlookFolder" placeholder="Inbox" />
+                <p class="hint">The folder to scan for ticket emails (e.g. 'Inbox' or 'Releases').</p>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h3 class="group-title">File Storage</h3>
+            <div class="input-row">
+                <label>Scripts Path</label>
+                <div class="path-input">
+                    <input class="glass-input" @bind="ScriptsPath" />
+                </div>
+                <p class="hint">Where extracted scripts are temporarily stored.</p>
+            </div>
+            
+            <div class="input-row">
+                <label>Consolidated Output Path</label>
+                <div class="path-input">
+                    <input class="glass-input" @bind="ConsolidatedPath" />
+                </div>
+                <p class="hint">Where final merged scripts will be saved.</p>
+            </div>
+        </div>
+
+        <div class="actions-row">
+            <button class="glass-button" @onclick="SaveSettings">
+                <span class="btn-content">💾 Save Changes</span>
+            </button>
+            <span class="status-msg @(IsSaved ? "success" : "")">@StatusMessage</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding-top: 2rem;
+    }
+    
+    .content-card {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .page-title { margin: 0; font-size: 1.5rem; font-weight: 300; letter-spacing: 0.05em; }
+    
+    .settings-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .settings-group:last-child { border-bottom: none; }
+    
+    .group-title {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--primary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .input-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .input-row label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .hint {
+        margin: 0;
+        font-size: 0.8rem;
+        color: rgba(148, 163, 184, 0.6);
+        font-style: italic;
+    }
+    
+    .actions-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .status-msg {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .status-msg.success {
+        color: var(--success);
+        opacity: 1;
+    }
+</style>
+
+@code {
+    private string OutlookFolder { get; set; }
+    private string ScriptsPath { get; set; }
+    private string ConsolidatedPath { get; set; }
+    
+    private string StatusMessage { get; set; }
+    private bool IsSaved { get; set; }
+
+    protected override void OnInitialized()
+    {
+        OutlookFolder = SettingsService.CurrentTargetFolder;
+        ScriptsPath = SettingsService.ScriptsPath;
+        ConsolidatedPath = SettingsService.ConsolidatedScriptsPath;
+    }
+
+    private async Task SaveSettings()
+    {
+        IsSaved = false;
+        StatusMessage = "Saving...";
+        
+        await SettingsService.UpdateSettingsAsync(OutlookFolder, ScriptsPath, ConsolidatedPath);
+        
+        IsSaved = true;
+        StatusMessage = "Settings saved successfully!";
+        Logger.LogSuccess("Settings updated by user.");
+        
+        // Hide message after delay
+        await Task.Delay(3000);
+        IsSaved = false;
+        StatusMessage = "";
+        StateHasChanged();
+    }
+}

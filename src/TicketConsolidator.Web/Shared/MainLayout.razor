@@ -1,0 +1,134 @@
+﻿@inherits LayoutComponentBase
+
+<div class="app-layout">
+    <div class="background-orb orb-1"></div>
+    <div class="background-orb orb-2"></div>
+    
+    <header class="app-header glass-panel">
+        <div class="brand">
+            <span class="brand-icon">✨</span>
+            <span class="brand-text">TicketConsolidator</span>
+        </div>
+        <nav class="top-nav">
+            <NavLink href="" Match="NavLinkMatch.All" class="nav-link">
+                <span class="icon">📊</span> Dashboard
+            </NavLink>
+            <NavLink href="settings" class="nav-link">
+                <span class="icon">⚙️</span> Settings
+            </NavLink>
+            <NavLink href="logs" class="nav-link">
+                <span class="icon">📝</span> Logs
+            </NavLink>
+            <NavLink href="help" class="nav-link">
+                <span class="icon">❓</span> Help
+            </NavLink>
+        </nav>
+    </header>
+
+    <main class="content-container custom-scroll">
+        <div class="page-transition-wrapper">
+            @Body
+        </div>
+    </main>
+    
+    <ToastContainer />
+</div>
+
+<style>
+    .app-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        background: radial-gradient(ellipse at top, #0f0728 0%, #030014 100%);
+    }
+    
+    /* Animated Background Orbs */
+    .background-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.4;
+        z-index: 0;
+        animation: floatOrb 20s infinite ease-in-out;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: 20%; animation-delay: 0s; }
+    .orb-2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; right: 10%; animation-delay: -5s; }
+    
+    @@keyframes floatOrb {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(30px, 50px); }
+    }
+
+    .app-header {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1.5rem;
+        height: var(--header-height);
+        flex-shrink: 0;
+        background: rgba(15, 7, 40, 0.6); /* Semi-transparent */
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.02em;
+        text-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+    
+    .top-nav { display: flex; gap: 0.5rem; }
+
+    .nav-link {
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        transition: all 0.3s;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .nav-link:hover {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .nav-link.active {
+        color: white;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 15px rgba(255,255,255,0.1);
+    }
+
+    .content-container {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .page-transition-wrapper {
+        height: 100%;
+        width: 100%;
+        animation: pageFadeIn 0.4s ease-out;
+    }
+    
+    @@keyframes pageFadeIn {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\TicketConsolidator.Domain\TicketConsolidator.Domain.csproj" />
+    <ProjectReference Include="..\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+  </PropertyGroup>
+
+</Project>

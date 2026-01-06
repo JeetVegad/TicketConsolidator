@@ -1,0 +1,169 @@
+<UserControl x:Class="TicketConsolidator.UI.Views.HelpView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            
+            <!-- HEADER / ABOUT -->
+            <materialDesign:Card Margin="0,0,0,20" Padding="20" UniformCornerRadius="8" materialDesign:ShadowAssist.ShadowDepth="Depth1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Ticket Consolidator" Style="{StaticResource MaterialDesignHeadline5TextBlock}" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="Version: " Foreground="Gray"/>
+                            <TextBlock Text="{Binding AppVersion, FallbackValue='v1.0.0'}" FontWeight="Bold" Margin="0,0,15,0"/>
+                            <TextBlock Text="Built: " Foreground="Gray"/>
+                            <TextBlock Text="{Binding BuildDate}" FontWeight="Bold"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- USER GUIDE -->
+            <TextBlock Text="User Guide" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
+            <materialDesign:Card Margin="0,0,0,20" UniformCornerRadius="8">
+                <StackPanel>
+                    <Grid Margin="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Numeric1Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Enter Ticket Numbers (e.g. TICKET-123, TICKET-456) in the Dashboard input." VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                    <Separator/>
+                    <Grid Margin="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Numeric2Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Click 'SCAN' to search your Outlook emails for attachments." VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                    <Separator/>
+                    <Grid Margin="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Numeric3Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Review found scripts. Use Up/Down arrows to reorder them if needed." VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                    <Separator/>
+                    <Grid Margin="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Numeric4Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Click 'CONSOLIDATE' to merge them into final SQL files." VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- VISUAL WORKFLOW (New) -->
+            <TextBlock Text="Workflow Overview" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
+            <materialDesign:Card Margin="0,0,0,20" Padding="20" UniformCornerRadius="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Step 1: Input -->
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <Border Background="#E3F2FD" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="TicketOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#1565C0"/>
+                        </Border>
+                        <TextBlock Text="1. Input" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Enter Ticket #s" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Arrow -->
+                    <materialDesign:PackIcon Grid.Column="1" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+
+                    <!-- Step 2: Scan -->
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                        <Border Background="#E8F5E9" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="EmailSearchOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#2E7D32"/>
+                        </Border>
+                        <TextBlock Text="2. Scan" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Find Emails" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Arrow -->
+                    <materialDesign:PackIcon Grid.Column="3" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+
+                    <!-- Step 3: Sort -->
+                    <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                        <Border Background="#FFF3E0" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="SortVariant" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#EF6C00"/>
+                        </Border>
+                        <TextBlock Text="3. Sort" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Review Scripts" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Arrow -->
+                    <materialDesign:PackIcon Grid.Column="5" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+
+                    <!-- Step 4: Consolidate -->
+                    <StackPanel Grid.Column="6" HorizontalAlignment="Center">
+                        <Border Background="#F3E5F5" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
+                            <materialDesign:PackIcon Kind="FolderZipOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#7B1FA2"/>
+                        </Border>
+                        <TextBlock Text="4. Merge" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Save Files" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- SCRIPT FORMATTING RULES -->
+            <TextBlock Text="Script Formatting Rules" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" Background="#FAFAFA">
+                <StackPanel>
+                    <TextBlock Text="Ensure your .sql attachments use this format so the parser can identify them:" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <Border Background="#EEEEEE" Padding="10" CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1">
+                        <TextBlock FontFamily="Consolas" FontSize="13" TextWrapping="Wrap">
+                            <Run Foreground="Green">-- &lt;TICKET-123&gt; START</Run><LineBreak/>
+                            INSERT INTO Users (Name) VALUES ('John');<LineBreak/>
+                            <Run Foreground="Green">-- &lt;TICKET-123&gt; END</Run>
+                        </TextBlock>
+                    </Border>
+                    <TextBlock Text="* Replace TICKET-123 with your actual ticket number." FontStyle="Italic" FontSize="12" Margin="0,8,0,0"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- FAQ -->
+            <TextBlock Text="Troubleshooting / FAQ" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
+            <StackPanel>
+                <Expander Header="Why is my ticket not found?" Background="White" Margin="0,0,0,5">
+                    <TextBlock Text="1. Ensure the email Subject contains the ticket number.&#x0a;2. Check if the email is in the folder specified in Settings (Default: Inbox).&#x0a;3. If it's in a subfolder, update the folder name in Settings." TextWrapping="Wrap" Margin="20"/>
+                </Expander>
+                <Expander Header="Outlook connection error?" Background="White" Margin="0,0,0,5">
+                    <TextBlock Text="Ensure you are running 'Outlook Classic' application on this machine. The 'New Outlook' (webwrapper) is not supported. Also check that both this app and Outlook are running with the same permissions (e.g. both as Admin or both as User)." TextWrapping="Wrap" Margin="20"/>
+                </Expander>
+                <Expander Header="How are duplicate scripts handled?" Background="White" Margin="0,0,0,5">
+                    <TextBlock Text="The application processes emails for a ticket in 'Newest First' order. Once a script is found for a ticket in a newer email (e.g. a Reply), any older emails for that same ticket are ignored." TextWrapping="Wrap" Margin="20"/>
+                </Expander>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

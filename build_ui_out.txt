@@ -1,0 +1,20 @@
+  Determining projects to restore...
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+  All projects are up-to-date for restore.
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.
+  TicketConsolidator.Domain -> C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Domain\bin\Debug\net10.0\TicketConsolidator.Domain.dll
+  TicketConsolidator.Application -> C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Application\bin\Debug\net10.0\TicketConsolidator.Application.dll
+  TicketConsolidator.Infrastructure -> C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\bin\Debug\net10.0-windows\TicketConsolidator.Infrastructure.dll
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\obj\Debug\net10.0-windows\Microsoft.CodeAnalysis.Razor.Compiler\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\App_razor.g.cs(99,55): warning CS0618: 'Router.PreferExactMatches' is obsolete: 'This property is obsolete and configuring it has no effect.' [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\Pages\Index.razor(280,6): error CS0103: The name 'keyframes' does not exist in the current context [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+
+Build FAILED.
+
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary. [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\obj\Debug\net10.0-windows\Microsoft.CodeAnalysis.Razor.Compiler\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\App_razor.g.cs(99,55): warning CS0618: 'Router.PreferExactMatches' is obsolete: 'This property is obsolete and configuring it has no effect.' [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\Pages\Index.razor(280,6): error CS0103: The name 'keyframes' does not exist in the current context [C:\Users\krish.maniar\Downloads\Documents\Apps\TicketConsolidator\src\TicketConsolidator.Web\TicketConsolidator.Web.csproj]
+    3 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.89

@@ -1,0 +1,109 @@
+@namespace TicketConsolidator.Web.Components
+@inject TicketConsolidator.Web.Services.TicketService TicketService
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="drop-zone @(_isDragOver ? "drag-over" : "")"
+     @ondragenter="HandleDragEnter"
+     @ondragleave="HandleDragLeave"
+     @ondragover="HandleDragEnter"
+     @ondrop="HandleDrop">
+    
+    <InputFile OnChange="HandleFileSelected" multiple class="file-input" />
+    
+    <div class="drop-content">
+        <span class="drop-icon">☁️</span>
+        <span class="drop-text">Drag SQL files here or click to upload</span>
+    </div>
+</div>
+
+<style>
+    .drop-zone {
+        position: relative;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-md);
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.02);
+        cursor: pointer;
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.1);
+        transform: scale(1.01);
+    }
+
+    .file-input {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .drop-content {
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .drop-icon { font-size: 2rem; }
+    .drop-text { color: var(--text-secondary); font-weight: 500; }
+</style>
+
+@code {
+    private bool _isDragOver = false;
+
+    private void HandleDragEnter(DragEventArgs e) => _isDragOver = true;
+    private void HandleDragLeave(DragEventArgs e) => _isDragOver = false;
+
+    private async Task HandleDrop(DragEventArgs e)
+    {
+        _isDragOver = false;
+        // Note: Blazor InputFile handles the file selection via OnChange.
+        // Dragging onto the InputFile element triggers "HandleFileSelected".
+        // The @ondrop here handles the visual state reset.
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        // Max 50 files, Max 10MB each
+        var files = e.GetMultipleFiles(50);
+        // Call logic in TicketService.
+        // But TicketService logic expects file paths (for WPF File structure).
+        // Since we are moving to Blazor, we need to adapt TicketService to accept STREAMS or Save to Temp.
+        
+        // Wait, I implemented logic in TicketService assuming "File.Exists(path)".
+        // I need to update TicketService to handle "Uploads" by saving them to temp first.
+        // Or I can do it right here in the component and pass paths.
+        
+        // Strategy: Save to Temp Folder -> Pass Paths to TicketService.
+        // This keeps TicketService consistent with Email attachments (which are paths).
+        
+        var paths = new List<string>();
+        foreach(var file in files)
+        {
+             var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), file.Name);
+             using var stream = file.OpenReadStream(10 * 1024 * 1024); // 10MB max
+             using var fs = new System.IO.FileStream(tempPath, System.IO.FileMode.Create);
+             await stream.CopyToAsync(fs);
+             paths.Add(tempPath);
+        }
+        
+        // Now call Service (I need to Expose a method "ProcessUploadedFiles(List<string> paths)")
+        // I implemented "StartScanAsync" which takes ticket input.
+        // I haven't implemented "ProcessUploadedFiles" in TicketService yet?
+        // Checking TicketService... I did "ConsolidateAsync", "StartScanAsync".
+        // I MISSED "UploadFilesAsync" or similar in TicketService!
+        // I need to add it.
+        
+        // Temporarily, I can call a new method I'll add.
+        await TicketService.UploadFilesAsync(paths);
+    }
+}

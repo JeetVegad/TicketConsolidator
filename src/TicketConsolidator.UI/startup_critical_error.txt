@@ -1,0 +1,29 @@
+System.Windows.Markup.XamlParseException: 'No matching constructor found on type 'MaterialDesignThemes.Wpf.DialogOpenedEventHandler'. You can use the Arguments or FactoryMethod directives to construct this type.' Line number '23' and line position '15'.
+ ---> System.MissingMethodException: No default constructor found for type 'MaterialDesignThemes.Wpf.DialogOpenedEventHandler'. You can use the Arguments or FactoryMethod directives to construct this type.
+   at System.Xaml.Schema.XamlTypeInvoker.DefaultCtorXamlActivator.EnsureConstructorDelegate(XamlTypeInvoker type)
+   at System.Xaml.Schema.XamlTypeInvoker.CreateInstance(Object[] arguments)
+   at MS.Internal.Xaml.Runtime.ClrObjectRuntime.CreateInstance(XamlType xamlType, Object[] args)
+   --- End of inner exception stack trace ---
+   at System.Windows.Markup.XamlReader.RewrapException(Exception e, IXamlLineInfo lineInfo, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)
+   at System.Windows.Markup.WpfXamlLoader.LoadBaml(XamlReader xamlReader, Boolean skipJournaledProperties, Object rootObject, XamlAccessLevel accessLevel, Uri baseUri)
+   at System.Windows.Markup.XamlReader.LoadBaml(Stream stream, ParserContext parserContext, Object parent, Boolean closeStream)
+   at System.Windows.Application.LoadComponent(Object component, Uri resourceLocator)
+   at TicketConsolidator.UI.MainWindow.InitializeComponent() in C:\Users\krish.maniar\Downloads\Documents\Apps\Ticket - Consilidator\TicketConsolidator\src\TicketConsolidator.UI\MainWindow.xaml:line 1
+   at TicketConsolidator.UI.MainWindow..ctor(MainWindowViewModel viewModel) in C:\Users\krish.maniar\Downloads\Documents\Apps\Ticket - Consilidator\TicketConsolidator\src\TicketConsolidator.UI\MainWindow.xaml.cs:line 21
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitConstructor(ConstructorCallSite constructorCallSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitRootCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.CreateServiceAccessor(ServiceIdentifier serviceIdentifier)
+   at System.Collections.Concurrent.ConcurrentDictionary`2.GetOrAdd(TKey key, Func`2 valueFactory)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
+   at TicketConsolidator.UI.App.OnStartup(StartupEventArgs e) in C:\Users\krish.maniar\Downloads\Documents\Apps\Ticket - Consilidator\TicketConsolidator\src\TicketConsolidator.UI\App.xaml.cs:line 65

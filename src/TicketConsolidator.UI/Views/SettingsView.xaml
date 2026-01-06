@@ -1,0 +1,39 @@
+<UserControl x:Class="TicketConsolidator.UI.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:TicketConsolidator.UI"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid Margin="20">
+        <StackPanel>
+            <TextBlock Text="Application Settings" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,20" Foreground="{DynamicResource MaterialDesignBody}"/>
+            
+            <materialDesign:Card Padding="16" UniformCornerRadius="8" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                <StackPanel>
+                    <TextBlock Text="Email Configuration" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    
+                    <!-- Runtime Folder Setting -->
+                    <TextBox Text="{Binding TargetFolder, UpdateSourceTrigger=PropertyChanged}"
+                             materialDesign:HintAssist.Hint="Outlook Target Folder Name"
+                             materialDesign:HintAssist.HelperText="Enter the folder name where emails are stored (e.g., Inbox, Tickets)"
+                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             Margin="0,10,0,10"
+                             FontSize="14"/>
+
+                    <Button Command="{Binding UpdateFolderCommand}"
+                            Content="Save Configuration"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            HorizontalAlignment="Left"
+                            Margin="0,10,0,0"
+                            ToolTip="Save the folder for future scans"/>
+                </StackPanel>
+            </materialDesign:Card>
+
+
+        </StackPanel>
+    </Grid>
+</UserControl>

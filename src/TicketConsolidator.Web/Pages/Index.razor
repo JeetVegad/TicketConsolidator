@@ -1,0 +1,390 @@
+﻿@page "/"
+@using TicketConsolidator.Web.Services
+@using TicketConsolidator.Web.Components
+@using TicketConsolidator.Application.DTOs
+@inject TicketService TicketService
+@implements IDisposable
+
+<PageTitle>Dashboard | TicketConsolidator</PageTitle>
+
+<div class="dashboard-container">
+    
+    <!-- Controls Header -->
+    <div class="glass-panel controls-bar">
+        <div class="input-group">
+            <span class="icon">🔍</span>
+            <input class="glass-input search-input" 
+                   @bind="TicketInput" 
+                   @bind:event="oninput" 
+                   placeholder="Enter Tickets (e.g. ENGAGE-1234, 11096)" />
+        </div>
+        
+        <div class="actions">
+            <button class="glass-button" @onclick="StartScan" disabled="@IsBusy">
+                @if(IsBusy) 
+                { 
+                     <span class="btn-content"><span class="loader-mini"></span> Scanning...</span>
+                } 
+                else 
+                { 
+                     <span class="btn-content">⚡ Scan Tickets</span> 
+                }
+            </button>
+            <button class="glass-button-secondary" @onclick="Clear" disabled="@IsBusy">
+                <span class="btn-content">🗑️ Clear</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+        <!-- Input Column -->
+        <div class="grid-col upload-col">
+            <div class="glass-card status-card">
+                <div class="status-header">
+                    <h4>Current Status</h4>
+                    <span class="status-badge @(IsBusy ? "busy" : "idle")">
+                        @(IsBusy ? "Processing" : "Idle")
+                    </span>
+                </div>
+                <div class="status-body">
+                    <div class="status-top-row">
+                        <p class="status-msg" title="@TicketService.StatusMessage">@TicketService.StatusMessage</p>
+                        <span class="progress-percent">@TicketService.ProgressValue%</span>
+                    </div>
+                    <div class="progress-container">
+                         <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width: @(TicketService.ProgressValue)%"></div>
+                        </div>
+                        <span class="progress-text">@TicketService.TicketsCount tickets found</span>
+                    </div>
+                </div>
+            </div>
+
+            <FileDropZone />
+
+            <div class="action-stack glass-card p-4">
+                 <h4 class="section-title">Actions</h4>
+                 <button class="glass-button full-width" @onclick="Consolidate" 
+                         disabled="@(IsListEmpty || TicketService.IsBusy)">
+                     <span class="btn-content">🚀 Consolidate & Save</span>
+                 </button>
+                 
+                 <button class="glass-button-secondary full-width" @onclick="OpenEmailDialog"
+                         disabled="@(string.IsNullOrEmpty(TicketService.LastRunId) || TicketService.IsBusy)">
+                      <span class="btn-content">📧 Create Release Email</span>
+                 </button>
+            </div>
+        </div>
+
+        <!-- Lists Column (Tables) -->
+        <div class="grid-col">
+            <ScriptList Title="Tables" Scripts="@TicketService.TableScripts" 
+                        MoveUp="s => MoveItem(s, TicketService.TableScripts, -1)"
+                        MoveDown="s => MoveItem(s, TicketService.TableScripts, 1)"
+                        Remove="s => RemoveItem(s, TicketService.TableScripts)" />
+        </div>
+
+        <!-- Lists Column (SP) -->
+        <div class="grid-col">
+            <ScriptList Title="Stored Procedures" Scripts="@TicketService.SpScripts"
+                        MoveUp="s => MoveItem(s, TicketService.SpScripts, -1)"
+                        MoveDown="s => MoveItem(s, TicketService.SpScripts, 1)"
+                        Remove="s => RemoveItem(s, TicketService.SpScripts)" />
+        </div>
+        
+        <!-- Lists Column (Data) -->
+        <div class="grid-col">
+            <ScriptList Title="Data Scripts" Scripts="@TicketService.DataScripts"
+                        MoveUp="s => MoveItem(s, TicketService.DataScripts, -1)"
+                        MoveDown="s => MoveItem(s, TicketService.DataScripts, 1)"
+                        Remove="s => RemoveItem(s, TicketService.DataScripts)" />
+        </div>
+    </div>
+</div>
+
+<!-- Components -->
+<Spinner Visible="@TicketService.IsBusy" Text="@TicketService.StatusMessage" />
+
+<ReleaseDetailsDialog @bind-IsVisible="ShowEmailDialog" 
+                      @ref="emailDialog"
+                      OnSubmit="CreateEmail" />
+
+<style>
+    /* Layout Improvements - Single Screen Pro */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        height: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; 
+    }
+
+    .controls-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 1.2rem; /* Compact padding */
+        align-items: center;
+        gap: 1.5rem;
+        flex-shrink: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        background: rgba(15, 7, 40, 0.4);
+        backdrop-filter: blur(10px);
+        z-index: 20;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        flex: 1;
+        max-width: 600px;
+    }
+    
+    .icon { font-size: 1.2rem; opacity: 0.8; }
+    
+    .actions { display: flex; gap: 0.8rem; }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr 1fr 1fr; /* Fixed sidebar, equal lists */
+        grid-template-rows: 1fr;
+        gap: 1rem; /* Tighter gap */
+        flex: 1;
+        min-height: 0; /* Crucial for nested scroll */
+        padding: 1rem; /* Tighter padding */
+        overflow: hidden;
+    }
+
+    .grid-col {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 0;
+        overflow: hidden;
+    }
+    
+    .upload-col {
+        gap: 1rem;
+    }
+    
+    .status-card {
+        padding: 1.2rem; /* Compact */
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.02);
+    }
+
+    .status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-header h4 {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: var(--radius-pill);
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+    }
+    
+    .status-badge.busy { background: rgba(139, 92, 246, 0.2); color: #a78bfa; box-shadow: 0 0 10px rgba(139,92,246,0.4); animation: pulse 1.5s infinite; }
+    .status-badge.idle { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+    
+    @@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+    /* Progress Bar */
+    .status-top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.4rem;
+    }
+    
+    .status-msg {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+
+    .progress-percent {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    
+    .progress-bar-bg {
+        height: 6px; /* Sleek thin bar */
+        background: rgba(255,255,255,0.05); /* Lower contrast bg */
+        border-radius: var(--radius-pill);
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 12px var(--primary-glow);
+        position: relative;
+    }
+
+    /* Shimmer Effect on Progress */
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transform: translateX(-100%);
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @@keyframes shimmer { 100% { transform: translateX(100%); } }
+    
+    .progress-text {
+        font-size: 0.75rem; 
+        color: var(--text-secondary);
+        text-align: right;
+    }
+
+    /* Action Stack */
+    .action-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-top: auto; 
+        padding: 1rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    
+    .section-title {
+        margin: 0 0 0.4rem 0;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+    
+    .full-width { width: 100%; justify-content: center; }
+    
+    /* Utility */
+    .p-4 { padding: 1rem; }
+
+    /* Loader Mini */
+    .loader-mini {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+    
+    @@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+@code {
+    private string TicketInput { get; set; }
+    private bool IsBusy => TicketService.IsBusy;
+    private bool IsListEmpty => (TicketService.TableScripts.Count + TicketService.SpScripts.Count + TicketService.DataScripts.Count) == 0;
+
+    private bool ShowEmailDialog { get; set; }
+    private ReleaseDetailsDialog emailDialog;
+
+    protected override void OnInitialized()
+    {
+        TicketService.OnChange += StateHasChanged;
+    }
+    
+    public void Dispose()
+    {
+        TicketService.OnChange -= StateHasChanged;
+        // TicketService is Scoped, so it lives as long as the circuit/tab.
+        // We unsubscribe to prevent leak if user navigates away (though standard Dash is main page).
+    }
+
+    private async Task StartScan()
+    {
+        await TicketService.StartScanAsync(TicketInput);
+    }
+
+    private void Clear()
+    {
+        TicketInput = "";
+        TicketService.Clear();
+    }
+
+    private async Task Consolidate()
+    {
+        await TicketService.ConsolidateAsync();
+    }
+
+    private void OpenEmailDialog()
+    {
+        if (emailDialog != null)
+        {
+            emailDialog.SetDefaults(TicketService.LastRunId, TicketService.LastConsolidatedPath);
+        }
+        ShowEmailDialog = true;
+    }
+
+    private async Task CreateEmail()
+    {
+        if (emailDialog != null)
+        {
+             await TicketService.CreateReleaseEmailAsync(emailDialog.BuildNumber, emailDialog.SolutionPath, emailDialog.Username);
+        }
+    }
+
+    private void MoveItem(Application.DTOs.SqlScript script, List<Application.DTOs.SqlScript> list, int direction)
+    {
+        int index = list.IndexOf(script);
+        if (index < 0) return;
+        
+        int newIndex = index + direction;
+        if (newIndex >= 0 && newIndex < list.Count)
+        {
+            var item = list[index];
+            list.RemoveAt(index);
+            list.Insert(newIndex, item);
+            // No need to notify if standard List doesn't trigger OnChange.
+            // But we bound to the list in ScriptList.
+            // To force update:
+            StateHasChanged(); // Local refresh
+        }
+    }
+    
+    private void RemoveItem(Application.DTOs.SqlScript script, List<Application.DTOs.SqlScript> list)
+    {
+        list.Remove(script);
+        StateHasChanged();
+    }
+}
