@@ -1,0 +1,190 @@
+@namespace TicketConsolidator.Web.Components
+@inject IJSRuntime JSRuntime
+
+<div class="modal-overlay @(IsVisible ? "visible" : "")" @onclick="Close">
+    <div class="glass-card modal-container @(IsVisible ? "animate-pop" : "")" @onclick:stopPropagation="true">
+        
+        <div class="success-animation">
+            <div class="drawing-scene">
+                <!-- Confetti -->
+                <div class="confetti c1"></div><div class="confetti c2"></div><div class="confetti c3"></div>
+                <div class="confetti c4"></div><div class="confetti c5"></div><div class="confetti c6"></div>
+                
+                <svg class="checkmark-svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle-draw" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark-check-draw" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+        </div>
+
+        <h3 class="modal-title">Consolidation Successful!</h3>
+        
+        <p class="modal-subtitle">Your scripts have been successfully merged.</p>
+
+        <div class="path-container glass-inset">
+            <code class="path-text">@Path</code>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="glass-button-secondary" @onclick="CopyPath">
+                <span class="btn-icon">📋</span> COPY PATH
+            </button>
+            <button class="glass-button" @onclick="Close">
+                OK, THANKS
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 480px;
+        padding: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        /* Glass Card Effect is inherited but we override layout */
+        border: 1px solid rgba(16, 185, 129, 0.2); /* Green tint */
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 20px rgba(16, 185, 129, 0.1);
+    }
+
+    .modal-title {
+        margin: 1.5rem 0 0.5rem 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .modal-subtitle {
+        margin: 0 0 1.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .path-container {
+        width: 100%;
+        background: rgba(0,0,0,0.3);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(255,255,255,0.05);
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+
+    .path-text {
+        font-family: 'Fira Code', monospace;
+        font-size: 0.85rem;
+        color: var(--accent);
+        white-space: nowrap;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Animated Success Scene */
+    .success-animation { position: relative; margin-bottom: 20px; }
+    
+    .drawing-scene {
+        position: relative;
+        width: 80px; height: 80px;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .checkmark-svg {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        display: block;
+        stroke-width: 3;
+        stroke: #10b981; /* Green */
+        stroke-miterlimit: 10;
+        box-shadow: inset 0 0 0 #10b981;
+        animation: fillScale .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    }
+
+    .checkmark-circle-draw {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        stroke-width: 2;
+        stroke-miterlimit: 10;
+        fill: none;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    .checkmark-check-draw {
+        transform-origin: 50% 50%;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+
+    @@keyframes stroke { 100% { stroke-dashoffset: 0; } }
+    @@keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+    @@keyframes fillScale { 100% { box-shadow: inset 0 0 0 50px rgba(16, 185, 129, 0.1); } }
+
+    /* Confetti */
+    .confetti {
+        position: absolute; width: 6px; height: 6px; background: var(--accent);
+        top: 50%; left: 50%; opacity: 0;
+    }
+    
+    .c1 { animation: burst 1s ease-out 0.8s forwards; transform: translate(0,0); --x: -40px; --y: -40px; background: #FFD700; }
+    .c2 { animation: burst 1s ease-out 0.9s forwards; transform: translate(0,0); --x: 40px; --y: -40px; background: #FF0055; }
+    .c3 { animation: burst 1s ease-out 0.7s forwards; transform: translate(0,0); --x: -40px; --y: 40px; background: #00AAFF; }
+    .c4 { animation: burst 1s ease-out 0.85s forwards; transform: translate(0,0); --x: 40px; --y: 40px; background: #00FF55; }
+    .c5 { animation: burst 1s ease-out 0.8s forwards; transform: translate(0,0); --x: 0px; --y: -55px; background: white; }
+    .c6 { animation: burst 1s ease-out 0.8s forwards; transform: translate(0,0); --x: 0px; --y: 55px; background: var(--primary); }
+
+    @@keyframes burst {
+        0% { opacity: 1; transform: translate(0,0) scale(0); }
+        100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1); }
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public string Path { get; set; }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task CopyPath()
+    {
+        if (!string.IsNullOrEmpty(Path))
+        {
+            try 
+            {
+                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", Path);
+            }
+            catch {}
+        }
+    }
+}

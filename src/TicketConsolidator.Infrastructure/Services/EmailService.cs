@@ -73,11 +73,13 @@ namespace TicketConsolidator.Infrastructure.Services
                 var procs = System.Diagnostics.Process.GetProcessesByName("OUTLOOK");
                 if (procs.Length > 0)
                 {
-                    // If we reach here, Outlook IS running, but we couldn't attach after 3 tries.
-                    // This confirms a Hard Permission Mismatch (Admin vs User) or Hard Stuck.
-                    // We MUST Close it to proceed.
-                    foreach (var p in procs) { try { p.Kill(); } catch { } }
-                    await Task.Delay(2000); // Wait for release
+                if (procs.Length > 0)
+                {
+                    // Outlook is running but we couldn't attach.
+                    // Instead of killing it (which disrupts the user), we will try to start a new instance using ShellExecute
+                    // or just fail gracefully if that doesn't work.
+                    // Do NOT Kill.
+                }
                 }
 
                 // Start VISIBLE Outlook Application

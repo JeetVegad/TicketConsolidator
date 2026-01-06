@@ -1024,7 +1024,10 @@ namespace TicketConsolidator.UI
 
                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>");
                 sb.AppendLine("<ul>"); 
-                foreach(var f in fileList) sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                foreach(var f in fileList) 
+                {
+                    sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                }
                 sb.AppendLine("</ul>");
 
                 sb.AppendLine("<br/>");

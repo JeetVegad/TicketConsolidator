@@ -1,96 +1,135 @@
 @namespace TicketConsolidator.Web.Components
 
-<dialog id="releaseDialog" class="glass-panel dialog-modal" open="@IsVisible">
-    <div class="dialog-header">
-        <h3>Release Details</h3>
-        <button class="close-btn" @onclick="Cancel">✕</button>
-    </div>
-    
-    <div class="dialog-body">
-        <label class="input-label">Build Number</label>
-        <input class="glass-input" @bind="BuildNumber" placeholder="e.g. 10.0.123" />
-        
-        <label class="input-label">Solution Path</label>
-        <input class="glass-input" @bind="SolutionPath" placeholder="\\Network\Share\Release" />
-        
-        <label class="input-label">Your Name</label>
-        <input class="glass-input" @bind="Username" placeholder="John Doe" />
-    </div>
-    
-    <div class="dialog-footer">
-        <button class="glass-button-secondary" @onclick="Cancel">Cancel</button>
-        <button class="glass-button" @onclick="Confirm">Create Email</button>
-    </div>
-</dialog>
-
 @if(IsVisible)
 {
-    <div class="backdrop animate-fade-in"></div>
+    <div class="dialog-overlay animate-fade-in" @onclick="Cancel">
+        <div class="dialog-card animate-scale-in" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Release Details</h3>
+                <button class="close-btn" @onclick="Cancel" title="Close">✕</button>
+            </div>
+            
+            <div class="dialog-body">
+                <div class="form-group">
+                    <label class="input-label">Build Number</label>
+                    <input class="glass-input" @bind="BuildNumber" placeholder="e.g. 10.0.123" />
+                </div>
+
+                <div class="form-group">
+                    <label class="input-label">Solution Path</label>
+                    <input class="glass-input" @bind="SolutionPath" placeholder="\\Network\Share\Release" />
+                </div>
+                
+                <div class="form-group">
+                    <label class="input-label">Your Name</label>
+                    <input class="glass-input" @bind="Username" placeholder="John Doe" />
+                </div>
+            </div>
+            
+            <div class="dialog-footer">
+                <button class="glass-button-secondary" @onclick="Cancel">Cancel</button>
+                <button class="glass-button" @onclick="Confirm">
+                    <span class="btn-icon">📧</span> Create Draft
+                </button>
+            </div>
+        </div>
+    </div>
 }
 
 <style>
-    .dialog-modal {
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 2000;
-        padding: 0;
-        border: 1px solid rgba(255,255,255,0.1);
-        width: 400px;
-        color: var(--text-primary);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        display: none;
-    }
-    
-    .dialog-modal[open] {
-        display: block;
-        animation: slideUp 0.3s ease-out;
-    }
-
-    .backdrop {
+    .dialog-overlay {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(2px);
-        z-index: 1500;
+        background: rgba(0, 0, 0, 0.75); /* Darker backdrop */
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .dialog-card {
+        width: 100%;
+        max-width: 440px;
+        background: #18181b; /* Zinc 900 - Solid */
+        border: 1px solid #3f3f46; /* Zinc 700 */
+        border-radius: var(--radius-lg);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); /* Deep shadow */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .dialog-header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #27272a;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: #18181b;
     }
 
-    .dialog-header h3 { margin: 0; font-size: 1.1rem; }
+    .dialog-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
 
     .close-btn {
-        background: none; border: none; color: var(--text-secondary);
-        font-size: 1.2rem; cursor: pointer;
+        background: none; 
+        border: none; 
+        color: var(--text-tertiary);
+        font-size: 1.1rem; 
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        line-height: 1;
+        transition: color 0.2s;
     }
+    .close-btn:hover { color: var(--text-primary); }
     
     .dialog-body {
         padding: 1.5rem;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.25rem;
+        background: #18181b;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .input-label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 500;
         color: var(--text-secondary);
-        margin-bottom: -0.5rem;
     }
 
     .dialog-footer {
-        padding: 1rem 1.5rem;
+        padding: 1.25rem 1.5rem;
         display: flex;
         justify-content: flex-end;
-        gap: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        background: rgba(0,0,0,0.1);
+        gap: 0.75rem;
+        border-top: 1px solid #27272a;
+        background: #27272a; /* Slightly lighter footer */
     }
+
+    /* Simple Animations */
+    .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+    .animate-scale-in { animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    @@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @@keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    /* .loader-mini removed - uses global theme.css */
 </style>
 
 @code {
@@ -101,9 +140,10 @@
 
     public string BuildNumber { get; set; }
     public string SolutionPath { get; set; }
-    public string Username { get; set; } = Environment.UserName;
+    public string Username { get; set; } = System.Environment.UserName;
+    
+    private bool IsProcessing { get; set; }
 
-    // Method to allow parent to set defaults
     public void SetDefaults(string build, string path)
     {
         BuildNumber = build;
@@ -112,8 +152,22 @@
 
     private async Task Confirm()
     {
-        await OnSubmit.InvokeAsync();
-        await Close();
+        if (IsProcessing) return;
+        
+        IsProcessing = true;
+        IsProcessing = true;
+        StateHasChanged(); 
+        // Instant feedback requested - no delay
+        
+        try
+        {
+            await OnSubmit.InvokeAsync();
+            await Close();
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
     }
 
     private async Task Cancel()

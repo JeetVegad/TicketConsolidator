@@ -21,6 +21,7 @@ namespace TicketConsolidator.Web.Services
 
         // State Validation & UI Updates
         public event Action OnChange;
+        public event Action<string> OnConsolidationSuccess;
         private void NotifyStateChanged() => OnChange?.Invoke();
 
         // State Properties
@@ -95,6 +96,7 @@ namespace TicketConsolidator.Web.Services
 
                 // 1. Scan Emails
                 StatusMessage = "Scanning Emails...";
+                _logger.LogInfo($"Starting email scan for {tickets.Count} tickets...");
                 ProgressValue = 10;
                 NotifyStateChanged();
 
@@ -103,6 +105,7 @@ namespace TicketConsolidator.Web.Services
 
                 ProgressValue = 40;
                 StatusMessage = $"Found {emails.Count} emails. Parsing...";
+                _logger.LogInfo($"Found {emails.Count} matching emails. Parsing attachments...");
                 NotifyStateChanged();
 
                 // Missing Tickets Check
@@ -111,6 +114,10 @@ namespace TicketConsolidator.Web.Services
                 if (missingTickets.Any())
                 {
                     _logger.LogWarning($"Missing Tickets: {string.Join(", ", missingTickets)}");
+                }
+                else
+                {
+                    _logger.LogSuccess("All tickets found in emails.");
                 }
 
                 // 2. Parse Scripts
@@ -124,14 +131,31 @@ namespace TicketConsolidator.Web.Services
                     foreach (var email in emails)
                     {
                         if (token.IsCancellationRequested) break;
-
+                        
                         foreach (var path in email.AttachmentPaths)
                         {
                             if (System.IO.File.Exists(path))
                             {
                                 string content = System.IO.File.ReadAllText(path);
                                 string fileName = System.IO.Path.GetFileName(path);
-                                string realTicket = tickets.FirstOrDefault(t => fileName.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0) ?? "Unknown";
+                                
+                                // Determine Real Ticket (Regex Upgrade)
+                                string ticketInputMatch = tickets.FirstOrDefault(t => fileName.IndexOf(t, StringComparison.OrdinalIgnoreCase) >= 0);
+                                if (ticketInputMatch == null) continue;
+
+                                string realTicket = ticketInputMatch;
+                                var ticketRegexMatch = System.Text.RegularExpressions.Regex.Match(fileName, @"([A-Za-z]+-\d+|\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                                if (ticketRegexMatch.Success) 
+                                {
+                                    string found = ticketRegexMatch.Value;
+                                    if (found.IndexOf(ticketInputMatch, StringComparison.OrdinalIgnoreCase) >= 0)
+                                    {
+                                        realTicket = found;
+                                    }
+                                }
+                                
+                                // LOGGING: Granular File Processing
+                                _logger.LogInfo($"Processing {fileName} for Ticket {realTicket}...");
 
                                 // Parse
                                 var parsed = _parserService.ParseScript(content, fileName, realTicket);
@@ -139,6 +163,7 @@ namespace TicketConsolidator.Web.Services
                                 // Fallback
                                 if (parsed.Count == 0)
                                 {
+                                    _logger.LogWarning($"No script blocks found in {fileName}. Treating as whole file.");
                                     parsed.Add(new SqlScript 
                                     { 
                                         TicketNumber = realTicket, 
@@ -146,6 +171,10 @@ namespace TicketConsolidator.Web.Services
                                         SourceFileName = fileName,
                                         Type = DetectScriptType(fileName)
                                     });
+                                }
+                                else
+                                {
+                                    _logger.LogInfo($"Parsed {parsed.Count} blocks from {fileName}.");
                                 }
 
                                 // Apply Summary
@@ -176,6 +205,7 @@ namespace TicketConsolidator.Web.Services
                 ProgressValue = 100;
                 TicketsCount = $"{foundTickets.Count}/{tickets.Count}";
                 StatusMessage = $"Scan Complete. Loaded {newScripts.Count} scripts.";
+                _logger.LogSuccess($"Scan complete. Loaded {newScripts.Count} scripts total.");
                 NotifyStateChanged();
 
             }
@@ -232,6 +262,7 @@ namespace TicketConsolidator.Web.Services
 
                 StatusMessage = "Consolidation Complete!";
                 NotifyStateChanged();
+                OnConsolidationSuccess?.Invoke(outputDir);
             }
             catch (Exception ex)
             {
@@ -279,7 +310,7 @@ namespace TicketConsolidator.Web.Services
                  }
 
                  // Get Files
-                 string[] files = System.IO.Directory.GetFiles(LastConsolidatedPath, "*.*");
+                 string[] files = System.IO.Directory.GetFiles(LastConsolidatedPath, "*.*", System.IO.SearchOption.AllDirectories);
                  var fileList = files.Select(f => System.IO.Path.GetFileName(f)).ToList();
                  var attachmentPaths = files.ToList();
 
@@ -288,17 +319,15 @@ namespace TicketConsolidator.Web.Services
                  sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>");
                  sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {buildNum}]:</b></p>");
                  
-                 sb.AppendLine("<ul>");
-                 foreach(var f in fileList)
-                     sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f} (Database Scripts)</li>");
-                 sb.AppendLine("</ul>");
-
                  sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>");
                  sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{solPath}'>{solPath}</a></p>");
 
                  sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>");
                  sb.AppendLine("<ul>");
-                 foreach(var f in fileList) sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                 foreach(var f in fileList) 
+                 {
+                     sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                 }
                  sb.AppendLine("</ul>");
 
                  sb.AppendLine("<br/>");

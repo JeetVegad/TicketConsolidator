@@ -1,111 +1,203 @@
 :root {
-    /* Deep Glassy Aurora Palette */
-    --bg-primary: #030014;
-    --bg-secondary: #0f0728;
-    --bg-glass: rgba(10, 5, 30, 0.4);
+    /* Professional Deep Purple Matte Palette (Production Grade) */
+    --bg-primary: #0a0814;
+    /* Deepest Purple/Black */
+    --bg-secondary: #161225;
+    /* Dark Purple Surface */
+    --bg-tertiary: #231d36;
+    /* Lighter Purple Surface */
 
-    --text-primary: #ffffff;
-    --text-secondary: #94a3b8;
-    /* Slate 400 */
+    --bg-app: #0a0814;
+    --bg-panel: rgba(22, 18, 37, 0.95);
+    /* Solid-ish Panel */
 
-    /* Neon Accents - Vibrant & Smooth */
-    --primary: #8b5cf6;
-    /* Violet 500 */
-    --primary-hover: #7c3aed;
-    --primary-glow: rgba(139, 92, 246, 0.5);
+    --text-primary: #ede9fe;
+    /* Laundry white/purple tint */
+    --text-secondary: #a78bfa;
+    /* Soft Purple text */
+    --text-tertiary: #7c3aed;
+    /* Deep Purple text accent */
+    --text-muted: #6b7280;
 
-    --accent: #06b6d4;
-    /* Cyan 500 */
-    --accent-glow: rgba(6, 182, 212, 0.5);
+    /* Professional Accents - Standard Deep Purple */
+    --primary: #673ab7;
+    /* Material Deep Purple 500 */
+    --primary-hover: #512da8;
+    /* Deep Purple 700 */
+    --primary-glow: rgba(103, 58, 183, 0.4);
 
-    --success: #10b981;
-    /* Emerald */
-    --error: #f43f5e;
-    /* Rose */
-    --warning: #f59e0b;
-    /* Amber */
+    --accent: #d500f9;
+    /* Purple Accent A400 */
 
-    /* Glass Effects */
-    --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --glass-blur: blur(24px);
+    --success: #00c853;
+    /* Green A700 - Sharp */
+    --error: #f44336;
+    /* Red 500 */
+    --warning: #ffab00;
+    /* Amber A700 */
 
-    /* Ultra-Compact Sizing */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
+    /* Surface Styles - Matte, Clean Borders */
+    --border-color: #2d2445;
+    --surface-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+
+    /* Sizing - Rounded & Friendly */
+    --radius-sm: 8px;
+    /* Buttons/Inputs */
+    --radius-md: 12px;
+    /* Cards/Panels */
+    --radius-lg: 24px;
+    /* Dialogs/Large Containers */
     --radius-pill: 9999px;
 
-    --header-height: 42px;
-    /* Very Compact */
-    --footer-height: 32px;
-    --content-max-width: 100%;
+    --header-height: 48px;
+    /* Compact Header */
+    --content-max-width: 95%;
+    /* Wider Layout */
 
-    /* Animation Speeds */
-    --trans-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --trans-smooth: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Animation Speeds - Slower/Smoother */
+    --trans-fast: 0.15s ease;
+    --trans-smooth: 0.3s ease;
 }
 
+/* Global Loaders */
+.loader-mini {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+.spinner-ring {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.upload-loader {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+html,
 body {
-    background-color: var(--bg-primary);
-    background-image:
-        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
-    color: var(--text-primary);
-    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
-    font-size: 13px;
-    /* Compact */
+    height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    /* Strict Single Screen */
-    line-height: 1.4;
+    background-color: var(--bg-primary);
+    /* Critical: Prevents white WebView background */
 }
 
-/* Global Transition */
-* {
-    box-sizing: border-box;
+body {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--surface-shadow);
 }
 
-/* Typography Overrides for Compactness */
-h1 {
-    font-size: 1.5rem;
+/* Buttons */
+.glass-button {
+    background: var(--primary);
+    color: white;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    /* Compact padding */
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--trans-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
 }
 
-h2 {
-    font-size: 1.25rem;
+.glass-button:hover:not(:disabled) {
+    background: var(--primary-hover);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-h3 {
-    font-size: 1.1rem;
+.glass-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
 }
 
-h4 {
-    font-size: 0.95rem;
+.glass-button-secondary {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--trans-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
 }
 
-p {
+.glass-button-secondary:hover:not(:disabled) {
+    background: #2e2645;
+    border-color: #453868;
+}
+
+/* Inputs */
+.glass-input {
+    background: #0f0b1a;
+    /* Darker than card */
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color var(--trans-fast);
+    width: 100%;
     font-size: 0.9rem;
 }
 
-small {
-    font-size: 0.8rem;
+.glass-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
+.glass-input::placeholder {
+    color: var(--text-muted);
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+/* Utility */
+.d-flex {
+    display: flex;
 }
 
-::-webkit-scrollbar-thumb {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-pill);
+.align-center {
+    align-items: center;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-secondary);
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-2 {
+    gap: 0.5rem;
 }

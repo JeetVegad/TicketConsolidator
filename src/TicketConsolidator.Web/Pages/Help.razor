@@ -2,61 +2,102 @@
 
 <PageTitle>Help | TicketConsolidator</PageTitle>
 
-<div class="help-container animate-fade-in">
+<div class="help-container animate-fade-in custom-scroll">
     <div class="glass-panel content-card">
-        <h2 class="page-title">Help & Documentation</h2>
+        <h2 class="page-title">Documentation & Workflow</h2>
         
-        <div class="help-section">
-            <h3>Overview</h3>
-            <p>TicketConsolidator helps you package SQL scripts from Outlook emails into a release-ready format.</p>
+        <!-- Live Workflow Section -->
+        <div class="workflow-grid">
+            
+            <!-- Step 1: Scan -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.1s">
+                <div class="step-visual">
+                    <div class="scan-scene">
+                        <div class="scene-doc">
+                            <div class="doc-line"></div>
+                            <div class="doc-line"></div>
+                            <div class="doc-line short"></div>
+                        </div>
+                        <div class="scene-magnifier">
+                             <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                             </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">1</div>
+                    <h4>Scan Tickets</h4>
+                    <p>Enter ID (e.g. <code>12345</code>). The app scans Outlook emails & extracts SQL attachments.</p>
+                </div>
+            </div>
+
+            <!-- Step 2: Consolidate -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.2s">
+                <div class="step-visual">
+                    <div class="merge-scene">
+                        <div class="file-icon f1"><div class="f-band"></div></div>
+                        <div class="file-icon f2"><div class="f-band"></div></div>
+                        <div class="file-icon f3"><div class="f-band"></div></div>
+                        <div class="merge-arrow">➔</div>
+                        <div class="file-icon f-final">SQL</div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">2</div>
+                    <h4>Consolidate</h4>
+                    <p>Review scripts, then click "Consolidate". Files merge into a single master SQL script.</p>
+                </div>
+            </div>
+
+            <!-- Step 3: Release -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.3s">
+                <div class="step-visual">
+                    <div class="release-scene">
+                        <div class="envelope">
+                            <div class="env-flap"></div>
+                            <div class="env-body"></div>
+                        </div>
+                        <div class="fly-trail"></div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">3</div>
+                    <h4>Release</h4>
+                    <p>Generate a release email with attachments, ready to send to your team.</p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="help-section">
-            <h3>How to Use</h3>
-            <ol class="steps-list">
-                <li class="animate-slide-right" style="animation-delay: 0.1s">
-                    <span class="step-marker animate-pulse">1</span>
-                    <div class="step-content">
-                        <strong>Find Scripts:</strong> Enter a Ticket Number (e.g. <code>12345</code> or <code>ABC-123</code>) and click "Scan".
-                        <p class="step-desc">The app searches your configured Outlook folder for emails with that ticket number and extracts attached SQL files.</p>
-                    </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.2s">
-                    <span class="step-marker animate-pulse">2</span>
-                    <div class="step-content">
-                        <strong>Review & Reorder:</strong> The extracted scripts appear in lists (Tables, PROCs, Data).
-                        <p class="step-desc">Drag and drop or use arrows to reorder them if execution order matters.</p>
-                    </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.3s">
-                    <span class="step-marker animate-pulse">3</span>
-                    <div class="step-content">
-                        <strong>Manual Upload:</strong> Drag scripts directly from your desktop into the upload zone effectively adding them to the list.
-                    </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.4s">
-                    <span class="step-marker animate-pulse">4</span>
-                    <div class="step-content">
-                        <strong>Consolidate:</strong> Click "Consolidate & Save" to merge all scripts into one master SQL file.
-                    </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.5s">
-                    <span class="step-marker animate-pulse">5</span>
-                    <div class="step-content">
-                        <strong>Release:</strong> Click "Create Release Email" to generate a draft email in Outlook with the consolidated scripts attached.
-                    </div>
-                </li>
-            </ol>
+        <div class="divider"></div>
+
+        <!-- Troubleshooting Accordion -->
+        <h3 class="section-title">Common Issues</h3>
+        <div class="accordion">
+            <details class="glass-card accordion-item">
+                <summary>Outlook isn't finding emails</summary>
+                <div class="accordion-content">
+                    <p>Ensure you are using <strong>Classic Outlook (Desktop)</strong>. The "New Outlook" (web wrapper) does not support automation. Also verify the "Target Folder" in Settings matches your Outlook folder name exactly.</p>
+                </div>
+            </details>
+            
+            <details class="glass-card accordion-item">
+                <summary>Scripts are out of order</summary>
+                <div class="accordion-content">
+                    <p>Use the <strong>Up/Down arrows</strong> in the script list to reorder them before consolidating. The final file respects this order.</p>
+                </div>
+            </details>
+            
+            <details class="glass-card accordion-item">
+                <summary>How do I add manual scripts?</summary>
+                <div class="accordion-content">
+                    <p>Drag and drop SQL files from your desktop directly into the "File Upload" zone on the dashboard.</p>
+                </div>
+            </details>
         </div>
-        
-        <div class="help-section">
-             <h3>Troubleshooting</h3>
-             <ul class="trouble-list">
-                 <li><strong>Outlook Error:</strong> Ensure default Outlook (Desktop) is running. "New Outlook" (Web wrapper) is not supported.</li>
-                 <li><strong>Scan Failed:</strong> Check "Settings" to ensure the Target Folder name matches your Outlook folder exactly.</li>
-             </ul>
-        </div>
-        
+
         <div class="footer-info">
             <p>Version 2.0.0 (Blazor Edition)</p>
         </div>
@@ -65,79 +106,170 @@
 
 <style>
     .help-container {
-        max-width: 800px;
+        height: 100%;
+        padding: 1.5rem;
+        max-width: 1000px;
         margin: 0 auto;
-        padding-top: 2rem;
+        overflow-y: auto;
     }
     
-    .content-card { padding: 3rem; }
+    .content-card { padding: 2rem; }
     
-    .help-section { margin-bottom: 2.5rem; }
+    .page-title { margin-bottom: 2rem; color: #fff; font-size: 1.25rem; }
+    .section-title { margin: 2rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
     
-    h3 { 
-        color: var(--primary); 
-        border-bottom: 1px solid rgba(255,255,255,0.1); 
-        padding-bottom: 0.5rem; 
-        margin-bottom: 1rem;
-        font-weight: 500;
-    }
-    
-    p { line-height: 1.6; color: var(--text-primary); }
-    
-    .steps-list { 
-        padding-left: 0; 
-        list-style: none;
-        display: flex;
-        flex-direction: column;
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 2rem 0; }
+
+    /* Workflow Grid */
+    .workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
     }
-    
-    .steps-list li { 
-        display: flex;
-        gap: 1rem;
-        color: var(--text-primary);
-        opacity: 0; /* Starts hidden for animation */
+
+    .workflow-step-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: transform 0.3s;
     }
-    
-    .step-marker {
-        background: var(--primary);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+    .workflow-step-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.1); }
+
+    .step-visual {
+        height: 120px;
+        background: rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .step-info { padding: 1.2rem; position: relative; }
+    
+    .step-badge {
+        position: absolute;
+        top: -16px;
+        right: 1.2rem;
+        width: 32px; height: 32px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
         font-weight: bold;
-        flex-shrink: 0;
-        box-shadow: 0 0 10px var(--primary-glow);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        border: 2px solid #18181b; /* Match bg to cut overlapping */
     }
     
-    .step-content { flex: 1; padding-top: 0.25rem; }
+    .step-info h4 { margin: 0 0 0.5rem 0; color: #fff; font-size: 1rem; }
+    .step-info p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
     
-    .steps-list strong { color: #a5b4fc; } /* Lighter accent */
+    code { background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 4px; color: #a5b4fc; }
+
+    /* --- ANIMATION SCENES --- */
     
-    .step-desc { 
-        margin-top: 0.25rem; 
-        font-size: 0.9rem; 
-        color: var(--text-secondary); 
+    /* Scene 1: Scan */
+    .scene-doc {
+        width: 60px; height: 80px;
+        background: #27272a;
+        border-radius: 4px;
+        padding: 8px;
+        display: flex; flex-direction: column; gap: 6px;
+    }
+    .doc-line { height: 4px; background: #3f3f46; border-radius: 2px; }
+    .doc-line.short { width: 60%; }
+    
+    .scene-magnifier {
+        position: absolute;
+        color: var(--accent);
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        animation: scanMove 3s ease-in-out infinite;
+    }
+    @@keyframes scanMove {
+        0% { transform: translate(-20px, -20px) rotate(0deg); }
+        50% { transform: translate(20px, 20px) rotate(10deg); }
+        100% { transform: translate(-20px, -20px) rotate(0deg); }
+    }
+
+    /* Scene 2: Merge */
+    .file-icon {
+        width: 24px; height: 32px;
+        background: #3f3f46;
+        border-radius: 3px;
+        position: absolute;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .f-band { width: 100%; height: 6px; background: var(--primary); opacity: 0.5; }
+    .f1 { left: 30px; animation: mergeLeft 3s infinite; }
+    .f2 { left: 60px; z-index: 2; animation: mergeCenter 3s infinite; }
+    .f3 { left: 90px; animation: mergeRight 3s infinite; }
+    
+    .f-final {
+        width: 40px; height: 50px;
+        background: var(--primary);
+        color: white; font-size: 10px; font-weight: bold;
+        left: 55px; opacity: 0;
+        animation: mergeFinal 3s infinite;
+        z-index: 10;
+        box-shadow: 0 0 15px var(--primary-glow);
     }
     
-    .trouble-list li { margin-bottom: 0.5rem; color: var(--text-secondary); }
-    .trouble-list strong { color: #f87171; }
-    
-    .footer-info {
-        border-top: 1px solid rgba(255,255,255,0.05);
-        padding-top: 1rem;
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgba(255,255,255,0.3);
+    @@keyframes mergeLeft { 0%, 40% { transform: translateX(0); opacity: 1; } 50%, 100% { transform: translateX(30px); opacity: 0; } }
+    @@keyframes mergeCenter { 0%, 40% { transform: scale(1); opacity: 1; } 50%, 100% { transform: scale(0.5); opacity: 0; } }
+    @@keyframes mergeRight { 0%, 40% { transform: translateX(0); opacity: 1; } 50%, 100% { transform: translateX(-30px); opacity: 0; } }
+    @@keyframes mergeFinal { 0%, 45% { opacity: 0; transform: scale(0.8); } 55% { opacity: 1; transform: scale(1.1); } 65%, 100% { opacity: 1; transform: scale(1); } }
+
+    /* Scene 3: Release */
+    .envelope {
+        width: 60px; height: 40px;
+        background: #e4e4e7;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+        animation: envFly 3s infinite;
+    }
+    .env-flap {
+        position: absolute; top: 0; left: 0; right: 0; height: 20px;
+        background: #d4d4d8;
+        clip-path: polygon(0 0, 50% 100%, 100% 0);
+        transform-origin: top;
+        animation: flapClose 3s infinite;
     }
     
-    code { 
-        background: rgba(0,0,0,0.3); 
-        padding: 0.1rem 0.4rem; 
-        border-radius: 4px; 
-        font-family: monospace;
+    @@keyframes flapClose { 0% { transform: rotateX(180deg); } 20% { transform: rotateX(0deg); } 100% { transform: rotateX(0deg); } }
+    @@keyframes envFly { 
+        0%, 30% { transform: translate(0, 0) scale(1); opacity: 1; } 
+        40% { transform: translate(-10px, 10px) rotate(-5deg); }
+        100% { transform: translate(100px, -50px) rotate(15deg) scale(0.8); opacity: 0; } 
     }
+
+    /* Accordion */
+    .accordion { display: flex; flex-direction: column; gap: 0.8rem; }
+    
+    .accordion-item { overflow: hidden; }
+    
+    summary {
+        padding: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text-primary);
+        transition: background 0.2s;
+    }
+    summary:hover { background: rgba(255,255,255,0.03); }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; font-size: 1.2rem; color: var(--text-secondary); font-weight: 300; }
+    details[open] summary::after { content: '−'; }
+    details[open] summary { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    
+    .accordion-content { padding: 1rem; color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; }
+    
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+    @@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    .footer-info { margin-top: 3rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); opacity: 0.6; }
 </style>
