@@ -91,7 +91,7 @@ namespace TicketConsolidator.Infrastructure.Services
 </ul>
 <br/>
 <p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>
-<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:80%'>
+<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:100%'>
 <tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>
 {ReleaseDetails}
 </table>
