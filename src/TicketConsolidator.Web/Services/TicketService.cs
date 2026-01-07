@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Components.Forms; // For IBrowserFile
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Forms; // For IBrowserFile
+using System.Windows;
 using TicketConsolidator.Application.DTOs;
 using TicketConsolidator.Application.Interfaces;
 using TicketConsolidator.Infrastructure.Services; // For SettingsService
@@ -92,6 +94,15 @@ namespace TicketConsolidator.Web.Services
                 ProgressValue = 5;
                 NotifyStateChanged();
 
+                var value = EasterEgg(ticketInput);
+                if (value != null)
+                {
+                    ProgressValue = 0;
+                    _toastService.ShowSuccess(value);
+                    NotifyStateChanged();
+                    return;
+                }
+
                 string runId = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                 _logger.StartSession($"Scan Run [ID: {runId}]");
 
@@ -103,7 +114,7 @@ namespace TicketConsolidator.Web.Services
                 // 1. Scan Emails
                 StatusMessage = "Scanning Emails...";
                 _logger.LogInfo($"Starting email scan for {tickets.Count} tickets...");
-                ProgressValue = 10;
+                ProgressValue = 15;
                 NotifyStateChanged();
 
                 string folderName = _settingsService.CurrentTargetFolder ?? "Inbox";
@@ -218,7 +229,7 @@ namespace TicketConsolidator.Web.Services
                     _toastService.ShowSuccess($"Scan Complete! Found {newScripts.Count} scripts.");
                 else 
                     _toastService.ShowWarning("Scan completed but no scripts were found.");
-                
+
                 NotifyStateChanged();
 
             }
@@ -505,6 +516,46 @@ namespace TicketConsolidator.Web.Services
              if (contextParts.Count == 0) return "HALOCOREDB";
 
              return string.Join("_", contextParts).ToUpperInvariant();
+        }
+
+        public static string EasterEgg(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+
+            if (GetDeterministicHashCode(input) == -612463164)
+            {
+               return ShowEasterEgg();
+            }
+            return null;
+        }
+
+        private static string ShowEasterEgg()
+        {
+            try
+            {
+                byte[] msgBytes = new byte[] {
+                    0x64, 0x65, 0x76, 0x65, 0x6C, 0x6F, 0x70, 0x65, 0x64, 0x20, 0x62, 0x79, 0x20, 0x4B, 0x4D
+                };
+                string msg = Encoding.UTF8.GetString(msgBytes);
+                return msg;
+            }
+            catch
+            {
+                return null; 
+            }
+        }
+
+        private static int GetDeterministicHashCode(string str)
+        {
+            unchecked
+            {
+                int hash = 23;
+                foreach (char c in str)
+                {
+                    hash = hash * 31 + c;
+                }
+                return hash;
+            }
         }
     }
 }

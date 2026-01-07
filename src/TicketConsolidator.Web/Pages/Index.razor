@@ -82,36 +82,39 @@
             </div>
         </div>
 
-        <!-- Lists Column (Tables) -->
-        <div class="grid-col animate-slide-up delay-3">
-            <ScriptList Title="Tables" Scripts="@TicketService.TableScripts" 
-                        MoveUp="s => MoveItem(s, TicketService.TableScripts, -1)"
-                        MoveDown="s => MoveItem(s, TicketService.TableScripts, 1)"
-                        Remove="s => RemoveItem(s, TicketService.TableScripts)" />
-        </div>
+        <!-- Lists Grid (2x2) -->
+        <div class="lists-grid">
+            <!-- Tables (Top Left) -->
+            <div class="grid-col animate-slide-up delay-3">
+                <ScriptList Title="Tables" Scripts="@TicketService.TableScripts" 
+                            MoveUp="s => MoveItem(s, TicketService.TableScripts, -1)"
+                            MoveDown="s => MoveItem(s, TicketService.TableScripts, 1)"
+                            Remove="s => RemoveItem(s, TicketService.TableScripts)" />
+            </div>
 
-        <!-- Lists Column (SP) -->
-        <div class="grid-col animate-slide-up delay-4">
-            <ScriptList Title="Stored Procedures" Scripts="@TicketService.SpScripts"
-                        MoveUp="s => MoveItem(s, TicketService.SpScripts, -1)"
-                        MoveDown="s => MoveItem(s, TicketService.SpScripts, 1)"
-                        Remove="s => RemoveItem(s, TicketService.SpScripts)" />
-        </div>
-        
-        <!-- Lists Column (Data) -->
-        <div class="grid-col animate-slide-up delay-5">
-            <ScriptList Title="Data Scripts" Scripts="@TicketService.DataScripts"
-                        MoveUp="s => MoveItem(s, TicketService.DataScripts, -1)"
-                        MoveDown="s => MoveItem(s, TicketService.DataScripts, 1)"
-                        Remove="s => RemoveItem(s, TicketService.DataScripts)" />
-        </div>
+            <!-- SPs (Top Right) -->
+            <div class="grid-col animate-slide-up delay-4">
+                <ScriptList Title="Stored Procedures" Scripts="@TicketService.SpScripts"
+                            MoveUp="s => MoveItem(s, TicketService.SpScripts, -1)"
+                            MoveDown="s => MoveItem(s, TicketService.SpScripts, 1)"
+                            Remove="s => RemoveItem(s, TicketService.SpScripts)" />
+            </div>
+            
+            <!-- Data (Bottom Left) -->
+            <div class="grid-col animate-slide-up delay-5">
+                <ScriptList Title="Data Scripts" Scripts="@TicketService.DataScripts"
+                            MoveUp="s => MoveItem(s, TicketService.DataScripts, -1)"
+                            MoveDown="s => MoveItem(s, TicketService.DataScripts, 1)"
+                            Remove="s => RemoveItem(s, TicketService.DataScripts)" />
+            </div>
 
-        <!-- Lists Column (Triggers) -->
-        <div class="grid-col animate-slide-up delay-6">
-            <ScriptList Title="Triggers" Scripts="@TicketService.TriggerScripts"
-                        MoveUp="s => MoveItem(s, TicketService.TriggerScripts, -1)"
-                        MoveDown="s => MoveItem(s, TicketService.TriggerScripts, 1)"
-                        Remove="s => RemoveItem(s, TicketService.TriggerScripts)" />
+            <!-- Triggers (Bottom Right) -->
+            <div class="grid-col animate-slide-up delay-6">
+                <ScriptList Title="Triggers" Scripts="@TicketService.TriggerScripts"
+                            MoveUp="s => MoveItem(s, TicketService.TriggerScripts, -1)"
+                            MoveDown="s => MoveItem(s, TicketService.TriggerScripts, 1)"
+                            Remove="s => RemoveItem(s, TicketService.TriggerScripts)" />
+            </div>
         </div>
     </div>
 </div>
@@ -170,12 +173,21 @@
 
     .dashboard-grid {
         display: grid;
-        grid-template-columns: 320px 1fr 1fr 1fr 1fr; /* Fixed Sidebar + 4 Columns */
+        grid-template-columns: 320px 1fr; /* Fixed Sidebar + content area */
         grid-template-rows: 1fr;
         gap: 1rem;
         flex: 1;
         min-height: 0;
         padding: 1rem 1.5rem;
+        overflow: hidden;
+    }
+
+    .lists-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(2, minmax(0, 1fr)); /* 2 equal rows, properly constrained */
+        gap: 1rem;
+        min-height: 0;
         overflow: hidden;
     }
 
@@ -350,6 +362,13 @@
 
     private async Task StartScan()
     {
+        // Input Sanitization
+        if (!string.IsNullOrWhiteSpace(TicketInput))
+        {
+             // Allow only Alphanumeric, Hyphen, Comma, Space
+             TicketInput = System.Text.RegularExpressions.Regex.Replace(TicketInput, @"[^a-zA-Z0-9\-\,\s]", "");
+        }
+
         _isScanning = true;
         StateHasChanged(); // Immediate button update
         

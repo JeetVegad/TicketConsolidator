@@ -583,7 +583,6 @@ namespace TicketConsolidator.Infrastructure.Services
                                 .ToList();
 
                 // Strategy: Find "Release Includes" OR "Product Release Notification"
-                // Then assume subsequent lines might be "TICKET DESCRIPTION"
                 int startIndex = -1;
                 for (int i = 0; i < lines.Count; i++)
                 {
@@ -595,18 +594,50 @@ namespace TicketConsolidator.Infrastructure.Services
                     }
                 }
 
-                if (startIndex == -1) return summaries; // Block not found
+                if (startIndex == -1) 
+                {
+                    // Fallback: If no header found, scan the whole body? 
+                    // The user said "parse description from mail body... do whatever make it accurate".
+                    // Scanning everything might catch false positives, but let's try scanning from top if no explicit header found,
+                    // OR just rely on the regex being specific enough. 
+                    // Let's stick to header first. If user insists on "whole body", we might default to 0. 
+                    // Risk: Picking up tickets from previous reply chain.
+                    // Decision: Default to 0 if no header found, but rely on regex quality.
+                    startIndex = -1; // Keep strictly header-based for now to avoid junk. 
+                                     // Actually, if they say "Product Release Notification" is there, we find it.
+                }
 
                 // Regex for "TicketID  Description"
-                // Matches "ENGAGE-1234  Some Text", "ENGAGE- 1234 : Some Text", etc.
-                // Enhanced to support bullet points, spaces in ID, and flexible separators
-                var ticketRegex = new Regex(@"^[\s•\-\*]*([A-Za-z]+\s*-\s*\d+|\d+)(?:\s*[\-:\|]\s*|\s+)(.+)$", RegexOptions.IgnoreCase);
+                // Supports:
+                // ENGAGE-123 Description
+                // [ENGAGE-123] Description
+                // [ENGAGE- 123] - Description
+                // * ENGAGE 123 : Description
+                
+                // 1. Start with optional bullets/brackets: ^[\s•\-\*\[]*
+                // 2. Capture ID (Alpha-Num with optional spaces): ([A-Za-z]+\s*-\s*\d+|\d+)
+                // 3. Optional closing bracket: [\]]*
+                // 4. Separator (hyphen, colon, space): (?:\s*[\-:\|]\s*|\s+)
+                // 5. Capture Description: (.+)$
+                var ticketRegex = new Regex(@"^[\s•\-\*\[]*([A-Za-z]+\s*-\s*\d+|\d+)[\]]*(?:\s*[\-:\|]\s*|\s+)(.+)$", RegexOptions.IgnoreCase);
 
-                for (int i = startIndex + 1; i < lines.Count; i++)
+                // Start loop from startIndex. If startIndex is -1, we skip (unless we want to support headerless).
+                // Let's support the header line itself by stripping the header text? 
+                // Simpler: Just loop from startIndex (or 0 if we decide to be loose).
+                // Given "Product Release Notification: [Ticket]...", line-based regex might fail if it starts with "Product...".
+                // Let's process startIndex separately if needed.
+                
+                int loopStart = (startIndex != -1) ? startIndex : 0; 
+                // Only scan if we found a header OR if we want to be aggressive. 
+                // Let's assume header is present based on user request "Product Release Notification:".
+                
+                if (startIndex == -1) return summaries; // Safest for now.
+
+                for (int i = startIndex; i < lines.Count; i++)
                 {
                     var line = lines[i];
                     
-                    // Stop if we hit typical footer markers
+                    // Stop markers
                     if (line.StartsWith("Regards", StringComparison.OrdinalIgnoreCase) || 
                         line.StartsWith("Thanks", StringComparison.OrdinalIgnoreCase) ||
                         line.StartsWith("From:", StringComparison.OrdinalIgnoreCase))
@@ -614,19 +645,30 @@ namespace TicketConsolidator.Infrastructure.Services
                         break;
                     }
 
+                    // Special handling for the header line itself to support "Header: [Ticket]..."
+                    if (i == startIndex)
+                    {
+                        // Remove the header text to see if a ticket remains
+                        string lowerLine = line.ToLowerInvariant();
+                        string cleanLine = line;
+                        if (lowerLine.Contains("product release notification")) 
+                            cleanLine = Regex.Replace(line, "product release notification[:\\s-]*", "", RegexOptions.IgnoreCase);
+                        else if (lowerLine.Contains("release includes")) 
+                            cleanLine = Regex.Replace(line, "release includes[:\\s-]*", "", RegexOptions.IgnoreCase);
+                            
+                        if (string.IsNullOrWhiteSpace(cleanLine)) continue; // Just a header
+                        line = cleanLine.Trim();
+                    }
+
                     var match = ticketRegex.Match(line);
                     if (match.Success)
                     {
-                        // Normalize: "ENGAGE - 123" -> "ENGAGE-123"
-                        string ticketId = match.Groups[1].Value
-                                            .Replace(" ", "")
-                                            .Replace("\t", "")
-                                            .Trim()
-                                            .ToUpperInvariant(); 
-                        
+                        // Clean ID: "ENGAGE - 123" -> "ENGAGE-123"
+                        string rawId = match.Groups[1].Value;
+                        string ticketId = rawId.Replace(" ", "").Replace("\t", "").Trim().ToUpperInvariant();
                         
                         string summary = match.Groups[2].Value.Trim();
-                        // Filter out if summary is just a date or simple junk
+                        
                         if (summary.Length > 2 && !summaries.ContainsKey(ticketId))
                         {
                             summaries[ticketId] = summary;
