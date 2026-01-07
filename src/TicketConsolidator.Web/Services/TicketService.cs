@@ -18,6 +18,7 @@ namespace TicketConsolidator.Web.Services
         private readonly IConsolidationService _consolidationService;
         private readonly ILoggerService _logger;
         private readonly SettingsService _settingsService;
+        private readonly ToastService _toastService;
 
         // State Validation & UI Updates
         public event Action OnChange;
@@ -47,7 +48,8 @@ namespace TicketConsolidator.Web.Services
             IScriptValidatorService validatorService,
             IConsolidationService consolidationService,
             ILoggerService logger,
-            SettingsService settingsService)
+            SettingsService settingsService,
+            ToastService toastService)
         {
             _emailService = emailService;
             _parserService = parserService;
@@ -55,6 +57,7 @@ namespace TicketConsolidator.Web.Services
             _consolidationService = consolidationService;
             _logger = logger;
             _settingsService = settingsService;
+            _toastService = toastService;
         }
 
         public void Clear()
@@ -206,6 +209,12 @@ namespace TicketConsolidator.Web.Services
                 TicketsCount = $"{foundTickets.Count}/{tickets.Count}";
                 StatusMessage = $"Scan Complete. Loaded {newScripts.Count} scripts.";
                 _logger.LogSuccess($"Scan complete. Loaded {newScripts.Count} scripts total.");
+                
+                if (newScripts.Count > 0) 
+                    _toastService.ShowSuccess($"Scan Complete! Found {newScripts.Count} scripts.");
+                else 
+                    _toastService.ShowWarning("Scan completed but no scripts were found.");
+                
                 NotifyStateChanged();
 
             }
@@ -213,6 +222,7 @@ namespace TicketConsolidator.Web.Services
             {
                 StatusMessage = $"Error: {ex.Message}";
                 _logger.LogError($"Scan Error: {ex.Message}");
+                _toastService.ShowError($"Scan Failed: {ex.Message}");
             }
             finally
             {
@@ -263,11 +273,13 @@ namespace TicketConsolidator.Web.Services
                 StatusMessage = "Consolidation Complete!";
                 NotifyStateChanged();
                 OnConsolidationSuccess?.Invoke(outputDir);
+                _toastService.ShowSuccess("Consolidation Successful! Files saved.");
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Consolidation Failed: {ex.Message}";
                 NotifyStateChanged();
+                _toastService.ShowError($"Consolidation Failed: {ex.Message}");
             }
             finally
             {
@@ -314,53 +326,45 @@ namespace TicketConsolidator.Web.Services
                  var fileList = files.Select(f => System.IO.Path.GetFileName(f)).ToList();
                  var attachmentPaths = files.ToList();
 
-                 var sb = new System.Text.StringBuilder();
-                 sb.AppendLine("<html><body>");
-                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>");
-                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {buildNum}]:</b></p>");
-                 
-                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>");
-                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{solPath}'>{solPath}</a></p>");
+                 // LOAD TEMPLATE
+                 string template = _settingsService.EmailTemplate;
+                 if (string.IsNullOrWhiteSpace(template)) template = "<html><body>No Template Configured.</body></html>";
 
-                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>");
-                 sb.AppendLine("<ul>");
-                 foreach(var f in fileList) 
-                 {
-                     sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
-                 }
-                 sb.AppendLine("</ul>");
+                 // PREPARE DATA
+                 var sbFiles = new System.Text.StringBuilder();
+                 foreach(var f in fileList) sbFiles.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
 
-                 sb.AppendLine("<br/>");
-                 sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>");
-                 
-                 sb.AppendLine("<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:80%'>");
-                 sb.AppendLine("<tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>");
-                 
+                 var sbDetails = new System.Text.StringBuilder();
                  foreach(var t in uniqueTickets)
                  {
-                     sb.AppendLine("<tr>");
-                     sb.AppendLine($"<td style='padding:4px'><b>{t.ToUpperInvariant()}</b></td>");
-                     sb.AppendLine($"<td style='padding:4px'>{summaryMap[t]}</td>");
-                     sb.AppendLine("</tr>");
+                     sbDetails.AppendLine("<tr>");
+                     sbDetails.AppendLine($"<td style='padding:4px'><b>{t.ToUpperInvariant()}</b></td>");
+                     sbDetails.AppendLine($"<td style='padding:4px'>{summaryMap[t]}</td>");
+                     sbDetails.AppendLine("</tr>");
                  }
-                 sb.AppendLine("</table>");
 
-                 sb.AppendLine("<br/>");
-                 sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{userName}</p>");
-                 sb.AppendLine("</body></html>");
+                 // REPLACE PLACEHOLDERS
+                 string finalBody = template
+                     .Replace("{BuildNumber}", buildNum)
+                     .Replace("{SolutionPath}", solPath)
+                     .Replace("{FileList}", sbFiles.ToString())
+                     .Replace("{ReleaseDetails}", sbDetails.ToString())
+                     .Replace("{UserName}", userName);
 
                  await _emailService.CreateDraftEmailAsync(
                      $"Product Release Notification [Build {buildNum}]", 
-                     sb.ToString(), 
+                     finalBody, 
                      attachmentPaths);
 
                  StatusMessage = "Email Draft Created.";
                  _logger.LogSuccess("Release Email Draft created.");
+                 _toastService.ShowSuccess("Email Draft Created Successfully in Outlook!");
             }
             catch (Exception ex)
             {
                 StatusMessage = $"Email Failed: {ex.Message}";
                 _logger.LogError($"Email Failed: {ex.Message}");
+                _toastService.ShowError($"Email Failed: {ex.Message}");
             }
             finally
             {

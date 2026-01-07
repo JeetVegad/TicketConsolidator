@@ -58,6 +58,9 @@ namespace TicketConsolidator.Infrastructure.Services
             // 3. Email Settings
             CurrentTargetFolder = LoadUserSetting("OutlookFolder");
             if (string.IsNullOrWhiteSpace(CurrentTargetFolder)) CurrentTargetFolder = _configuration["EmailSettings:TargetFolder"] ?? "Inbox";
+
+            EmailTemplate = LoadUserSetting("EmailTemplate");
+            if (string.IsNullOrWhiteSpace(EmailTemplate)) EmailTemplate = DefaultEmailTemplate;
         }
 
         private string LoadUserSetting(string key)
@@ -75,12 +78,33 @@ namespace TicketConsolidator.Infrastructure.Services
 
         public string ScriptsPath { get; private set; }
         public string ConsolidatedScriptsPath { get; private set; }
+        public string EmailTemplate { get; private set; }
 
-        public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath)
+        private const string DefaultEmailTemplate = @"<html><body>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {BuildNumber}]:</b></p>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{SolutionPath}'>{SolutionPath}</a></p>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>
+<ul>
+{FileList}
+</ul>
+<br/>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>
+<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:80%'>
+<tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>
+{ReleaseDetails}
+</table>
+<br/>
+<p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{UserName}</p>
+</body></html>";
+
+        public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath, string emailTemplate = null)
         {
              CurrentTargetFolder = outlookFolder;
              ScriptsPath = scriptsPath;
              ConsolidatedScriptsPath = consolidatedPath;
+             if (!string.IsNullOrEmpty(emailTemplate)) EmailTemplate = emailTemplate;
              
              // Ensure directories exist
              if (!string.IsNullOrWhiteSpace(ScriptsPath) && !Directory.Exists(ScriptsPath)) Directory.CreateDirectory(ScriptsPath);
@@ -91,7 +115,8 @@ namespace TicketConsolidator.Infrastructure.Services
                  ["OutlookFolder"] = outlookFolder,
                  ["ScriptsPath"] = scriptsPath,
                  ["ConsolidatedPath"] = consolidatedPath,
-                 ["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath) // Infer base
+                 ["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath), // Infer base
+                 ["EmailTemplate"] = EmailTemplate
              };
 
              var options = new JsonSerializerOptions { WriteIndented = true };

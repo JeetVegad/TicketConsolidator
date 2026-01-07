@@ -1,0 +1,44 @@
+@inject IJSRuntime JSRuntime
+
+<div class="code-editor-container">
+    <pre id="@_overlayId" class="code-editor-overlay"></pre>
+    <textarea id="@_areaId" 
+              class="code-editor-textarea custom-scroll"
+              value="@Value"
+              @oninput="OnInput"
+              spellcheck="false"></textarea>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private string _areaId = "txt_" + Guid.NewGuid().ToString("N");
+    private string _overlayId = "pre_" + Guid.NewGuid().ToString("N");
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("codeEditor.init", _areaId, _overlayId);
+            _initialized = true;
+        }
+    }
+    
+    // Detect external changes (e.g. Reset button)
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_initialized)
+        {
+            // If value changes programmatically, we might need to tell JS to re-highlight
+            await JSRuntime.InvokeVoidAsync("codeEditor.refresh", _areaId);
+        }
+    }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

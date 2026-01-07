@@ -1,0 +1,84 @@
+.code-editor-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1e1e1e;
+    /* VS Code-like dark background */
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.code-editor-overlay,
+.code-editor-textarea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    margin: 0;
+    border: none;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    tab-size: 4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: auto;
+    box-sizing: border-box;
+    outline: none;
+    background: transparent;
+    resize: none;
+}
+
+.code-editor-textarea {
+    z-index: 2;
+    color: transparent;
+    caret-color: white;
+    /* Visible cursor */
+    /* Ensure text color is truly transparent but selected text is visible */
+    background: transparent;
+}
+
+.code-editor-textarea::selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: transparent;
+}
+
+.code-editor-overlay {
+    z-index: 1;
+    color: #d4d4d4;
+    /* Base text color */
+    pointer-events: none;
+}
+
+/* Syntax Highlighting Colors */
+.token-tag {
+    color: #569cd6;
+    font-weight: bold;
+}
+
+/* Blue */
+.token-attr-name {
+    color: #9cdcfe;
+}
+
+/* Light Blue */
+.token-attr-value {
+    color: #ce9178;
+}
+
+/* Orange */
+.token-comment {
+    color: #6a9955;
+}
+
+/* Green */
+.token-string {
+    color: #ce9178;
+}
+
+.token-keyword {
+    color: #c586c0;
+}
