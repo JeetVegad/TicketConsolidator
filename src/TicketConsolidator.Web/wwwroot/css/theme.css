@@ -206,6 +206,15 @@ body {
     transform: translateY(-1px);
 }
 
+.glass-button-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: none;
+}
+
 /* --- Layout Utilities --- */
 .page-container {
     height: 100%;

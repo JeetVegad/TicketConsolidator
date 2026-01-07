@@ -71,6 +71,7 @@ namespace TicketConsolidator.Web.Services
             ProgressValue = 0;
             TicketsCount = "0/0";
             LastConsolidatedPath = null;
+            LastRunId = null;
             NotifyStateChanged();
         }
 

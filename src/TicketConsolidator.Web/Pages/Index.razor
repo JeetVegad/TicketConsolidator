@@ -25,7 +25,7 @@
         </div>
         
         <div class="actions">
-            <button class="glass-button" @onclick="StartScan" disabled="@(IsBusy || _isScanning)">
+            <button class="glass-button" @onclick="StartScan" disabled="@(IsBusy || _isScanning || string.IsNullOrWhiteSpace(TicketInput))">
                 @if(IsBusy || _isScanning) 
                 { 
                      <span class="btn-content"><span class="loader-mini"></span> Scanning...</span>
@@ -75,7 +75,7 @@
                      <span class="btn-content"><span class="icon live-icon">🚀</span> Consolidate & Save</span>
                  </button>
                  
-                 <button class="glass-button-secondary full-width" @onclick="OpenEmailDialog"
+                 <button class="glass-button full-width" @onclick="OpenEmailDialog"
                          disabled="@(string.IsNullOrEmpty(TicketService.LastRunId) || TicketService.IsBusy)">
                       <span class="btn-content"><span class="icon live-icon">📧</span> Create Release Email</span>
                  </button>
