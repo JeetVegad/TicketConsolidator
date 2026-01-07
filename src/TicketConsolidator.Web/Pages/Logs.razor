@@ -11,14 +11,7 @@
 <div class="logs-page-container animate-fade-in">
     <header class="logs-header glass-panel">
         <h2 class="page-title">Application Logs</h2>
-        <div class="header-actions">
-            <button class="glass-button-secondary small" @onclick="LoadHistory">
-                <span class="btn-content">📜 Load History</span>
-            </button>
-            <button class="glass-button-secondary small" @onclick="RefreshLogs">
-                 <span class="btn-content">🔄 Refresh</span>
-            </button>
-        </div>
+        <!-- Buttons removed as per request (Logs auto-refresh every 1s) -->
     </header>
 
     <div class="logs-content custom-scroll">
@@ -41,7 +34,8 @@
                                  <span class="session-name">@session.SessionName</span>
                                  <span class="badge">@session.Logs.Count</span>
                              </div>
-                             <span class="session-time">Last update: @DateTime.Now.ToString("HH:mm")</span>
+                             <!-- High visibility update text -->
+                             <span class="session-time">Last update: @GetLastLogTime(session)</span>
                          </div>
                          
                          @if(session.IsExpanded)
@@ -96,9 +90,6 @@
         color: var(--text-primary);
     }
 
-    .header-actions { display: flex; gap: 0.8rem; }
-    .small { padding: 0.4rem 0.8rem; font-size: 0.85rem; height: auto; }
-
     .logs-content {
         flex: 1;
         overflow-y: auto;
@@ -138,7 +129,13 @@
         border-radius: 12px;
     }
     
-    .session-time { font-size: 0.8rem; color: var(--text-tertiary); opacity: 0.6; }
+    .session-time { 
+        font-size: 0.85rem; 
+        color: var(--success); /* Bright Green for visibility */
+        font-weight: 600;
+        text-shadow: 0 0 10px rgba(0, 200, 83, 0.3); /* Subtle glow */
+        opacity: 1; /* Full visibility */
+    }
 
     .log-entries {
         background: rgba(0,0,0,0.3);
@@ -205,8 +202,9 @@
             UpdateSessions();
         }
         
-        // Initial Fetch from DB
-        await LoadHistory();
+        // Initial Fetch
+        await LoggerService.LoadHistoryAsync();
+        UpdateSessions();
         
         // Polling for live updates
         _timer = new System.Timers.Timer(1000);
@@ -222,26 +220,13 @@
     {
          if (LoggerService is LoggerService service)
          {
-             // Create a shallow copy to avoid collection modification errors during enumeration
              var currentSessions = service.Sessions.ToList();
-             
-             // Only update if count changed to avoid re-rendering entire tree unnecessarily (basic optimization)
-             // For deep log changes, the timer will force StateHasChanged anyway.
              Sessions = currentSessions;
          }
     }
 
-    private void RefreshLogs()
-    {
-        UpdateSessions();
-        StateHasChanged();
-    }
-    
-    private async Task LoadHistory()
-    {
-         await LoggerService.LoadHistoryAsync();
-         UpdateSessions();
-    }
+    // Buttons Removed: RefreshLogs, LoadHistory wrappers removed as they are no longer triggered from UI
+
 
     private void ToggleSession(LogSession session)
     {
@@ -262,5 +247,20 @@
             LogLevel.Success => "success",
             _ => "info"
         };
+    }
+    
+    private string GetLastLogTime(LogSession session)
+    {
+        if (session.Logs == null || session.Logs.Count == 0)
+        {
+            return "No logs";
+        }
+        
+        // Find latest timestamp
+        // Assuming logs are appended chronologically, Last() should be latest, 
+        // but we'll use Max() to be safe or OrderByDescending.
+        var lastLog = session.Logs.OrderByDescending(l => l.Timestamp).FirstOrDefault();
+        
+        return lastLog != null ? lastLog.Timestamp.ToString("HH:mm:ss") : "N/A";
     }
 }

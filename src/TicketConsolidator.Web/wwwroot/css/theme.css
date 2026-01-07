@@ -55,83 +55,126 @@
     /* Wider Layout */
 
     /* Animation Speeds - Slower/Smoother */
-    --trans-fast: 0.15s ease;
-    --trans-smooth: 0.3s ease;
+    --trans-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --trans-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Layout */
+    --container-padding: 2rem;
+    --card-padding: 1.5rem;
 }
 
-/* Global Loaders */
-.loader-mini {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-}
-
-.spinner-ring {
-    width: 32px;
-    height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-.upload-loader {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
+/* Global Reset/Base */
 html,
 body {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
     margin: 0;
     padding: 0;
     overflow: hidden;
     background-color: var(--bg-primary);
-    /* Critical: Prevents white WebView background */
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--surface-shadow);
+    /* Premium "Aurora" Background */
+    background:
+        radial-gradient(circle at 15% 50%, rgba(103, 58, 183, 0.15), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(213, 0, 249, 0.08), transparent 25%),
+        var(--bg-secondary);
+    background-size: cover;
+    background-attachment: fixed;
 }
 
-/* Buttons */
-.glass-button {
-    background: var(--primary);
-    color: white;
-    border: 1px solid transparent;
+/* --- Professional Glassmorphism System --- */
+
+/* Base Glass Panel (Headers, Sidebars) */
+.glass-panel {
+    background: rgba(22, 18, 37, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Glass Card (Content Containers) */
+.glass-card {
+    background: rgba(30, 25, 45, 0.5);
+    /* Slightly more opaque */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Brighter border */
+    border-radius: var(--radius-md);
+    padding: var(--card-padding);
+    box-shadow:
+        0 4px 24px -1px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    /* Inner glow/stroke */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.3);
+    background: rgba(35, 30, 50, 0.6);
+}
+
+/* Glass Input (Form Elements) */
+.glass-input {
+    background: rgba(10, 8, 20, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    /* More comfortable padding */
     border-radius: var(--radius-sm);
-    padding: 0.4rem 0.8rem;
-    /* Compact padding */
-    font-weight: 500;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    font-size: 0.95rem;
+    font-family: inherit;
+}
+
+.glass-input:focus {
+    border-color: var(--primary);
+    background: rgba(10, 8, 20, 0.6);
+    box-shadow: 0 0 0 3px rgba(103, 58, 183, 0.25);
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Glass Buttons */
+.glass-button {
+    background: linear-gradient(135deg, #7c3aed, #673ab7);
+    /* Vibrant Gradient */
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 1.5rem;
+    /* Larger Click Area */
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--trans-fast);
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
 .glass-button:hover:not(:disabled) {
-    background: var(--primary-hover);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(103, 58, 183, 0.5);
+    filter: brightness(1.1);
+}
+
+.glass-button:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .glass-button:disabled {
@@ -142,50 +185,167 @@ body {
 }
 
 .glass-button-secondary {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     border-radius: var(--radius-sm);
-    padding: 0.4rem 0.8rem;
+    padding: 0.6rem 1.5rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--trans-fast);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
+    gap: 0.6rem;
+    font-size: 0.95rem;
 }
 
 .glass-button-secondary:hover:not(:disabled) {
-    background: #2e2645;
-    border-color: #453868;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
 }
 
-/* Inputs */
-.glass-input {
-    background: #0f0b1a;
-    /* Darker than card */
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 0.5rem 0.8rem;
-    border-radius: var(--radius-sm);
-    outline: none;
-    transition: border-color var(--trans-fast);
+/* --- Layout Utilities --- */
+.page-container {
+    height: 100%;
     width: 100%;
-    font-size: 0.9rem;
+    padding: var(--container-padding);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    /* Important: Padding inside height */
+    /* Custom Scrollbar integration */
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-tertiary) transparent;
 }
 
-.glass-input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary);
+.page-container::-webkit-scrollbar {
+    width: 6px;
 }
 
-.glass-input::placeholder {
-    color: var(--text-muted);
+.page-container::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-/* Utility */
+.page-container::-webkit-scrollbar-thumb {
+    background-color: var(--bg-tertiary);
+    border-radius: 20px;
+}
+
+/* --- Animation System --- */
+
+/* Keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Utility Classes */
+.animate-fade-in {
+    animation: fadeIn var(--trans-smooth) forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp var(--trans-smooth) forwards;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight var(--trans-smooth) forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn var(--trans-smooth) forwards;
+}
+
+/* Stagger Delays */
+.delay-1 {
+    animation-delay: 0.05s;
+}
+
+.delay-2 {
+    animation-delay: 0.1s;
+}
+
+.delay-3 {
+    animation-delay: 0.15s;
+}
+
+.delay-4 {
+    animation-delay: 0.2s;
+}
+
+.delay-5 {
+    animation-delay: 0.25s;
+}
+
+/* Global Loaders */
+.loader-mini {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+
+/* Helper Utilities */
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
 .d-flex {
     display: flex;
 }
@@ -198,6 +358,68 @@ body {
     justify-content: space-between;
 }
 
-.gap-2 {
-    gap: 0.5rem;
+.w-full {
+    width: 100%;
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+/* --- Icon System --- */
+/* Base Icon Style - Ensures they behave well */
+.icon,
+.brand-icon,
+.btn-content .icon,
+.nav-link .icon {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Springy transition */
+}
+
+/* Entrance Animation for specific "Live" icons */
+.live-icon {
+    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+/* Hover Effects */
+.icon:hover,
+.brand-icon:hover {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.nav-link:hover .icon {
+    transform: scale(1.2) rotate(-10deg);
+}
+
+.glass-button:hover .btn-content {
+    /* Subtle lift for button content including icon */
+    transform: scale(1.02);
+}
+
+.glass-button:hover .icon {
+    /* Icon specific reaction inside button */
+    transform: scale(1.1);
+}
+
+/* Continuous Pulse for active status */
+.icon-pulse {
+    animation: iconPulse 2s infinite ease-in-out;
+}
+
+@keyframes iconPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
