@@ -13,6 +13,7 @@ namespace TicketConsolidator.Application.DTOs
     {
         StoredProcedure,
         Data,
-        Table
+        Table,
+        Trigger
     }
 }

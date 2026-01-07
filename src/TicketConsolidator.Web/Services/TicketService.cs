@@ -34,6 +34,7 @@ namespace TicketConsolidator.Web.Services
         public List<SqlScript> TableScripts { get; private set; } = new List<SqlScript>();
         public List<SqlScript> SpScripts { get; private set; } = new List<SqlScript>();
         public List<SqlScript> DataScripts { get; private set; } = new List<SqlScript>();
+        public List<SqlScript> TriggerScripts { get; private set; } = new List<SqlScript>();
 
         // Metadata
         public string LastConsolidatedPath { get; private set; }
@@ -65,6 +66,7 @@ namespace TicketConsolidator.Web.Services
             TableScripts.Clear();
             SpScripts.Clear();
             DataScripts.Clear();
+            TriggerScripts.Clear();
             StatusMessage = "Idle";
             ProgressValue = 0;
             TicketsCount = "0/0";
@@ -202,6 +204,7 @@ namespace TicketConsolidator.Web.Services
                         case ScriptType.Table: TableScripts.Add(script); break;
                         case ScriptType.StoredProcedure: SpScripts.Add(script); break;
                         case ScriptType.Data: DataScripts.Add(script); break;
+                        case ScriptType.Trigger: TriggerScripts.Add(script); break;
                     }
                 }
 
@@ -243,6 +246,7 @@ namespace TicketConsolidator.Web.Services
                 var allScripts = new List<SqlScript>();
                 allScripts.AddRange(SpScripts);
                 allScripts.AddRange(DataScripts);
+                allScripts.AddRange(TriggerScripts);
                 allScripts.AddRange(TableScripts);
 
                 string baseDir = _settingsService.ConsolidatedScriptsPath;
@@ -268,6 +272,10 @@ namespace TicketConsolidator.Web.Services
                     
                     if (spScripts.Any())
                         await ProcessConsolidationGroup(spScripts, "SP", outputDir, context, "02");
+                    
+                    var triggerScripts = group.Where(s => s.Type == ScriptType.Trigger).ToList();
+                    if (triggerScripts.Any())
+                        await ProcessConsolidationGroup(triggerScripts, "TRIGGER", outputDir, context, "03");
                 }
 
                 StatusMessage = "Consolidation Complete!";
@@ -309,7 +317,7 @@ namespace TicketConsolidator.Web.Services
 
             try
             {
-                 var allScripts = TableScripts.Concat(SpScripts).Concat(DataScripts).ToList();
+                 var allScripts = TableScripts.Concat(SpScripts).Concat(TriggerScripts).Concat(DataScripts).ToList();
                  var uniqueTickets = allScripts.Select(s => s.TicketNumber).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
                  // Summary Map
@@ -433,6 +441,7 @@ namespace TicketConsolidator.Web.Services
                          case ScriptType.Table: TableScripts.Add(script); break;
                          case ScriptType.StoredProcedure: SpScripts.Add(script); break;
                          case ScriptType.Data: DataScripts.Add(script); break;
+                         case ScriptType.Trigger: TriggerScripts.Add(script); break;
                     }
                 }
                 
@@ -464,6 +473,12 @@ namespace TicketConsolidator.Web.Services
              {
                  return ScriptType.Data;
              }
+             if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(Trigger|Trg)(?:[_\-\.\s]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                 fileName.EndsWith(".trigger.sql", StringComparison.OrdinalIgnoreCase) ||
+                 fileName.EndsWith(".trg.sql", StringComparison.OrdinalIgnoreCase))
+             {
+                 return ScriptType.Trigger;
+             }
              return ScriptType.Table;
         }
 
@@ -482,7 +497,7 @@ namespace TicketConsolidator.Web.Services
              var ignoredKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
              {
                  "SP", "Data", "Table", "Tables", "Tb", "Tbl", "StoredProcedure", "Insert", "Update", "Script", "Stored", "Procedure", "Engage", "Ticket",
-                 "CR", "PR", "INC", "TASK", "US", "Bug", "Feat", "Feature", "Fix", "Hotfix"
+                 "CR", "PR", "INC", "TASK", "US", "Bug", "Feat", "Feature", "Fix", "Hotfix", "Trigger", "Trg", "Triggers"
              };
 
              var contextParts = parts.Where(p => !ignoredKeywords.Contains(p) && !p.All(char.IsDigit)).ToList();

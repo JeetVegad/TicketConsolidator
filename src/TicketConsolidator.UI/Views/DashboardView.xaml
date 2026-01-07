@@ -209,7 +209,7 @@
                         <Separator Background="White" Opacity="0.1" Margin="0,10"/>
                         
                         <TextBlock Text="FOUND OBJECTS" FontSize="9" Opacity="0.7" FontWeight="Bold" Margin="0,0,0,5"/>
-                        <UniformGrid Columns="4">
+                        <UniformGrid Columns="5">
                             <StackPanel>
                                 <TextBlock Text="{Binding TicketsCount}" FontSize="16" FontWeight="Bold"/>
                                 <TextBlock Text="Tickets" FontSize="9" Opacity="0.7"/>
@@ -221,6 +221,10 @@
                             <StackPanel>
                                 <TextBlock Text="{Binding SpCount}" FontSize="16" FontWeight="Bold"/>
                                 <TextBlock Text="SPs" FontSize="9" Opacity="0.7"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding TriggerCount}" FontSize="16" FontWeight="Bold"/>
+                                <TextBlock Text="Triggers" FontSize="9" Opacity="0.7"/>
                             </StackPanel>
                             <StackPanel>
                                 <TextBlock Text="{Binding DataCount}" FontSize="16" FontWeight="Bold"/>
@@ -241,9 +245,11 @@
 
             <TextBlock Grid.Row="0" Text="Extracted Scripts (Ready for Merge)" FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8" Foreground="#424242"/>
 
-            <!-- 3 Columns Layout -->
+            <!-- 4 Columns Layout -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
@@ -385,8 +391,75 @@
                     </Grid>
                 </materialDesign:Card>
 
-                <!-- Data Column -->
+                <!-- Triggers Column -->
                 <materialDesign:Card Grid.Column="4" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Background="#F3E5F5" CornerRadius="8,8,0,0" Padding="12">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="LightningBolt" Foreground="#8E24AA" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Triggers" FontWeight="Bold" Foreground="#7B1FA2" FontSize="13"/>
+                                <TextBlock Text="{Binding TriggerScripts.Count, StringFormat=' ({0})'}" Foreground="#BA68C8" FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8">
+                            <ItemsControl ItemsSource="{Binding TriggerScripts}" ItemsPanel="{StaticResource FluidItemsPanel}">
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter" BasedOn="{StaticResource SlideInAnimation}"/>
+                                </ItemsControl.ItemContainerStyle>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <materialDesign:Card Margin="0,0,0,8" Padding="10" Style="{StaticResource CardHoverStyle}" UniformCornerRadius="8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="#37474F" FontSize="11"/>
+                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                            Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                            CommandParameter="{Binding}" 
+                                                            Height="24" Width="24" Foreground="#4CAF50"
+                                                            Visibility="{Binding IsFirst, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                            ToolTip="Move Up">
+                                                        <materialDesign:PackIcon Kind="ArrowUpBold" Width="18" Height="18"/>
+                                                    </Button>
+                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                            Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                            CommandParameter="{Binding}" 
+                                                            Height="24" Width="24" Foreground="#F44336"
+                                                            Visibility="{Binding IsLast, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                                            ToolTip="Move Down">
+                                                        <materialDesign:PackIcon Kind="ArrowDownBold" Width="18" Height="18"/>
+                                                    </Button>
+                                                             <!-- Remove Button -->
+                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                            Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                            CommandParameter="{Binding}" 
+                                                            Height="24" Width="24" Foreground="#757575"
+                                                            ToolTip="Remove Script"
+                                                            Margin="5,0,0,0">
+                                                        <materialDesign:PackIcon Kind="DeleteOutline" Width="18" Height="18"/>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                        </materialDesign:Card>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Data Column -->
+                <materialDesign:Card Grid.Column="6" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>

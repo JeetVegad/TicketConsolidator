@@ -66,6 +66,9 @@ namespace TicketConsolidator.UI
         private int _tableCount;
         public int TableCount { get => _tableCount; set { _tableCount = value; OnPropertyChanged(); } }
 
+        private int _triggerCount;
+        public int TriggerCount { get => _triggerCount; set { _triggerCount = value; OnPropertyChanged(); } }
+
         private string _ticketsCount = "0";
         public string TicketsCount { get => _ticketsCount; set { _ticketsCount = value; OnPropertyChanged(); } }
 
@@ -77,6 +80,9 @@ namespace TicketConsolidator.UI
             = new System.Collections.ObjectModel.ObservableCollection<ScriptItemViewModel>();
 
         public System.Collections.ObjectModel.ObservableCollection<ScriptItemViewModel> DataScripts { get; } 
+            = new System.Collections.ObjectModel.ObservableCollection<ScriptItemViewModel>();
+
+        public System.Collections.ObjectModel.ObservableCollection<ScriptItemViewModel> TriggerScripts { get; } 
             = new System.Collections.ObjectModel.ObservableCollection<ScriptItemViewModel>();
 
         public ICommand ScanCommand { get; }
@@ -111,7 +117,7 @@ namespace TicketConsolidator.UI
             _settingsService = settingsService;
 
             ScanCommand = new RelayCommand(async (o) => await ExecuteScan(o), CanExecuteScan);
-            ConsolidateCommand = new RelayCommand(async (o) => await ExecuteConsolidate(o), o => (TableScripts.Count + SpScripts.Count + DataScripts.Count) > 0 && !IsBusy);
+            ConsolidateCommand = new RelayCommand(async (o) => await ExecuteConsolidate(o), o => (TableScripts.Count + SpScripts.Count + DataScripts.Count + TriggerScripts.Count) > 0 && !IsBusy);
             ClearCommand = new RelayCommand(ExecuteClear);
             
             MoveUpCommand = new RelayCommand(ExecuteMoveUp);
@@ -127,6 +133,7 @@ namespace TicketConsolidator.UI
             TableScripts.CollectionChanged += (s, e) => CommandManager.InvalidateRequerySuggested();
             SpScripts.CollectionChanged += (s, e) => CommandManager.InvalidateRequerySuggested();
             DataScripts.CollectionChanged += (s, e) => CommandManager.InvalidateRequerySuggested();
+            TriggerScripts.CollectionChanged += (s, e) => CommandManager.InvalidateRequerySuggested();
 
             InitializeOutlook();
             InitializeHistory();
@@ -217,6 +224,12 @@ namespace TicketConsolidator.UI
                         {
                             scriptType = Application.DTOs.ScriptType.Data;
                         }
+                        else if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(Trigger|Trg)(?:[_\-\.\s]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                                 fileName.EndsWith(".trigger.sql", System.StringComparison.OrdinalIgnoreCase) ||
+                                 fileName.EndsWith(".trg.sql", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            scriptType = Application.DTOs.ScriptType.Trigger;
+                        }
 
                         // Debugging for User
                         System.Windows.MessageBox.Show($"File: {fileName}\nDetected Type: {scriptType}", "Debug Type Detection");
@@ -266,7 +279,8 @@ namespace TicketConsolidator.UI
                         {
                             bool isDuplicate = TableScripts.Any(x => x.SourceFile == fileName) ||
                                                SpScripts.Any(x => x.SourceFile == fileName) ||
-                                               DataScripts.Any(x => x.SourceFile == fileName);
+                                               DataScripts.Any(x => x.SourceFile == fileName) ||
+                                               TriggerScripts.Any(x => x.SourceFile == fileName);
 
                             if (isDuplicate)
                             {
@@ -284,6 +298,9 @@ namespace TicketConsolidator.UI
 
                                     var toRemoveData = DataScripts.Where(x => x.SourceFile == fileName).ToList();
                                     foreach (var item in toRemoveData) DataScripts.Remove(item);
+
+                                    var toRemoveTrigger = TriggerScripts.Where(x => x.SourceFile == fileName).ToList();
+                                    foreach (var item in toRemoveTrigger) TriggerScripts.Remove(item);
                                     return true;
                                 }
                                 return false;
@@ -418,11 +435,13 @@ namespace TicketConsolidator.UI
             TableScripts.Clear();
             SpScripts.Clear();
             DataScripts.Clear();
+            TriggerScripts.Clear();
             ProgressValue = 0;
             StatusMessage = "Idle";
             SpCount = 0;
             DataCount = 0;
             TableCount = 0;
+            TriggerCount = 0;
             TicketsCount = "0";
             _logger.LogInfo("Dashboard cleared by user.");
         }
@@ -432,6 +451,7 @@ namespace TicketConsolidator.UI
             if (item.Script.Type == Application.DTOs.ScriptType.Table) return TableScripts;
             if (item.Script.Type == Application.DTOs.ScriptType.StoredProcedure) return SpScripts;
             if (item.Script.Type == Application.DTOs.ScriptType.Data) return DataScripts;
+            if (item.Script.Type == Application.DTOs.ScriptType.Trigger) return TriggerScripts;
             return null;
         }
 
@@ -501,11 +521,13 @@ namespace TicketConsolidator.UI
             UpdateCollectionPositions(TableScripts);
             UpdateCollectionPositions(SpScripts);
             UpdateCollectionPositions(DataScripts);
+            UpdateCollectionPositions(TriggerScripts);
 
             // Update Counts for binding
             TableCount = TableScripts.Count;
             SpCount = SpScripts.Count;
             DataCount = DataScripts.Count;
+            TriggerCount = TriggerScripts.Count;
         }
 
         private System.Threading.CancellationTokenSource _cancellationTokenSource;
@@ -612,6 +634,7 @@ namespace TicketConsolidator.UI
                 foreach(var item in TableScripts) existingFiles.Add(item.SourceFile);
                 foreach(var item in SpScripts) existingFiles.Add(item.SourceFile);
                 foreach(var item in DataScripts) existingFiles.Add(item.SourceFile);
+                foreach(var item in TriggerScripts) existingFiles.Add(item.SourceFile);
 
                 // 2. Parse Scripts (CPU Bound - Task.Run) & Save Files (IO Bound)
                 // Return Tuple: (Script, IsConflict, SavePath)
@@ -665,6 +688,12 @@ namespace TicketConsolidator.UI
                                               fileName.EndsWith(".data.sql", System.StringComparison.OrdinalIgnoreCase))
                                      {
                                          scriptType = Application.DTOs.ScriptType.Data;
+                                     }
+                                     else if (System.Text.RegularExpressions.Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(Trigger|Trg)(?:[_\-\.\s]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase) ||
+                                              fileName.EndsWith(".trigger.sql", System.StringComparison.OrdinalIgnoreCase) ||
+                                              fileName.EndsWith(".trg.sql", System.StringComparison.OrdinalIgnoreCase))
+                                     {
+                                         scriptType = Application.DTOs.ScriptType.Trigger;
                                      }
 
                                      var scripts = _parserService.ParseScript(content, fileName, realTicket);
@@ -797,6 +826,9 @@ namespace TicketConsolidator.UI
                             
                             var existingData = DataScripts.Where(x => x.SourceFile == script.SourceFileName).ToList();
                             foreach(var e in existingData) DataScripts.Remove(e);
+
+                            var existingTrigger = TriggerScripts.Where(x => x.SourceFile == script.SourceFileName).ToList();
+                            foreach(var e in existingTrigger) TriggerScripts.Remove(e);
                             
                             // Log
                             _logger.LogInfo($"Replaced existing file: {script.SourceFileName}");
@@ -820,6 +852,7 @@ namespace TicketConsolidator.UI
                         case Application.DTOs.ScriptType.Table: TableScripts.Add(vm); break;
                         case Application.DTOs.ScriptType.StoredProcedure: SpScripts.Add(vm); break;
                         case Application.DTOs.ScriptType.Data: DataScripts.Add(vm); break;
+                        case Application.DTOs.ScriptType.Trigger: TriggerScripts.Add(vm); break;
                     }
                 }
 
@@ -895,6 +928,7 @@ namespace TicketConsolidator.UI
                 var allScripts = new System.Collections.Generic.List<Application.DTOs.SqlScript>();
                 allScripts.AddRange(SpScripts.Select(vm => vm.Script));
                 allScripts.AddRange(DataScripts.Select(vm => vm.Script));
+                allScripts.AddRange(TriggerScripts.Select(vm => vm.Script));
                 allScripts.AddRange(TableScripts.Select(vm => vm.Script));
 
                 _logger.LogInfo($"Consolidating: {allScripts.Count} scripts in total.");
@@ -921,6 +955,7 @@ namespace TicketConsolidator.UI
                     // Separate by Type
                     var dataScripts = group.Where(s => s.Type == Application.DTOs.ScriptType.Data || s.Type == Application.DTOs.ScriptType.Table).ToList();
                     var spScripts = group.Where(s => s.Type == Application.DTOs.ScriptType.StoredProcedure).ToList();
+                    var triggerScripts = group.Where(s => s.Type == Application.DTOs.ScriptType.Trigger).ToList();
 
                     if (dataScripts.Count > 0)
                     {
@@ -929,6 +964,10 @@ namespace TicketConsolidator.UI
                     if (spScripts.Count > 0)
                     {
                         await ProcessConsolidationGroup(spScripts, "SP", runId, outputDir, context, "02");
+                    }
+                    if (triggerScripts.Count > 0)
+                    {
+                        await ProcessConsolidationGroup(triggerScripts, "TRIGGER", runId, outputDir, context, "03");
                     }
                 }
                 
@@ -992,7 +1031,7 @@ namespace TicketConsolidator.UI
                 StatusMessage = "Creating Release Email...";
 
                 // Gather Data
-                var allScripts = TableScripts.Concat(SpScripts).Concat(DataScripts).Select(vm => vm.Script).ToList();
+                var allScripts = TableScripts.Concat(SpScripts).Concat(DataScripts).Concat(TriggerScripts).Select(vm => vm.Script).ToList();
                 var uniqueTickets = allScripts.Select(s => s.TicketNumber).Distinct(System.StringComparer.OrdinalIgnoreCase).ToList();
                 
                 // Build Summary Map (Best Effort)
@@ -1120,7 +1159,7 @@ namespace TicketConsolidator.UI
             var ignoredKeywords = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
             {
                 "SP", "Data", "Table", "Tables", "Tb", "Tbl", "StoredProcedure", "Insert", "Update", "Script", "Stored", "Procedure", "Engage", "Ticket",
-                "CR", "PR", "INC", "TASK", "US", "Bug", "Feat", "Feature", "Fix", "Hotfix"
+                "CR", "PR", "INC", "TASK", "US", "Bug", "Feat", "Feature", "Fix", "Hotfix", "Trigger", "Trg", "Triggers"
             };
 
             var contextParts = parts.Where(p => !ignoredKeywords.Contains(p) && !p.All(char.IsDigit)).ToList();

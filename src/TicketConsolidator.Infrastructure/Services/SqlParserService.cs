@@ -114,7 +114,6 @@ namespace TicketConsolidator.Infrastructure.Services
         private ScriptType DetectScriptType(string content, string fileName)
         {
             // 1. Check filename hints first (highest reliability if provided)
-            // 1. Check filename hints first (highest reliability if provided)
             // Use Regex to handle various delimiters (_, -, ., space) and case insensitivity
             if (Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(SP|StoredProcedure)(?:[_\-\.\s]|$)", RegexOptions.IgnoreCase) ||
                 fileName.EndsWith(".sp.sql", StringComparison.OrdinalIgnoreCase))
@@ -128,6 +127,13 @@ namespace TicketConsolidator.Infrastructure.Services
                 return ScriptType.Data;
             }
 
+            if (Regex.IsMatch(fileName, @"(?:^|[_\-\.\s])(Trigger|Trg)(?:[_\-\.\s]|$)", RegexOptions.IgnoreCase) ||
+                fileName.EndsWith(".trigger.sql", StringComparison.OrdinalIgnoreCase) ||
+                fileName.EndsWith(".trg.sql", StringComparison.OrdinalIgnoreCase))
+            {
+                return ScriptType.Trigger;
+            }
+
             // 2. Content Analysis
             string upperContent = content.ToUpperInvariant();
             if (Regex.IsMatch(upperContent, @"\bCREATE\s+PROCEDURE\b") || 
@@ -135,6 +141,13 @@ namespace TicketConsolidator.Infrastructure.Services
                 Regex.IsMatch(upperContent, @"\bCREATE\s+Or\s+ALTER\s+PROCEDURE\b"))
             {
                 return ScriptType.StoredProcedure;
+            }
+
+            if (Regex.IsMatch(upperContent, @"\bCREATE\s+TRIGGER\b") || 
+                Regex.IsMatch(upperContent, @"\bALTER\s+TRIGGER\b") ||
+                Regex.IsMatch(upperContent, @"\bCREATE\s+Or\s+ALTER\s+TRIGGER\b"))
+            {
+                return ScriptType.Trigger;
             }
 
             if (Regex.IsMatch(upperContent, @"\bINSERT\s+INTO\b") || 

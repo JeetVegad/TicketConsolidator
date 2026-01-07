@@ -105,6 +105,14 @@
                         MoveDown="s => MoveItem(s, TicketService.DataScripts, 1)"
                         Remove="s => RemoveItem(s, TicketService.DataScripts)" />
         </div>
+
+        <!-- Lists Column (Triggers) -->
+        <div class="grid-col animate-slide-up delay-6">
+            <ScriptList Title="Triggers" Scripts="@TicketService.TriggerScripts"
+                        MoveUp="s => MoveItem(s, TicketService.TriggerScripts, -1)"
+                        MoveDown="s => MoveItem(s, TicketService.TriggerScripts, 1)"
+                        Remove="s => RemoveItem(s, TicketService.TriggerScripts)" />
+        </div>
     </div>
 </div>
 
@@ -162,7 +170,7 @@
 
     .dashboard-grid {
         display: grid;
-        grid-template-columns: 320px 1fr 1fr 1fr; /* Fixed Sidebar */
+        grid-template-columns: 320px 1fr 1fr 1fr 1fr; /* Fixed Sidebar + 4 Columns */
         grid-template-rows: 1fr;
         gap: 1rem;
         flex: 1;
@@ -305,7 +313,7 @@
 @code {
     private string TicketInput { get; set; }
     private bool IsBusy => TicketService.IsBusy;
-    private bool IsListEmpty => (TicketService.TableScripts.Count + TicketService.SpScripts.Count + TicketService.DataScripts.Count) == 0;
+    private bool IsListEmpty => (TicketService.TableScripts.Count + TicketService.SpScripts.Count + TicketService.DataScripts.Count + TicketService.TriggerScripts.Count) == 0;
 
     private bool ShowEmailDialog { get; set; }
     private ReleaseDetailsDialog emailDialog;
