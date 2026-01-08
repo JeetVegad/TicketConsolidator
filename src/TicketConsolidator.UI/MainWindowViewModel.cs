@@ -15,9 +15,13 @@ namespace TicketConsolidator.UI
             set
             {
                 _currentView = value;
+                CurrentViewName = _currentView?.GetType().Name; 
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CurrentViewName));
             }
         }
+
+        public string CurrentViewName { get; private set; }
 
         public ICommand NavigateDashboardCommand { get; }
         public ICommand NavigateSettingsCommand { get; }

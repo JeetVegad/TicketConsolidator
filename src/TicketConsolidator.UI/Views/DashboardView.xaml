@@ -13,15 +13,17 @@
              TextElement.FontSize="13"
              TextOptions.TextFormattingMode="Ideal"
              TextOptions.TextRenderingMode="Auto"
-             Background="#F5F5F5"
-             FontFamily="{DynamicResource MaterialDesignFont}">
+             Background="{DynamicResource MaterialDesignPaper}"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+             RenderOptions.BitmapScalingMode="HighQuality"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <helpers:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         
-        <!-- Fluid Items Panel for Sliding Animation -->
         <ItemsPanelTemplate x:Key="FluidItemsPanel">
             <StackPanel>
                 <b:Interaction.Behaviors>
@@ -34,9 +36,6 @@
             </StackPanel>
         </ItemsPanelTemplate>
 
-        <!-- Simplified List Item Style with Hover Animation -->
-        
-        <!-- Simplified List Item Style with Hover Animation -->
         <Style x:Key="CardHoverStyle" TargetType="materialDesign:Card">
             <Setter Property="RenderTransform">
                 <Setter.Value>
@@ -57,7 +56,6 @@
             </Style.Triggers>
         </Style>
 
-        <!-- Slide In Animation for New Items -->
         <Style x:Key="SlideInAnimation" TargetType="ContentPresenter">
             <Style.Triggers>
                 <EventTrigger RoutedEvent="Loaded">
@@ -72,7 +70,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="30">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Header -->
             <RowDefinition Height="Auto"/> <!-- Input & Status -->
@@ -81,23 +79,49 @@
         </Grid.RowDefinitions>
 
         <!-- 1. Header Area (Compact) -->
-        <Grid Grid.Row="0" Margin="0,0,0,10">
+        <Grid x:Name="HeaderArea" Grid.Row="0" Margin="0,0,0,5" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform> <TranslateTransform Y="20"/> </Grid.RenderTransform>
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                             <DoubleAnimation Storyboard.TargetName="HeaderArea" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Consolidation Dashboard" FontSize="24" FontWeight="Bold" Foreground="#4527A0"/>
-                <TextBlock Text="Extract, Sort, and Merge scripts with precision" FontSize="12" Opacity="0.6" Margin="0,2,0,0"/>
+                <TextBlock Text="Consolidation Dashboard" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}"/>
+                <TextBlock Text="Extract, Sort, and Merge scripts with precision" FontSize="12" Opacity="0.6" Margin="0,2,0,0" Foreground="{DynamicResource MaterialDesignBody}"/>
             </StackPanel>
-            
-            <Border Grid.Column="1" Background="#EDE7F6" CornerRadius="50" Width="40" Height="40">
-                <materialDesign:PackIcon Kind="DatabaseSync" Width="20" Height="20" Foreground="#4527A0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <!-- SYSTEM STATUS -->
+            <Border Grid.Column="1" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="50" Width="40" Height="40">
+                <Grid>
+                    <Border Background="{DynamicResource PrimaryHueLightBrush}" Opacity="0.2" CornerRadius="50" Width="40" Height="40"/>
+                    <Border Background="Transparent" CornerRadius="50" Width="40" Height="40">
+                        <materialDesign:PackIcon Kind="DatabaseSync" Width="20" Height="20" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Border>
+                </Grid>
             </Border>
         </Grid>
 
         <!-- 2. Main Action Card (Compacted) -->
-        <Grid Grid.Row="1" Margin="0,0,0,15">
+        <Grid x:Name="ActionCard" Grid.Row="1" Margin="0,0,0,10" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform> <TranslateTransform Y="20"/> </Grid.RenderTransform>
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                             <DoubleAnimation Storyboard.TargetName="ActionCard" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.1"/>
+                             <DoubleAnimation Storyboard.TargetName="ActionCard" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="0:0:0.5" BeginTime="0:0:0.1" DecelerationRatio="0.9"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/> <!-- Input (Smaller) -->
                 <ColumnDefinition Width="20"/> <!-- Spacing -->
@@ -105,105 +129,102 @@
             </Grid.ColumnDefinitions>
 
             <!-- Input Section (Target Tickets) -->
-            <materialDesign:Card Grid.Column="0" Padding="15" UniformCornerRadius="10" materialDesign:ShadowAssist.ShadowDepth="Depth2"
-                                 AllowDrop="True">
-                <b:Interaction.Triggers>
-                    <b:EventTrigger EventName="Drop">
-                        <b:InvokeCommandAction Command="{Binding DropCommand}" PassEventArgsToCommand="True"/>
-                    </b:EventTrigger>
-                </b:Interaction.Triggers>
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <materialDesign:PackIcon Kind="TicketConfirmationOutline" Foreground="#5E35B1" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Target Tickets / Drop Files Here" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    
-                    <TextBox materialDesign:HintAssist.Hint="Enter ticket numbers (e.g. Engage-11333)" 
-                             materialDesign:HintAssist.Foreground="{DynamicResource PrimaryHueDarkBrush}"
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}" 
-                             Height="40"
-                             Text="{Binding TicketInput, UpdateSourceTrigger=PropertyChanged}"
-                             IsEnabled="{Binding IsScanRunning, Converter={StaticResource InverseBooleanConverter}}"
-                             BorderBrush="#B39DDB"
-                             materialDesign:TextFieldAssist.TextFieldCornerRadius="6"
-                             FontSize="12"
-                             Padding="8"
-                             Foreground="Black"
-                             VerticalContentAlignment="Center"/>
-
-                    <Grid Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Column="0"
-                                Content="RESET" 
-                                Command="{Binding ClearCommand}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
-                                BorderBrush="#D32F2F"
-                                Foreground="#D32F2F"
-                                Height="32"
-                                Width="80"
-                                FontSize="10"
-                                materialDesign:ButtonAssist.CornerRadius="6"/>
-
-                        <!-- Spacer -->
+            <!-- MAIN INPUT CARD -->
+            <Border x:Name="DropTargetBorder" Grid.Column="0" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="8" Padding="10" AllowDrop="True">
+                <Grid>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <materialDesign:PackIcon Kind="TicketConfirmationOutline" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Target Tickets / Drop Files Here" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBody}"/>
+                        </StackPanel>
                         
-                        <Button Grid.Column="2" 
-                                Content="UPLOAD FILE"
-                                Command="{Binding UploadFileCommand}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
-                                BorderBrush="#5E35B1"
-                                Foreground="#5E35B1"
-                                Height="32"
-                                Width="100"
-                                FontSize="10"
-                                materialDesign:ButtonAssist.CornerRadius="6"/>
+                        <TextBox materialDesign:HintAssist.Hint="Enter ticket numbers (e.g. Engage-11333)" 
+                                 materialDesign:HintAssist.Foreground="{DynamicResource PrimaryHueDarkBrush}"
+                                 Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                                 Height="35"
+                                 Text="{Binding TicketInput, UpdateSourceTrigger=PropertyChanged}"
+                                 IsEnabled="{Binding IsScanRunning, Converter={StaticResource InverseBooleanConverter}}"
+                                 BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                 Background="{DynamicResource MaterialDesignPaper}"
+                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="6"
+                                 FontSize="12"
+                                 Padding="8"
+                                 Foreground="{DynamicResource MaterialDesignBody}"
+                                 VerticalContentAlignment="Center"/>
 
-                        <!-- Scan / Stop Toggle -->
-                        <Grid Grid.Column="4">
-                            <!-- SCAN Button (Visible when NOT running) -->
-                            <Button Content="SCAN &amp; PROCESS" 
-                                    Command="{Binding ScanCommand}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Background="#5E35B1"
-                                    BorderBrush="#5E35B1"
-                                    Height="32"
-                                    Width="120"
-                                    FontSize="10"
-                                    materialDesign:ButtonAssist.CornerRadius="6"
-                                    Visibility="{Binding IsScanRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                            <!-- STOP Button (Visible when RUNNING) -->
-                            <Button Content="STOP SCAN" 
-                                    Command="{Binding StopScanCommand}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Background="#D32F2F"
+                            <Button Grid.Column="0"
+                                    Content="RESET" 
+                                    Command="{Binding ClearCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
                                     BorderBrush="#D32F2F"
+                                    Foreground="#D32F2F"
                                     Height="32"
-                                    Width="120"
+                                    Width="80"
                                     FontSize="10"
-                                    materialDesign:ButtonAssist.CornerRadius="6"
-                                    Visibility="{Binding IsScanRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    materialDesign:ButtonAssist.CornerRadius="6"/>
+
+                            <!-- Spacer -->
+                            
+                            <Button Grid.Column="2" 
+                                    Content="UPLOAD FILE"
+                                    Command="{Binding UploadFileCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    BorderBrush="{DynamicResource PrimaryHueMidBrush}"
+                                    Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                    Height="32"
+                                    Width="100"
+                                    FontSize="10"
+                                    materialDesign:ButtonAssist.CornerRadius="6"/>
+
+                            <!-- Scan / Stop Toggle -->
+                            <Grid Grid.Column="4">
+                                <!-- SCAN Button (Visible when NOT running) -->
+                                <Button Content="SCAN &amp; PROCESS" 
+                                        Command="{Binding ScanCommand}"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
+                                        materialDesign:ButtonAssist.CornerRadius="6"
+                                        Height="32"
+                                        Width="120"
+                                        FontSize="10"
+                                        Visibility="{Binding IsScanRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+
+                                <!-- STOP Button (Visible when RUNNING) -->
+                                <Button Content="STOP SCAN" 
+                                        Command="{Binding StopScanCommand}"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
+                                        Background="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                        BorderBrush="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                        Height="32"
+                                        Width="120"
+                                        FontSize="10"
+                                        materialDesign:ButtonAssist.CornerRadius="6"
+                                        Visibility="{Binding IsScanRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </Grid>
                         </Grid>
-                    </Grid>
-                </StackPanel>
-            </materialDesign:Card>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
             <!-- Status & Stats Section -->
-            <materialDesign:Card Grid.Column="2" Padding="15" UniformCornerRadius="10" Background="{DynamicResource PrimaryHueMidBrush}" Foreground="White" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+            <materialDesign:Card Grid.Column="2" Padding="10" UniformCornerRadius="8" Background="{DynamicResource PrimaryHueMidBrush}" Foreground="White" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                 <Grid>
                     <StackPanel>
                         <TextBlock Text="SYSTEM STATUS" FontSize="9" Opacity="0.7" FontWeight="Bold"/>
-                        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,5,0,8" FontSize="11" FontWeight="SemiBold" MaxHeight="35" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" Margin="0,5,0,8" FontSize="11" FontWeight="SemiBold" MaxHeight="35" TextTrimming="CharacterEllipsis" Foreground="White"/>
                         
                         <ProgressBar Value="{Binding ProgressValue}" Maximum="100" Height="4" 
-                                     Background="#50FFFFFF" Foreground="#00E5FF" 
+                                     Background="#30FFFFFF" Foreground="#76FF03" 
                                      BorderThickness="0"
+                                     RenderOptions.BitmapScalingMode="HighQuality"
                                      Visibility="{Binding IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
                         <Separator Background="White" Opacity="0.1" Margin="0,10"/>
@@ -237,13 +258,24 @@
         </Grid>
 
         <!-- 3. Results List (Expanded Area) -->
-        <Grid Grid.Row="2">
+        <Grid x:Name="ResultsArea" Grid.Row="2" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform> <TranslateTransform Y="20"/> </Grid.RenderTransform>
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                             <DoubleAnimation Storyboard.TargetName="ResultsArea" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.2"/>
+                             <DoubleAnimation Storyboard.TargetName="ResultsArea" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="0:0:0.5" BeginTime="0:0:0.2" DecelerationRatio="0.9"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Extracted Scripts (Ready for Merge)" FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8" Foreground="#424242"/>
+            <TextBlock Grid.Row="0" Text="Extracted Scripts (Ready for Merge)" FontSize="13" FontWeight="SemiBold" Margin="5,0,0,8" Foreground="{DynamicResource MaterialDesignBody}"/>
 
             <!-- 4 Columns Layout -->
             <Grid Grid.Row="1">
@@ -258,17 +290,18 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Tables Column -->
-                <materialDesign:Card Grid.Column="0" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
+                <Border Grid.Column="0" Margin="0,0,10,0" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="8">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Border Background="#E8EAF6" CornerRadius="8,8,0,0" Padding="12">
+                        <Border Background="{DynamicResource PrimaryHueLightBrush}" Opacity="0.1" CornerRadius="8,8,0,0" Padding="12"/>
+                        <Border Background="Transparent" Padding="12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Table" Foreground="#3F51B5" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Tables" FontWeight="Bold" Foreground="#3949AB" FontSize="13"/>
-                                <TextBlock Text="{Binding TableScripts.Count, StringFormat=' ({0})'}" Foreground="#7986CB" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="Table" Foreground="{DynamicResource PrimaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Tables" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="13"/>
+                                <TextBlock Text="{Binding TableScripts.Count, StringFormat=' ({0})'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
                             </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8">
@@ -285,8 +318,8 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="#37474F" FontSize="11"/>
-                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="{DynamicResource MaterialDesignBodyLight}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
@@ -305,8 +338,7 @@
                                                             ToolTip="Move Down">
                                                         <materialDesign:PackIcon Kind="ArrowDownBold" Width="18" Height="18"/>
                                                     </Button>
-                                                             <!-- Remove Button -->
-                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                             <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
                                                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}" 
                                                             Height="24" Width="24" Foreground="#757575"
@@ -322,20 +354,21 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- SPs Column -->
-                <materialDesign:Card Grid.Column="2" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
+                <Border Grid.Column="4" Margin="0,0,10,0" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="8">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Border Background="#E3F2FD" CornerRadius="8,8,0,0" Padding="12">
+                        <Border Background="{DynamicResource SecondaryHueLightBrush}" Opacity="0.1" CornerRadius="8,8,0,0" Padding="12"/>
+                        <Border Background="Transparent" Padding="12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Function" Foreground="#1E88E5" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Stored Procedures" FontWeight="Bold" Foreground="#1565C0" FontSize="13"/>
-                                <TextBlock Text="{Binding SpScripts.Count, StringFormat=' ({0})'}" Foreground="#64B5F6" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="Function" Foreground="{DynamicResource SecondaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Stored Procedures" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="13"/>
+                                <TextBlock Text="{Binding SpScripts.Count, StringFormat=' ({0})'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
                             </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8">
@@ -352,8 +385,8 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="#37474F" FontSize="11"/>
-                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="{DynamicResource MaterialDesignBodyLight}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
@@ -372,8 +405,7 @@
                                                             ToolTip="Move Down">
                                                         <materialDesign:PackIcon Kind="ArrowDownBold" Width="18" Height="18"/>
                                                     </Button>
-                                                             <!-- Remove Button -->
-                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                             <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
                                                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}" 
                                                             Height="24" Width="24" Foreground="#757575"
@@ -389,20 +421,21 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- Triggers Column -->
-                <materialDesign:Card Grid.Column="4" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
+                <Border Grid.Column="2" Margin="0,0,10,0" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="8">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Border Background="#F3E5F5" CornerRadius="8,8,0,0" Padding="12">
+                        <Border Background="{DynamicResource PrimaryHueMidBrush}" Opacity="0.1" CornerRadius="8,8,0,0" Padding="12"/>
+                        <Border Background="Transparent" Padding="12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="LightningBolt" Foreground="#8E24AA" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Triggers" FontWeight="Bold" Foreground="#7B1FA2" FontSize="13"/>
-                                <TextBlock Text="{Binding TriggerScripts.Count, StringFormat=' ({0})'}" Foreground="#BA68C8" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="LightningBolt" Foreground="{DynamicResource PrimaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Triggers" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="13"/>
+                                <TextBlock Text="{Binding TriggerScripts.Count, StringFormat=' ({0})'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
                             </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8">
@@ -419,8 +452,8 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="#37474F" FontSize="11"/>
-                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="{DynamicResource MaterialDesignBodyLight}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
@@ -439,8 +472,7 @@
                                                             ToolTip="Move Down">
                                                         <materialDesign:PackIcon Kind="ArrowDownBold" Width="18" Height="18"/>
                                                     </Button>
-                                                             <!-- Remove Button -->
-                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                             <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
                                                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}" 
                                                             Height="24" Width="24" Foreground="#757575"
@@ -456,20 +488,21 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- Data Column -->
-                <materialDesign:Card Grid.Column="6" UniformCornerRadius="8" Padding="0" materialDesign:ShadowAssist.ShadowDepth="Depth1" VerticalAlignment="Stretch">
+                <Border Grid.Column="6" Margin="10,0,0,0" Background="{DynamicResource MaterialDesignCardBackground}" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="8">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Border Background="#E0F2F1" CornerRadius="8,8,0,0" Padding="12">
+                        <Border Background="{DynamicResource SecondaryHueMidBrush}" Opacity="0.1" CornerRadius="8,8,0,0" Padding="12"/>
+                        <Border Background="Transparent" Padding="12">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Database" Foreground="#00897B" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Data / Inserts" FontWeight="Bold" Foreground="#00695C" FontSize="13"/>
-                                <TextBlock Text="{Binding DataScripts.Count, StringFormat=' ({0})'}" Foreground="#4DB6AC" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="Database" Foreground="{DynamicResource SecondaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Data / Inserts" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="13"/>
+                                <TextBlock Text="{Binding DataScripts.Count, StringFormat=' ({0})'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="13"/>
                             </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="8">
@@ -486,8 +519,8 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="#37474F" FontSize="11"/>
-                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Text="{Binding TicketNumber}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}" FontSize="11"/>
+                                                    <TextBlock Text="{Binding SourceFile}" FontSize="9" Foreground="{DynamicResource MaterialDesignBodyLight}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
@@ -506,8 +539,7 @@
                                                             ToolTip="Move Down">
                                                         <materialDesign:PackIcon Kind="ArrowDownBold" Width="18" Height="18"/>
                                                     </Button>
-                                                             <!-- Remove Button -->
-                                                    <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
+                                                             <Button Style="{StaticResource MaterialDesignIconForegroundButton}" 
                                                             Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                                             CommandParameter="{Binding}" 
                                                             Height="24" Width="24" Foreground="#757575"
@@ -523,12 +555,23 @@
                             </ItemsControl>
                         </ScrollViewer>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
             </Grid>
         </Grid>
 
         <!-- 4. Footer -->
-        <Grid Grid.Row="3" Margin="0,15,0,0">
+        <Grid x:Name="FooterArea" Grid.Row="3" Margin="0,10,0,0" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform> <TranslateTransform Y="20"/> </Grid.RenderTransform>
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                             <DoubleAnimation Storyboard.TargetName="FooterArea" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.3"/>
+                             <DoubleAnimation Storyboard.TargetName="FooterArea" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="0:0:0.5" BeginTime="0:0:0.3" DecelerationRatio="0.9"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="15"/>

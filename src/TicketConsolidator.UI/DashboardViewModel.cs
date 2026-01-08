@@ -1001,35 +1001,57 @@ namespace TicketConsolidator.UI
                 IsBusy = true;
                 StatusMessage = "Preparing Release Email...";
 
+                string buildNum = string.Empty;
+                string solPath = string.Empty;
+                string userName = string.Empty;
+
                 // Show Dialog for Customization
-                string buildNum = _lastRunId;
-                string solPath = _lastConsolidatedPath;
-                string userName = System.Environment.UserName;
+                var vm = new ViewModels.ReleaseDetailsViewModel
+                {
+                    BuildNumber = _lastRunId,
+                    SolutionPath = _lastConsolidatedPath,
+                    Username = System.Environment.UserName
+                };
+
+                var view = new Views.Dialogs.ReleaseDetailsDialog { DataContext = vm };
 
                 // Application.Current.Dispatcher must be used for UI Dialog
-                bool dialogResult = false;
-                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => 
+                // Use 'await await' to unwrap the Task<bool> returned by the async lambda
+                bool dialogResult = await await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () => 
                 {
-                    var dlg = new Views.Dialogs.ReleaseDetailsDialog();
-                    // Pre-fill if we have data (optional, logic in VM or Dialog ctor)
-                    if (dlg.ShowDialog() == true)
+                    var result = await MaterialDesignThemes.Wpf.DialogHost.Show(view, "RootDialog");
+                    
+                    bool isConfirmed = false;
+                    if (result is string s && string.Equals(s, "Generate", System.StringComparison.OrdinalIgnoreCase)) 
                     {
-                        buildNum = dlg.BuildNumber;
-                        solPath = dlg.SolutionPath;
-                        userName = dlg.Username;
-                        dialogResult = true;
+                        isConfirmed = true;
                     }
+                    else if (result is bool b && b) // Fallback
+                    {
+                         isConfirmed = true;
+                    }
+
+                    if (isConfirmed)
+                    {
+                        var updatedVm = (ViewModels.ReleaseDetailsViewModel)view.DataContext;
+                        buildNum = updatedVm.BuildNumber;
+                        solPath = updatedVm.SolutionPath;
+                        userName = updatedVm.Username;
+                    }
+                    
+                    return isConfirmed;
                 });
 
                 if (!dialogResult)
                 {
                     StatusMessage = "Email Creation Cancelled.";
+                    _logger.LogInfo("Email Creation Cancelled by user."); 
                     IsBusy = false;
                     return;
                 }
 
                 StatusMessage = "Creating Release Email...";
-
+                
                 // Gather Data
                 var allScripts = TableScripts.Concat(SpScripts).Concat(DataScripts).Concat(TriggerScripts).Select(vm => vm.Script).ToList();
                 var uniqueTickets = allScripts.Select(s => s.TicketNumber).Distinct(System.StringComparer.OrdinalIgnoreCase).ToList();

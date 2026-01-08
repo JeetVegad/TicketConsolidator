@@ -6,7 +6,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="False" PanningMode="VerticalOnly">
         <StackPanel Margin="20">
             
             <!-- HEADER / ABOUT -->
@@ -17,10 +17,10 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     
-                    <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48" Foreground="{DynamicResource PrimaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
                     
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Ticket Consolidator" Style="{StaticResource MaterialDesignHeadline5TextBlock}" FontWeight="Bold"/>
+                        <TextBlock Text="Ticket Consolidator" Style="{StaticResource MaterialDesignHeadline5TextBlock}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="Version: " Foreground="Gray"/>
                             <TextBlock Text="{Binding AppVersion, FallbackValue='v1.0.0'}" FontWeight="Bold" Margin="0,0,15,0"/>
@@ -33,14 +33,39 @@
 
             <!-- USER GUIDE -->
             <TextBlock Text="User Guide" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" UniformCornerRadius="8">
+            <materialDesign:Card Margin="0,0,0,20" UniformCornerRadius="8" x:Name="UserGuideCard">
+                <materialDesign:Card.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="UserGuideCard" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </materialDesign:Card.Triggers>
                 <StackPanel>
                     <Grid Margin="20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric1Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric1Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.5">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.5">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Enter Ticket Numbers (e.g. TICKET-123, TICKET-456) in the Dashboard input." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -49,7 +74,23 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric2Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric2Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.7">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.7">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Click 'SCAN' to search your Outlook emails for attachments." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -58,7 +99,23 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric3Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric3Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.9">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.9">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Review found scripts. Use Up/Down arrows to reorder them if needed." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -67,7 +124,23 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric4Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric4Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:1.1">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:1.1">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Click 'CONSOLIDATE' to merge them into final SQL files." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                 </StackPanel>
@@ -75,75 +148,157 @@
 
             <!-- VISUAL WORKFLOW (New) -->
             <TextBlock Text="Workflow Overview" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" Padding="20" UniformCornerRadius="8">
-                <Grid>
+            <materialDesign:Card Margin="0,0,0,20" Padding="20" UniformCornerRadius="8" ClipToBounds="True">
+                <Grid Height="120">
+                    <Grid.Resources>
+                        <Storyboard x:Key="WorkflowAnimation" RepeatBehavior="Forever">
+                            <!-- Scanning: Move Back and Forth Slower -->
+                            <DoubleAnimation Storyboard.TargetName="ScanMagnifier" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                             From="-20" To="20" Duration="0:0:3" AutoReverse="True">
+                                <DoubleAnimation.EasingFunction>
+                                    <SineEase EasingMode="EaseInOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="ScanMagnifier" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             From="-20" To="20" Duration="0:0:3" AutoReverse="True">
+                                <DoubleAnimation.EasingFunction>
+                                    <SineEase EasingMode="EaseInOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+
+                            <!-- Merge: Files moving to center -->
+                            <DoubleAnimation Storyboard.TargetName="File1" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                             From="0" To="60" Duration="0:0:3" BeginTime="0:0:0"/>
+                            <DoubleAnimation Storyboard.TargetName="File1" Storyboard.TargetProperty="Opacity"
+                                             From="1" To="0" Duration="0:0:3" BeginTime="0:0:0"/>
+                            
+                            <DoubleAnimation Storyboard.TargetName="File2" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                             From="0" To="40" Duration="0:0:3" BeginTime="0:0:1"/>
+                            <DoubleAnimation Storyboard.TargetName="File2" Storyboard.TargetProperty="Opacity"
+                                             From="1" To="0" Duration="0:0:3" BeginTime="0:0:1"/>
+
+                            <!-- Result File Growing -->
+                            <DoubleAnimation Storyboard.TargetName="FinalFile" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             From="0.5" To="1.1" Duration="0:0:1.5" BeginTime="0:0:2.5"/>
+                             <DoubleAnimation Storyboard.TargetName="FinalFile" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             From="0.5" To="1.1" Duration="0:0:1.5" BeginTime="0:0:2.5"/>
+                             <DoubleAnimation Storyboard.TargetName="FinalFile" Storyboard.TargetProperty="Opacity"
+                                             From="0" To="1" Duration="0:0:1.5" BeginTime="0:0:2.5"/>
+
+                            <!-- Release Envelope Flying -->
+                            <DoubleAnimation Storyboard.TargetName="Envelope" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                             From="0" To="100" Duration="0:0:4" BeginTime="0:0:0"/>
+                            <DoubleAnimation Storyboard.TargetName="Envelope" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             From="0" To="-50" Duration="0:0:4" BeginTime="0:0:0"/>
+                            <DoubleAnimation Storyboard.TargetName="Envelope" Storyboard.TargetProperty="Opacity"
+                                             From="1" To="0" Duration="0:0:4" BeginTime="0:0:0"/>
+
+                            <!-- 4. Verify Checkmark -->
+                            <DoubleAnimation Storyboard.TargetName="VerifyCheck" Storyboard.TargetProperty="Opacity"
+                                             From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:4.0"/>
+                            <DoubleAnimation Storyboard.TargetName="VerifyCheck" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             From="0.5" To="1.2" Duration="0:0:0.5" BeginTime="0:0:4.0"/>
+                            <DoubleAnimation Storyboard.TargetName="VerifyCheck" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             From="0.5" To="1.2" Duration="0:0:0.5" BeginTime="0:0:4.0"/>
+                             <!-- Shrink back a bit -->
+                            <DoubleAnimation Storyboard.TargetName="VerifyCheck" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1.0" Duration="0:0:0.2" BeginTime="0:0:4.5"/>
+                            <DoubleAnimation Storyboard.TargetName="VerifyCheck" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1.0" Duration="0:0:0.2" BeginTime="0:0:4.5"/>
+
+                        </Storyboard>
+                    </Grid.Resources>
+                    <Grid.Triggers>
+                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource WorkflowAnimation}"/>
+                        </EventTrigger>
+                    </Grid.Triggers>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/> <!-- Added 4th Column -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- Step 1: Input -->
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                        <Border Background="#E3F2FD" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="TicketOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#1565C0"/>
-                        </Border>
-                        <TextBlock Text="1. Input" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Enter Ticket #s" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+                    <Border Grid.Column="0" Background="{DynamicResource MaterialDesignDivider}" CornerRadius="8" Margin="5">
+                        <Canvas Width="100" Height="80" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
+                             <!-- Doc -->
+                            <Rectangle Canvas.Left="20" Canvas.Top="10" Width="60" Height="60" Fill="#757575" RadiusX="4" RadiusY="4"/>
+                            <Rectangle Canvas.Left="25" Canvas.Top="20" Width="40" Height="4" Fill="#BDBDBD"/>
+                            <Rectangle Canvas.Left="25" Canvas.Top="30" Width="50" Height="4" Fill="#BDBDBD"/>
+                            <Rectangle Canvas.Left="25" Canvas.Top="40" Width="30" Height="4" Fill="#BDBDBD"/>
+                            
+                            <!-- Magnifier -->
+                            <materialDesign:PackIcon x:Name="ScanMagnifier" Kind="Magnify" Width="40" Height="40" Canvas.Left="50" Canvas.Top="30" Foreground="{DynamicResource SecondaryHueMidBrush}">
+                                <materialDesign:PackIcon.RenderTransform>
+                                    <TranslateTransform X="0" Y="0"/>
+                                </materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Canvas>
+                    </Border>
+                    <TextBlock Grid.Column="0" Text="1. Scan" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="1" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+                    <!-- STEP 2: MERGE -->
+                    <Border Grid.Column="1" Background="{DynamicResource MaterialDesignDivider}" CornerRadius="8" Margin="5">
+                        <Canvas Width="120" Height="80" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
+                            <Rectangle x:Name="File1" Canvas.Left="10" Canvas.Top="20" Width="30" Height="40" Fill="{DynamicResource PrimaryHueDarkBrush}" RadiusX="2" RadiusY="2">
+                                <Rectangle.RenderTransform> <TranslateTransform/> </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <Rectangle x:Name="File2" Canvas.Left="30" Canvas.Top="25" Width="30" Height="40" Fill="{DynamicResource PrimaryHueMidBrush}" RadiusX="2" RadiusY="2">
+                                <Rectangle.RenderTransform> <TranslateTransform/> </Rectangle.RenderTransform>
+                            </Rectangle>
+                            
+                            <!-- Result -->
+                            <Rectangle x:Name="FinalFile" Canvas.Left="80" Canvas.Top="15" Width="40" Height="50" Fill="{DynamicResource PrimaryHueLightBrush}" RadiusX="2" RadiusY="2">
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform CenterX="20" CenterY="25"/>
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <TextBlock Canvas.Left="88" Canvas.Top="35" Text="SQL" Foreground="White" FontSize="10" FontWeight="Bold" IsHitTestVisible="False">
+                                 <TextBlock.RenderTransform>
+                                    <ScaleTransform CenterX="12" CenterY="6" ScaleX="{Binding ElementName=FinalFile, Path=RenderTransform.ScaleX}" ScaleY="{Binding ElementName=FinalFile, Path=RenderTransform.ScaleY}"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Canvas>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="2. Merge" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                    <!-- Step 2: Scan -->
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                        <Border Background="#E8F5E9" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="EmailSearchOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#2E7D32"/>
-                        </Border>
-                        <TextBlock Text="2. Scan" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Find Emails" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+                    <!-- STEP 3: RELEASE -->
+                    <Border Grid.Column="2" Background="{DynamicResource MaterialDesignDivider}" CornerRadius="8" Margin="5">
+                        <Canvas Width="100" Height="80" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
+                            <materialDesign:PackIcon x:Name="Envelope" Kind="EmailOutline" Width="50" Height="50" Canvas.Left="25" Canvas.Top="25" Foreground="{DynamicResource SecondaryHueMidBrush}">
+                                <materialDesign:PackIcon.RenderTransform>
+                                    <TranslateTransform/>
+                                </materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Canvas>
+                    </Border>
+                    <TextBlock Grid.Column="2" Text="3. Release" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="3" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
-
-                    <!-- Step 3: Sort -->
-                    <StackPanel Grid.Column="4" HorizontalAlignment="Center">
-                        <Border Background="#FFF3E0" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="SortVariant" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#EF6C00"/>
-                        </Border>
-                        <TextBlock Text="3. Sort" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Review Scripts" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="5" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
-
-                    <!-- Step 4: Consolidate -->
-                    <StackPanel Grid.Column="6" HorizontalAlignment="Center">
-                        <Border Background="#F3E5F5" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="FolderZipOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#7B1FA2"/>
-                        </Border>
-                        <TextBlock Text="4. Merge" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Save Files" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+                    <!-- STEP 4: VERIFY -->
+                    <Border Grid.Column="3" Background="{DynamicResource MaterialDesignDivider}" CornerRadius="8" Margin="5">
+                        <Canvas Width="100" Height="80" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
+                             <materialDesign:PackIcon x:Name="VerifyCheck" Kind="CheckDecagram" Width="50" Height="50" Canvas.Left="25" Canvas.Top="25" Foreground="{DynamicResource PrimaryHueLightBrush}" Opacity="0">
+                                <materialDesign:PackIcon.RenderTransform>
+                                    <ScaleTransform CenterX="25" CenterY="25"/>
+                                </materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Canvas>
+                    </Border>
+                    <TextBlock Grid.Column="3" Text="4. Verify" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,0,0,10"/>
                 </Grid>
             </materialDesign:Card>
 
             <!-- SCRIPT FORMATTING RULES -->
             <TextBlock Text="Script Formatting Rules" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" Background="#FAFAFA">
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="Ensure your .sql attachments use this format so the parser can identify them:" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                    <Border Background="#EEEEEE" Padding="10" CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Border Background="{DynamicResource MaterialDesignDivider}" Padding="10" CornerRadius="4">
                         <TextBlock FontFamily="Consolas" FontSize="13" TextWrapping="Wrap">
-                            <Run Foreground="Green">-- &lt;TICKET-123&gt; START</Run><LineBreak/>
+                            <Run Foreground="#2E7D32">-- &lt;TICKET-123&gt; START</Run><LineBreak/>
                             INSERT INTO Users (Name) VALUES ('John');<LineBreak/>
-                            <Run Foreground="Green">-- &lt;TICKET-123&gt; END</Run>
+                            <Run Foreground="#2E7D32">-- &lt;TICKET-123&gt; END</Run>
                         </TextBlock>
                     </Border>
                     <TextBlock Text="* Replace TICKET-123 with your actual ticket number." FontStyle="Italic" FontSize="12" Margin="0,8,0,0"/>
@@ -152,14 +307,28 @@
 
             <!-- FAQ -->
             <TextBlock Text="Troubleshooting / FAQ" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <StackPanel>
-                <Expander Header="Why is my ticket not found?" Background="White" Margin="0,0,0,5">
+            <StackPanel x:Name="FaqPanel">
+                <StackPanel.Triggers>
+                     <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="FaqPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8" BeginTime="0:0:0.5"/>
+                                <ThicknessAnimation Storyboard.TargetName="FaqPanel" Storyboard.TargetProperty="Margin" From="0,30,0,0" To="0,0,0,0" Duration="0:0:0.8" BeginTime="0:0:0.5">
+                                     <ThicknessAnimation.EasingFunction>
+                                        <QuadraticEase EasingMode="EaseOut"/>
+                                    </ThicknessAnimation.EasingFunction>
+                                </ThicknessAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </StackPanel.Triggers>
+                <Expander Header="Why is my ticket not found?" Margin="0,0,0,5">
                     <TextBlock Text="1. Ensure the email Subject contains the ticket number.&#x0a;2. Check if the email is in the folder specified in Settings (Default: Inbox).&#x0a;3. If it's in a subfolder, update the folder name in Settings." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
-                <Expander Header="Outlook connection error?" Background="White" Margin="0,0,0,5">
+                <Expander Header="Outlook connection error?" Margin="0,0,0,5">
                     <TextBlock Text="Ensure you are running 'Outlook Classic' application on this machine. The 'New Outlook' (webwrapper) is not supported. Also check that both this app and Outlook are running with the same permissions (e.g. both as Admin or both as User)." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
-                <Expander Header="How are duplicate scripts handled?" Background="White" Margin="0,0,0,5">
+                <Expander Header="How are duplicate scripts handled?" Margin="0,0,0,5">
                     <TextBlock Text="The application processes emails for a ticket in 'Newest First' order. Once a script is found for a ticket in a newer email (e.g. a Reply), any older emails for that same ticket are ignored." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
             </StackPanel>

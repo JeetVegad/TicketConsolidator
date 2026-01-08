@@ -4,36 +4,68 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:local="clr-namespace:TicketConsolidator.UI"
+             xmlns:helpers="clr-namespace:TicketConsolidator.UI.Helpers"
+             xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
+    
     <Grid Margin="20">
-        <StackPanel>
-            <TextBlock Text="Application Settings" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,20" Foreground="{DynamicResource MaterialDesignBody}"/>
-            
-            <materialDesign:Card Padding="16" UniformCornerRadius="8" materialDesign:ShadowAssist.ShadowDepth="Depth2">
-                <StackPanel>
-                    <TextBlock Text="Email Configuration" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                    
-                    <!-- Runtime Folder Setting -->
-                    <TextBox Text="{Binding TargetFolder, UpdateSourceTrigger=PropertyChanged}"
-                             materialDesign:HintAssist.Hint="Outlook Target Folder Name"
-                             materialDesign:HintAssist.HelperText="Enter the folder name where emails are stored (e.g., Inbox, Tickets)"
-                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                             Margin="0,10,0,10"
-                             FontSize="14"/>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetName="MainSettingsPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+            <StackPanel x:Name="MainSettingsPanel">
+                <TextBlock Text="Application Settings" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,20" Foreground="{DynamicResource MaterialDesignBody}"/>
+                
+                <materialDesign:Card Padding="16" UniformCornerRadius="8" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                    <StackPanel>
+                        <TextBlock Text="Email Configuration" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        
+                        <!-- Runtime Folder Setting -->
+                        <TextBox Text="{Binding TargetFolder, UpdateSourceTrigger=PropertyChanged}"
+                                 materialDesign:HintAssist.Hint="Outlook Target Folder Name"
+                                 materialDesign:HintAssist.HelperText="Enter the folder name where emails are stored (e.g., Inbox, Tickets)"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 Margin="0,25,0,40"
+                                 FontSize="14"/>
 
-                    <Button Command="{Binding UpdateFolderCommand}"
-                            Content="Save Configuration"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            HorizontalAlignment="Left"
-                            Margin="0,10,0,0"
-                            ToolTip="Save the folder for future scans"/>
-                </StackPanel>
-            </materialDesign:Card>
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignDivider}" CornerRadius="4" ClipToBounds="True" Margin="0,0,0,15" Background="{DynamicResource MaterialDesignPaper}">
+                            <avalonEdit:TextEditor Document="{Binding EmailTemplateDocument, UpdateSourceTrigger=PropertyChanged}"
+                                                   ShowLineNumbers="True"
+                                                   FontFamily="Consolas"
+                                                   FontSize="13"
+                                                   Height="280"
+                                                   SyntaxHighlighting="HTML">
+                                 <avalonEdit:TextEditor.Options>
+                                    <avalonEdit:TextEditorOptions ShowSpaces="False" HighlightCurrentLine="True"/>
+                                 </avalonEdit:TextEditor.Options>
+                            </avalonEdit:TextEditor>
+                        </Border>
 
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                             <Button Command="{Binding UpdateFolderCommand}"
+                                     Content="SAVE SETTINGS"
+                                     Style="{StaticResource MaterialDesignRaisedButton}"
+                                     HorizontalAlignment="Left"
+                                     Margin="0,0,15,0"
+                                     ToolTip="Save configuration"/>
 
-        </StackPanel>
+                             <Button Command="{Binding PreviewTemplateCommand}"
+                                     Content="PREVIEW"
+                                     Style="{StaticResource MaterialDesignOutlinedButton}"
+                                     HorizontalAlignment="Left"
+                                     ToolTip="Preview template in browser"/>
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

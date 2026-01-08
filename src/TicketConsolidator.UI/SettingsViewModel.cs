@@ -15,9 +15,20 @@ namespace TicketConsolidator.UI
         {
             _settingsService = settingsService;
             TargetFolder = _settingsService.CurrentTargetFolder;
+            
+            // Initialize Document
+            EmailTemplateDocument = new ICSharpCode.AvalonEdit.Document.TextDocument(_settingsService.EmailTemplate ?? "");
+            EmailTemplate = _settingsService.EmailTemplate ?? ""; // FIX: Initialize property immediately
+            EmailTemplateDocument.TextChanged += (s, e) => 
+            {
+                 EmailTemplate = EmailTemplateDocument.Text;
+            };
 
-            UpdateFolderCommand = new RelayCommand(ExecuteUpdateFolder);
+            UpdateFolderCommand = new RelayCommand(ExecuteUpdateSettings);
+            PreviewTemplateCommand = new RelayCommand(ExecutePreviewTemplate);
         }
+
+        public ICSharpCode.AvalonEdit.Document.TextDocument EmailTemplateDocument { get; }
 
         private string _targetFolder;
         public string TargetFolder
@@ -33,18 +44,102 @@ namespace TicketConsolidator.UI
             }
         }
 
-        public ICommand UpdateFolderCommand { get; }
-
-        private async void ExecuteUpdateFolder(object obj)
+        private string _emailTemplate;
+        public string EmailTemplate
         {
-            if (!string.IsNullOrWhiteSpace(TargetFolder))
+            get => _emailTemplate;
+            set
             {
-                await _settingsService.UpdateTargetFolderAsync(TargetFolder);
+                if (_emailTemplate != value)
+                {
+                    _emailTemplate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public ICommand UpdateFolderCommand { get; }
+        public ICommand PreviewTemplateCommand { get; }
+
+        public bool IsDarkMode
+        {
+            get => _settingsService.IsDarkMode;
+            set
+            {
+                if (_settingsService.IsDarkMode != value)
+                {
+                    ModifyTheme(value);
+                    _settingsService.UpdateDarkModeAsync(value); // Fire and forget async save
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private void ModifyTheme(bool isDark)
+        {
+            // RESOURCE DICTIONARY SWAP - Fallback method due to build issues with PaletteHelper extension methods
+            var dicts = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var target = System.Linq.Enumerable.FirstOrDefault(dicts, d => d.Source != null && (d.Source.ToString().Contains("MaterialDesignTheme.Light.xaml") || d.Source.ToString().Contains("MaterialDesignTheme.Dark.xaml")));
+            
+            if (target != null)
+            {
+                dicts.Remove(target);
+                var newSource = isDark 
+                    ? "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml" 
+                    : "pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml";
+                dicts.Add(new System.Windows.ResourceDictionary { Source = new System.Uri(newSource) });
+            }
+        }
+
+        private async void ExecuteUpdateSettings(object obj)
+        {
+            // Save Both Folder and Template
+            // Reuse existing Paths or load them? 
+            // Better to pull current from Service as we are only editing specific fields here.
+            
+            await _settingsService.UpdateSettingsAsync(
+                TargetFolder, 
+                _settingsService.ScriptsPath, 
+                _settingsService.ConsolidatedScriptsPath, 
+                EmailTemplate);
                 
-                // Use consistent UI Popup
-                await DialogHost.Show(new Views.Dialogs.InfoDialog(
-                    $"Folder name saved successfully. Next scan will use '{TargetFolder}'.", 
-                    "Settings Saved"), "RootDialog");
+            // Use consistent UI Popup
+            await DialogHost.Show(new Views.Dialogs.InfoDialog(
+                "Configuration saved successfully.", 
+                "Settings Saved"), "RootDialog");
+        }
+
+        private void ExecutePreviewTemplate(object obj)
+        {
+            try 
+            {
+                if(string.IsNullOrWhiteSpace(EmailTemplate)) return;
+
+                // Replace placeholders with dummy data for preview
+                string previewHtml = EmailTemplate
+                    .Replace("{BuildNumber}", "1.0.0-PREVIEW")
+                    .Replace("{SolutionPath}", @"C:\Preview\Release\Folder")
+                    .Replace("{FileList}", "<li>Script_1.sql</li><li>Script_2.sql</li>")
+                    .Replace("{ReleaseDetails}", "<tr><td>TICKET-123</td><td>Preview Ticket Summary</td></tr>")
+                    .Replace("{UserName}", System.Environment.UserName);
+
+                string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "EmailPreview.html");
+                System.IO.File.WriteAllText(tempPath, previewHtml);
+
+                // Open in default browser
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = tempPath,
+                    UseShellExecute = true
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch(System.Exception ex)
+            {
+                // Can't show dialog easily from void without async/await propagation or Dispatcher, 
+                // but RelayCommand is fire-and-forget.
+                // Just swallow or log needed. For now simple check.
+                System.Windows.MessageBox.Show($"Error previewing template: {ex.Message}");
             }
         }
 

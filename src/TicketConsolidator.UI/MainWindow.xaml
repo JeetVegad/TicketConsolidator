@@ -6,14 +6,19 @@
         xmlns:local="clr-namespace:TicketConsolidator.UI"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/Assets/app_icon.png"
+        Title="Ticket Consolidator" Height="800" Width="1200"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
+        RenderOptions.BitmapScalingMode="HighQuality"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True"
-        TextOptions.TextFormattingMode="Display"
-        TextOptions.TextRenderingMode="ClearType"
-        RenderOptions.ClearTypeHint="Enabled"
-        Title="Ticket Consolidator" Height="600" Width="900">
+        SnapsToDevicePixels="True">
     <materialDesign:DialogHost Identifier="RootDialog"
                                DialogTheme="Inherit" 
                                OverlayBackground="{DynamicResource PrimaryHueDarkBrush}" 
@@ -21,39 +26,45 @@
                                CloseOnClickAway="True">
 
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Sidebar -->
-            <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}">
-                <StackPanel Margin="10">
-                    <TextBlock Text="Ticket Consolidator" Foreground="White" FontSize="20" FontWeight="Bold" Margin="10,20,10,20"/>
-                    
-                    <Button Command="{Binding NavigateDashboardCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="DASHBOARD" />
-                    <Button Command="{Binding NavigateSettingsCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="SETTINGS" />
-                    <Button Command="{Binding NavigateLogsCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="LOGS" />
-                    <Button Command="{Binding NavigateHelpCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="HELP" />
-                </StackPanel>
+            <!-- Top Navigation Bar -->
+            <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Height="50" Padding="15,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/> <!-- Title -->
+                        <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                        <ColumnDefinition Width="Auto"/> <!-- Menu -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="DatabaseCheck" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueDarkBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="TicketHub" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Navigation Menu -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Command="{Binding NavigateDashboardCommand}" Content="DASHBOARD" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
+                        <Button Command="{Binding NavigateSettingsCommand}" Content="SETTINGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
+                        <Button Command="{Binding NavigateLogsCommand}" Content="LOGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
+                        <Button Command="{Binding NavigateHelpCommand}" Content="HELP" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
+                    </StackPanel>
+                </Grid>
             </Border>
-
             <!-- Main Content Area -->
-            <Grid Grid.Column="1" Background="{DynamicResource MaterialDesignPaper}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <!-- Top Header -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20">
-                    <TextBlock VerticalAlignment="Center" Margin="10,0" Text="{Binding CurrentView.DataContext.StatusMessage, FallbackValue='Status: Ready'}" FontStyle="Italic"/>
-                </StackPanel>
-
+            <Grid Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}">
                 <!-- Content Placeholder -->
-                <ContentControl Grid.Row="1" Content="{Binding CurrentView}" Margin="20"/>
+                <materialDesign:TransitioningContent Content="{Binding CurrentView}" Margin="20">
+                    <materialDesign:TransitioningContent.OpeningEffects>
+                        <materialDesign:TransitionEffect Kind="FadeIn" Duration="0:0:0.08"/>
+                    </materialDesign:TransitioningContent.OpeningEffects>
+                </materialDesign:TransitioningContent>
                 
-                <materialDesign:Snackbar x:Name="MainSnackbar" Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" VerticalAlignment="Bottom" Margin="10"/>
+                <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" VerticalAlignment="Bottom" Margin="10"/>
             </Grid>
         </Grid>
     </materialDesign:DialogHost>

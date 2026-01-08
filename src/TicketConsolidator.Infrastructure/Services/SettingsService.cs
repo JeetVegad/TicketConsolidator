@@ -55,12 +55,13 @@ namespace TicketConsolidator.Infrastructure.Services
             if (!Directory.Exists(ScriptsPath)) Directory.CreateDirectory(ScriptsPath);
             if (!Directory.Exists(ConsolidatedScriptsPath)) Directory.CreateDirectory(ConsolidatedScriptsPath);
 
-            // 3. Email Settings
             CurrentTargetFolder = LoadUserSetting("OutlookFolder");
             if (string.IsNullOrWhiteSpace(CurrentTargetFolder)) CurrentTargetFolder = _configuration["EmailSettings:TargetFolder"] ?? "Inbox";
 
             EmailTemplate = LoadUserSetting("EmailTemplate");
             if (string.IsNullOrWhiteSpace(EmailTemplate)) EmailTemplate = DefaultEmailTemplate;
+
+            IsDarkMode = bool.TryParse(LoadUserSetting("IsDarkMode"), out bool dm) ? dm : false;
         }
 
         private string LoadUserSetting(string key)
@@ -99,12 +100,15 @@ namespace TicketConsolidator.Infrastructure.Services
 <p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{UserName}</p>
 </body></html>";
 
-        public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath, string emailTemplate = null)
+        public bool IsDarkMode { get; private set; }
+
+        public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath, string emailTemplate = null, bool? isDarkMode = null)
         {
              CurrentTargetFolder = outlookFolder;
              ScriptsPath = scriptsPath;
              ConsolidatedScriptsPath = consolidatedPath;
              if (!string.IsNullOrEmpty(emailTemplate)) EmailTemplate = emailTemplate;
+             if (isDarkMode.HasValue) IsDarkMode = isDarkMode.Value;
              
              // Ensure directories exist
              if (!string.IsNullOrWhiteSpace(ScriptsPath) && !Directory.Exists(ScriptsPath)) Directory.CreateDirectory(ScriptsPath);
@@ -116,7 +120,8 @@ namespace TicketConsolidator.Infrastructure.Services
                  ["ScriptsPath"] = scriptsPath,
                  ["ConsolidatedPath"] = consolidatedPath,
                  ["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath), // Infer base
-                 ["EmailTemplate"] = EmailTemplate
+                 ["EmailTemplate"] = EmailTemplate,
+                 ["IsDarkMode"] = IsDarkMode.ToString()
              };
 
              var options = new JsonSerializerOptions { WriteIndented = true };
@@ -125,7 +130,12 @@ namespace TicketConsolidator.Infrastructure.Services
              _logger.LogInfo("Settings updated by user.");
         }
 
-
+        public async Task UpdateDarkModeAsync(bool isDarkMode)
+        {
+            IsDarkMode = isDarkMode;
+            // Re-save all current settings
+            await UpdateSettingsAsync(CurrentTargetFolder, ScriptsPath, ConsolidatedScriptsPath, EmailTemplate, isDarkMode);
+        }
 
         public async Task UpdateTargetFolderAsync(string newFolder)
         {
@@ -134,8 +144,9 @@ namespace TicketConsolidator.Infrastructure.Services
             string oldFolder = CurrentTargetFolder;
             CurrentTargetFolder = newFolder;
             _logger.LogInfo($"Scan folder changed from '{oldFolder}' to '{CurrentTargetFolder}'.");
-
-            // Persist to Disk
+            
+            // Should reuse general save method to ensure consistency but keeping legacy separate for now, 
+            // although optimally should just call UpdateSettingsAsync
             await SaveSettingsToDiskAsync();
         }
 

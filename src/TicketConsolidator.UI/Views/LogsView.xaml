@@ -8,19 +8,50 @@
              d:DesignHeight="450" d:DesignWidth="800">
     
     <Grid Margin="20">
+
+        <Grid.Resources>
+            <Storyboard x:Key="PulseAnimation" RepeatBehavior="Forever" AutoReverse="True">
+                <DoubleAnimation Storyboard.TargetName="LiveIcon" Storyboard.TargetProperty="Opacity" From="0.4" To="1.0" Duration="0:0:1"/>
+                <DoubleAnimation Storyboard.TargetName="LiveIcon" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.8" To="1.1" Duration="0:0:1"/>
+                <DoubleAnimation Storyboard.TargetName="LiveIcon" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.8" To="1.1" Duration="0:0:1"/>
+            </Storyboard>
+            
+            <Style x:Key="LogCardStyle" TargetType="materialDesign:Card">
+                <Style.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                       <BeginStoryboard>
+                           <Storyboard>
+                               <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+                               <ThicknessAnimation Storyboard.TargetProperty="Margin" From="0,20,0,15" To="0,0,0,15" Duration="0:0:0.5">
+                                   <ThicknessAnimation.EasingFunction>
+                                       <QuadraticEase EasingMode="EaseOut"/>
+                                   </ThicknessAnimation.EasingFunction>
+                               </ThicknessAnimation>
+                           </Storyboard>
+                       </BeginStoryboard>
+                    </EventTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Activity Logs" FontSize="24" FontWeight="Bold" Foreground="#4527A0" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <materialDesign:PackIcon Kind="History" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="32" Height="32" VerticalAlignment="Center" Margin="0,0,15,0"/>
+            <TextBlock Text="Logs" Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+            
+            
+        </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Sessions}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <materialDesign:Card Margin="0,0,0,15" materialDesign:ShadowAssist.ShadowDepth="Depth1">
-                            <Expander IsExpanded="{Binding IsExpanded}" Background="White">
+                        <materialDesign:Card Margin="0,0,0,15" materialDesign:ShadowAssist.ShadowDepth="Depth1" Style="{StaticResource LogCardStyle}" UniformCornerRadius="8">
+                            <Expander IsExpanded="False" Background="Transparent">
                                 <Expander.Header>
                                     <Grid Width="550"> <!-- rough width constraint for header content -->
                                         <Grid.ColumnDefinitions>
@@ -28,10 +59,10 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                            <materialDesign:PackIcon Kind="History" Foreground="#5E35B1" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding SessionName}" FontWeight="Bold" FontSize="14" Foreground="#424242"/>
+                                            <materialDesign:PackIcon Kind="History" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <TextBlock Text="{Binding SessionName}" FontWeight="Bold" FontSize="14"/>
                                         </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding StartTime, StringFormat='{}{0:g}'}" Foreground="Gray" FontSize="12" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding StartTime, StringFormat='{}{0:g}'}" Foreground="{DynamicResource MaterialDesignBodyLight}" FontSize="12" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Expander.Header>
                                 

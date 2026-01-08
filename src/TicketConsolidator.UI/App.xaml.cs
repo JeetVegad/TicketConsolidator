@@ -67,13 +67,6 @@ namespace TicketConsolidator.UI
 
                 ServiceProvider = serviceCollection.BuildServiceProvider();
 
-                try
-                {
-                    var settings = ServiceProvider.GetRequiredService<TicketConsolidator.Infrastructure.Services.SettingsService>();
-                    // Theme logic reverted
-                }
-                catch { /* Ignored */ }
-
                 var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
             }
