@@ -571,11 +571,9 @@ namespace TicketConsolidator.UI
             
             // Start New Run Session
             string runId = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            _logger.StartSession($"Scan Run [ID: {runId}]");
             
             // Do NOT Clear existing items (manual uploads)
             // TableScripts.Clear(); SpScripts.Clear(); DataScripts.Clear();
-            _logger.LogInfo($"Starting scan for Input: {TicketInput} (Appending to existing items)");
 
             try
             {
@@ -584,7 +582,12 @@ namespace TicketConsolidator.UI
                                .Select(t => t.Trim())
                                .Distinct(System.StringComparer.OrdinalIgnoreCase));
                 
-                _logger.LogInfo($"Parsed {tickets.Count} ticket(s) from input.");
+                // Start session with ticket correlation
+                string ticketSummary = tickets.Count > 5 
+                    ? $"{string.Join(", ", tickets.Take(5))}... ({tickets.Count} total)" 
+                    : string.Join(", ", tickets);
+                _logger.StartSession($"Scan Run [ID: {runId}] - Tickets: {ticketSummary}");
+                _logger.LogInfo($"Starting scan for {tickets.Count} ticket(s): {TicketInput}");
 
                 // 1. Scan Emails
                 StatusMessage = "Scanning Emails...";
@@ -919,7 +922,6 @@ namespace TicketConsolidator.UI
         {
             IsBusy = true;
             StatusMessage = "Consolidating...";
-            _logger.StartSession($"Consolidation Run - {System.DateTime.Now:g}");
             _logger.LogInfo("Starting Consolidation Process...");
             
             try 
@@ -1072,48 +1074,38 @@ namespace TicketConsolidator.UI
                 var fileList = files.Select(f => System.IO.Path.GetFileName(f)).ToList();
                 var attachmentPaths = files.ToList(); 
 
-                // Build HTML
-                var sb = new System.Text.StringBuilder();
-                sb.AppendLine("<html><body>");
-                sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>");
-                sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {buildNum}]:</b></p>");
+                // Get Email Template from Settings
+                string template = _settingsService.EmailTemplate ?? string.Empty;
                 
-
-
-                sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>");
-                sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{solPath}'>{solPath}</a></p>");
-
-                sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>");
-                sb.AppendLine("<ul>"); 
-                foreach(var f in fileList) 
-                {
-                    sb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
-                }
-                sb.AppendLine("</ul>");
-
-                sb.AppendLine("<br/>");
-                sb.AppendLine("<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>");
-                
-                // TABLE
-                sb.AppendLine("<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:80%'>");
-                sb.AppendLine("<tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>");
-                
+                // Build Placeholders matching the default template
+                // 1. ReleaseDetails - Ticket Table Rows (just the <tr> elements, not the full table)
+                var releaseDetailsSb = new System.Text.StringBuilder();
                 foreach(var t in uniqueTickets)
                 {
-                    sb.AppendLine("<tr>");
-                    sb.AppendLine($"<td style='padding:4px'><b>{t.ToUpperInvariant()}</b></td>");
-                    sb.AppendLine($"<td style='padding:4px'>{summaryMap[t]}</td>");
-                    sb.AppendLine("</tr>");
+                    releaseDetailsSb.AppendLine("<tr>");
+                    releaseDetailsSb.AppendLine($"<td style='padding:4px'><b>{t.ToUpperInvariant()}</b></td>");
+                    releaseDetailsSb.AppendLine($"<td style='padding:4px'>{summaryMap[t]}</td>");
+                    releaseDetailsSb.AppendLine("</tr>");
                 }
-                sb.AppendLine("</table>");
 
-                sb.AppendLine("<br/>");
-                sb.AppendLine($"<p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{userName}</p>");
-                sb.AppendLine("</body></html>");
+                // 2. FileList - Script List Items (just the <li> elements, not the full <ul>)
+                var fileListSb = new System.Text.StringBuilder();
+                foreach(var f in fileList) 
+                {
+                    fileListSb.AppendLine($"<li style='font-family:Calibri,sans-serif;font-size:11pt'>{f}</li>");
+                }
+
+                // Replace Placeholders
+                string htmlBody = template
+                    .Replace("{BuildNumber}", buildNum)
+                    .Replace("{SolutionPath}", solPath)
+                    .Replace("{FileList}", fileListSb.ToString())
+                    .Replace("{ReleaseDetails}", releaseDetailsSb.ToString())
+                    .Replace("{UserName}", userName);
 
                 await _emailService.CreateDraftEmailAsync(
                     $"Product Release Notification [Build {buildNum}]", 
-                    sb.ToString(), 
+                    htmlBody, 
                     attachmentPaths);
 
                 StatusMessage = "Email Draft Created.";

@@ -43,7 +43,7 @@
                     <!-- App Title -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <materialDesign:PackIcon Kind="DatabaseCheck" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueDarkBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="TicketHub" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="TicketConsolidator" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Navigation Menu -->
@@ -58,7 +58,7 @@
             <!-- Main Content Area -->
             <Grid Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}">
                 <!-- Content Placeholder -->
-                <materialDesign:TransitioningContent Content="{Binding CurrentView}" Margin="20">
+                <materialDesign:TransitioningContent Content="{Binding CurrentView}" Margin="5">
                     <materialDesign:TransitioningContent.OpeningEffects>
                         <materialDesign:TransitionEffect Kind="FadeIn" Duration="0:0:0.08"/>
                     </materialDesign:TransitioningContent.OpeningEffects>
