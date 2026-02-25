@@ -27,6 +27,7 @@ namespace TicketConsolidator.UI
         public ICommand NavigateSettingsCommand { get; }
         public ICommand NavigateLogsCommand { get; }
         public ICommand NavigateHelpCommand { get; }
+        public ICommand NavigateCodeReviewCommand { get; }
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -38,6 +39,7 @@ namespace TicketConsolidator.UI
             NavigateSettingsCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.SettingsView)));
             NavigateLogsCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.LogsView)));
             NavigateHelpCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.HelpView)));
+            NavigateCodeReviewCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.CodeReviewView)));
             
             // Set initial view
             CurrentView = ResolveView(typeof(Views.DashboardView));

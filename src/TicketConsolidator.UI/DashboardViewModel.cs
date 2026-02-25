@@ -259,7 +259,7 @@ namespace TicketConsolidator.UI
                         // Only parse/split if NOT a typed consolidated file
                         if (!isTypedConsolidated)
                         {
-                            parsedScripts = _parserService.ParseScript(content, fileName, ticketNumber);
+                            parsedScripts = _parserService.ParseScript(content, fileName, ticketNumber, System.DateTime.Now);
                         }
 
                         // Fallback: If no tags found, wrap whole file
@@ -699,7 +699,7 @@ namespace TicketConsolidator.UI
                                          scriptType = Application.DTOs.ScriptType.Trigger;
                                      }
 
-                                     var scripts = _parserService.ParseScript(content, fileName, realTicket);
+                                     var scripts = _parserService.ParseScript(content, fileName, realTicket, System.DateTime.Now);
                                      
                                      // Determine Summary
                                      string scriptSummary = "Manual Upload / No Summary Found";

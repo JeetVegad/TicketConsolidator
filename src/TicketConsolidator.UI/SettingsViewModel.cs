@@ -15,6 +15,7 @@ namespace TicketConsolidator.UI
         {
             _settingsService = settingsService;
             TargetFolder = _settingsService.CurrentTargetFolder;
+            TicketsFolder = _settingsService.TicketsFolder ?? "";
             
             // Initialize Document
             EmailTemplateDocument = new ICSharpCode.AvalonEdit.Document.TextDocument(_settingsService.EmailTemplate ?? "");
@@ -58,6 +59,20 @@ namespace TicketConsolidator.UI
             }
         }
 
+        private string _ticketsFolder;
+        public string TicketsFolder
+        {
+            get => _ticketsFolder;
+            set
+            {
+                if (_ticketsFolder != value)
+                {
+                    _ticketsFolder = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public ICommand UpdateFolderCommand { get; }
         public ICommand PreviewTemplateCommand { get; }
 
@@ -93,10 +108,8 @@ namespace TicketConsolidator.UI
 
         private async void ExecuteUpdateSettings(object obj)
         {
-            // Save Both Folder and Template
-            // Reuse existing Paths or load them? 
-            // Better to pull current from Service as we are only editing specific fields here.
-            
+            _settingsService.TicketsFolder = TicketsFolder;
+
             await _settingsService.UpdateSettingsAsync(
                 TargetFolder, 
                 _settingsService.ScriptsPath, 

@@ -33,7 +33,15 @@
                                  materialDesign:HintAssist.Hint="Outlook Target Folder Name"
                                  materialDesign:HintAssist.HelperText="Enter the folder name where emails are stored (e.g., Inbox, Tickets)"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                                 Margin="0,25,0,40"
+                                 Margin="0,25,0,20"
+                                 FontSize="14"/>
+
+                        <!-- Tickets Folder Setting (for Code Review SQL attachments) -->
+                        <TextBox Text="{Binding TicketsFolder, UpdateSourceTrigger=PropertyChanged}"
+                                 materialDesign:HintAssist.Hint="Tickets Folder Path"
+                                 materialDesign:HintAssist.HelperText="Parent folder containing ticket-named subfolders with .sql scripts (e.g., C:\Tickets)"
+                                 Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                 Margin="0,0,0,40"
                                  FontSize="14"/>
 
                         <!-- Email Template Editor Header -->

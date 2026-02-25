@@ -7,6 +7,8 @@ namespace TicketConsolidator.Application.DTOs
         public ScriptType Type { get; set; }
         public string SourceFileName { get; set; }
         public string Summary { get; set; }
+        public string ProcedureName { get; set; } // For Deduplication
+        public DateTime SourceDate { get; set; }  // For Deduplication
     }
 
     public enum ScriptType

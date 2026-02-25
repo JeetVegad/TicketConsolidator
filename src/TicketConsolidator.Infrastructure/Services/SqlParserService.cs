@@ -8,17 +8,13 @@ namespace TicketConsolidator.Infrastructure.Services
 {
     public class SqlParserService : ISqlParserService
     {
-        public List<SqlScript> ParseScript(string fileContent, string fileName, string ticketNumber)
+        public List<SqlScript> ParseScript(string fileContent, string fileName, string ticketNumber, DateTime sourceDate)
         {
             var scripts = new List<SqlScript>();
             if (string.IsNullOrWhiteSpace(fileContent)) return scripts;
 
             // Strategy 1: Regex for Explicit Blocks (Relaxed)
-            // Matches: <Ticket>START ... <Ticket>END
-            // Also supports: [Ticket] START, Ticket START, Ticket-START
             string safeTicket = Regex.Escape(ticketNumber);
-            // Allow: Optional < or [, Ticket, Optional > or ], Optional spacer (-, _), START
-            // PLUS: Optional "PRINT '... #" prefix and "...';" suffix to handle previously consolidated files cleanly
             string prefix = @"(?:PRINT\s+'[-]*\s*[#]?)?"; 
             string suffix = @"(?:[-]*';)?";
 
@@ -36,22 +32,22 @@ namespace TicketConsolidator.Infrastructure.Services
                     string content = match.Groups[1].Value.Trim();
                     if (!string.IsNullOrWhiteSpace(content))
                     {
+                        var type = DetectScriptType(content, fileName);
                         scripts.Add(new SqlScript
                         {
                             TicketNumber = ticketNumber,
                             Content = content,
                             SourceFileName = fileName,
-                            Type = DetectScriptType(content, fileName)
+                            Type = type,
+                            SourceDate = sourceDate,
+                            ProcedureName = ExtractProcedureName(content, type)
                         });
                     }
                 }
             }
             else
             {
-                // Strategy 2: Check for "Consolidated" format (Recursive Consolidation Support)
-                // Format: /* Ticket: {TicketNumber} | Source: {SourceFileName} */
-                
-                // Regex to match the Ticket Header
+                // Strategy 2: Check for "Consolidated" format
                 var headerRegex = new Regex(@"/\*\s*Ticket:\s*(.*?)(?:\s*\|\s*Source:\s*(.*?))?\s*\*/", RegexOptions.IgnoreCase);
                 var headerMatches = headerRegex.Matches(fileContent);
 
@@ -62,46 +58,26 @@ namespace TicketConsolidator.Infrastructure.Services
                         var currentMatch = headerMatches[i];
                         string extractedTicket = currentMatch.Groups[1].Value.Trim();
                         string extractedSource = currentMatch.Groups[2].Success ? currentMatch.Groups[2].Value.Trim() : fileName;
-
-                        // Content starts after this match + the closing separator line "/* ===... */"
-                        // But finding the exact end of the separator is tricky if we rely on rigid format.
-                        // Let's assume content starts after the header match index + length, 
-                        // and we trim the separator manually if present.
                         
                         int startIdx = currentMatch.Index + currentMatch.Length;
                         int endIdx = (i == headerMatches.Count - 1) 
                             ? fileContent.Length 
-                            : headerMatches[i + 1].Index; // Stop at next header
+                            : headerMatches[i + 1].Index;
 
                         string rawBlock = fileContent.Substring(startIdx, endIdx - startIdx);
-                        
-                        // Cleanup: Output usually has "/* ===... */" immediately after "Ticket: ... */"
-                        // And usually has "/* ===... */" immediately BEFORE the next header (which is captured in rawBlock at the end?)
-                        // No, the previous header was "/* Ticket: ... */".
-                        // Our ConsolidationService generator:
-                        // line 1: ===
-                        // line 2: Ticket: ...  <-- We matched this
-                        // line 3: ===
-                        
-                        // So 'rawBlock' starts immediately after "Ticket: ... */". 
-                        // It definitely contains the closing "/* ==== */" of the current header block.
-                        
-                        // Let's use a robust cleanup: removing the Separator lines from start/end.
-                        // Separator Regex: /\* =+ \*/
                         string cleanContent = Regex.Replace(rawBlock, @"/\*\s*=+\s*\*/", "").Trim();
-                        // Also remove "GO" if it was added solely for consolidation separation? 
-                        // ConsolidationService adds "GO" if loose.
-                        // But users might have "GO" in their script.
-                        // Better to keep "GO" to ensure validity.
 
                         if (!string.IsNullOrWhiteSpace(cleanContent))
                         {
+                            var type = DetectScriptType(cleanContent, extractedSource);
                             scripts.Add(new SqlScript
                             {
                                 TicketNumber = extractedTicket,
                                 Content = cleanContent,
                                 SourceFileName = extractedSource,
-                                Type = DetectScriptType(cleanContent, extractedSource)
+                                Type = type,
+                                SourceDate = sourceDate, // Inherit from file/email date
+                                ProcedureName = ExtractProcedureName(cleanContent, type)
                             });
                         }
                     }
@@ -109,6 +85,29 @@ namespace TicketConsolidator.Infrastructure.Services
             }
 
             return scripts;
+        }
+
+        private string ExtractProcedureName(string content, ScriptType type)
+        {
+            if (type != ScriptType.StoredProcedure) return null;
+
+            try
+            {
+                // Matches: CREATE/ALTER PROCEDURE [Schema].[Name] OR [Name]
+                // 1. CREATE OR ALTER | CREATE | ALTER
+                // 2. PROCEDURE | PROC
+                // 3. Name capture
+                var regex = new Regex(@"\b(?:CREATE|ALTER)\s+(?:OR\s+ALTER\s+)?(?:PROCEDURE|PROC)\s+(?:\[?[\w@#$]+\]?\.\[?)?(\[?[\w@#$]+\]?)", RegexOptions.IgnoreCase);
+                var match = regex.Match(content);
+                if (match.Success)
+                {
+                    // Return cleaner name (remove brackets if needed, specialized logic later if strict)
+                    string rawName = match.Groups[1].Value;
+                    return rawName.Replace("[", "").Replace("]", "").Trim();
+                }
+            }
+            catch { }
+            return null;
         }
 
         private ScriptType DetectScriptType(string content, string fileName)

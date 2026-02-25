@@ -61,6 +61,10 @@ namespace TicketConsolidator.Infrastructure.Services
             EmailTemplate = LoadUserSetting("EmailTemplate");
             if (string.IsNullOrWhiteSpace(EmailTemplate)) EmailTemplate = DefaultEmailTemplate;
 
+            CodeReviewTemplate = LoadUserSetting("CodeReviewTemplate") ?? "";
+
+            TicketsFolder = LoadUserSetting("TicketsFolder") ?? "";
+
             IsDarkMode = bool.TryParse(LoadUserSetting("IsDarkMode"), out bool dm) ? dm : false;
         }
 
@@ -80,6 +84,8 @@ namespace TicketConsolidator.Infrastructure.Services
         public string ScriptsPath { get; private set; }
         public string ConsolidatedScriptsPath { get; private set; }
         public string EmailTemplate { get; private set; }
+        public string CodeReviewTemplate { get; set; }
+        public string TicketsFolder { get; set; }
 
         private const string DefaultEmailTemplate = @"<html><body>
 <p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>
@@ -121,6 +127,8 @@ namespace TicketConsolidator.Infrastructure.Services
                  ["ConsolidatedPath"] = consolidatedPath,
                  ["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath), // Infer base
                  ["EmailTemplate"] = EmailTemplate,
+                 ["CodeReviewTemplate"] = CodeReviewTemplate ?? "",
+                 ["TicketsFolder"] = TicketsFolder ?? "",
                  ["IsDarkMode"] = IsDarkMode.ToString()
              };
 

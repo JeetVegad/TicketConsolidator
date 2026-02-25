@@ -175,7 +175,7 @@ namespace TicketConsolidator.Web.Services
                                 _logger.LogInfo($"Processing {fileName} for Ticket {realTicket}...");
 
                                 // Parse
-                                var parsed = _parserService.ParseScript(content, fileName, realTicket);
+                                var parsed = _parserService.ParseScript(content, fileName, realTicket, email.Date);
                                 
                                 // Fallback
                                 if (parsed.Count == 0)
@@ -277,7 +277,42 @@ namespace TicketConsolidator.Web.Services
                 {
                     string context = group.Key;
                     var dataScripts = group.Where(s => s.Type == ScriptType.Data || s.Type == ScriptType.Table).ToList();
-                    var spScripts = group.Where(s => s.Type == ScriptType.StoredProcedure).ToList();
+                    // SP Deduplication Logic for this context group
+                    // 1. Group by Ticket
+                    // 2. Group by ProcedureName
+                    // 3. Pick Latest
+                    
+                    var spScriptsRaw = group.Where(s => s.Type == ScriptType.StoredProcedure).ToList();
+                    var spScripts = new List<SqlScript>();
+
+                    if (spScriptsRaw.Any())
+                    {
+                        var loopTickets = spScriptsRaw.GroupBy(s => s.TicketNumber);
+                        foreach(var ticketGroup in loopTickets)
+                        {
+                            var procGroups = ticketGroup.GroupBy(s => s.ProcedureName);
+                            foreach(var procGroup in procGroups)
+                            {
+                                if (string.IsNullOrEmpty(procGroup.Key))
+                                {
+                                    // No proc name extracted? Keep all to be safe (or latest? Safe is keep all)
+                                    spScripts.AddRange(procGroup);
+                                }
+                                else
+                                {
+                                    // Deduplicate: Keep Latest
+                                    var winner = procGroup.OrderByDescending(s => s.SourceDate).First();
+                                    spScripts.Add(winner);
+
+                                    if (procGroup.Count() > 1)
+                                    {
+                                        var dropped = procGroup.Count() - 1;
+                                        _logger.LogWarning($"Deduped SP [{procGroup.Key}] for Ticket {ticketGroup.Key}. Kept {winner.SourceDate}, dropped {dropped} older versions.");
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if (dataScripts.Any()) 
                         await ProcessConsolidationGroup(dataScripts, "DATA", outputDir, context, "01");
@@ -427,7 +462,7 @@ namespace TicketConsolidator.Web.Services
                         }
 
                         // Parse
-                        var parsed = _parserService.ParseScript(content, fileName, ticketNumber);
+                        var parsed = _parserService.ParseScript(content, fileName, ticketNumber, DateTime.Now);
 
                         if (parsed.Count == 0)
                         {

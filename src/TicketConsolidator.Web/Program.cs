@@ -14,6 +14,7 @@ builder.Services.AddServerSideBlazor();
 
 // Domain & Infrastructure Services
 builder.Services.AddSingleton(new TicketConsolidator.Application.Configurations.EmailConfiguration());
+builder.Services.AddSingleton(new TicketConsolidator.Application.Configurations.JiraConfiguration());
 builder.Services.AddScoped<TicketConsolidator.Web.Services.ToastService>(); // UI Notifier
 builder.Services.AddScoped<ISqlParserService, SqlParserService>();
 builder.Services.AddScoped<IConsolidationService, ConsolidationService>();
@@ -23,6 +24,8 @@ builder.Services.AddScoped<SettingsService>(); // Concrete Type
 builder.Services.AddScoped<IEncryptionService, EncryptionService>(); // Dependency of SettingsService
 builder.Services.AddScoped<ILoggerService, LoggerService>();
 builder.Services.AddScoped<TicketConsolidator.Web.Services.TicketService>(); // Main Business Logic
+builder.Services.AddScoped<IJiraService, JiraService>();
+builder.Services.AddScoped<IPerforceService, PerforceService>();
 
 var app = builder.Build();
 
