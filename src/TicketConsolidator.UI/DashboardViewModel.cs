@@ -1,11 +1,15 @@
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using System.Linq; // Added for Linq extension methods
+using System.Linq;
 using TicketConsolidator.Application.Interfaces;
+using TicketConsolidator.Infrastructure.Services;
 using materialDesign = MaterialDesignThemes.Wpf;
-using TicketConsolidator.Application.DTOs; // Added for DTOs
+using TicketConsolidator.Application.DTOs;
 
 namespace TicketConsolidator.UI
 {
@@ -17,7 +21,7 @@ namespace TicketConsolidator.UI
         private readonly ILoggerService _logger; // Logger
 
         private readonly IConsolidationService _consolidationService;
-        private readonly Infrastructure.Services.SettingsService _settingsService; // Inject SettingsService
+        private readonly Infrastructure.Services.SettingsService _settingsService;
 
         private string _ticketInput;
         public string TicketInput
@@ -106,7 +110,7 @@ namespace TicketConsolidator.UI
             IConsolidationService consolidationService,
             IConfiguration configuration,
             ILoggerService logger,
-            Infrastructure.Services.SettingsService settingsService) // Inject
+            Infrastructure.Services.SettingsService settingsService)
         {
             _emailService = emailService;
             _parserService = parserService;
@@ -136,20 +140,8 @@ namespace TicketConsolidator.UI
             TriggerScripts.CollectionChanged += (s, e) => CommandManager.InvalidateRequerySuggested();
 
             InitializeOutlook();
-            InitializeHistory();
         }
 
-        private async void InitializeHistory()
-        {
-            try
-            {
-                await ((ILoggerService)_logger).LoadHistoryAsync();
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError($"Failed to load history: {ex.Message}");
-            }
-        }
 
         private void InitializeOutlook()
         {
@@ -975,6 +967,8 @@ namespace TicketConsolidator.UI
                 
                 StatusMessage = "Consolidation Complete! Files saved.";
                 _logger.LogSuccess("Consolidation process finished successfully.");
+
+
                 
                 string successMsg = $"Files saved successfully at:\n{outputDir}";
                 
@@ -1188,6 +1182,7 @@ namespace TicketConsolidator.UI
         {
             return !string.IsNullOrWhiteSpace(TicketInput);
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

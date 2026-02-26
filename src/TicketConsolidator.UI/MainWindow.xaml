@@ -51,6 +51,7 @@
                         <Button Command="{Binding NavigateDashboardCommand}" Content="DASHBOARD" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
                         <Button Command="{Binding NavigateCodeReviewCommand}" Content="CODE REVIEW" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
                         <Button Command="{Binding NavigateSettingsCommand}" Content="SETTINGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
+                        <Button Command="{Binding NavigateTemplateEditorCommand}" Content="TEMPLATE" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
                         <Button Command="{Binding NavigateLogsCommand}" Content="LOGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
                         <Button Command="{Binding NavigateHelpCommand}" Content="HELP" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
                     </StackPanel>

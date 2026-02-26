@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TicketConsolidator.Application.Configurations;
+using TicketConsolidator.Application.DTOs;
 using TicketConsolidator.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 
@@ -15,8 +18,10 @@ namespace TicketConsolidator.Infrastructure.Services
         private readonly ILoggerService _logger;
         private readonly string _settingsFilePath;
 
+
         // Current Runtime Folder (Default "Inbox", or load from config/last saved)
         public string CurrentTargetFolder { get; private set; }
+        public string AppDataFolder { get; private set; }
 
         public SettingsService(IEncryptionService encryptionService, ILoggerService logger, IConfiguration configuration)
         {
@@ -28,8 +33,10 @@ namespace TicketConsolidator.Infrastructure.Services
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string appFolder = Path.Combine(appData, "TicketConsolidator");
             if (!Directory.Exists(appFolder)) Directory.CreateDirectory(appFolder);
+            AppDataFolder = appFolder;
             
             _settingsFilePath = Path.Combine(appFolder, "userSettings.json");
+
             
             // 1. Storage Base Path Logic
             // Priority: User Settings > Config > Default MyDocuments
@@ -61,7 +68,8 @@ namespace TicketConsolidator.Infrastructure.Services
             EmailTemplate = LoadUserSetting("EmailTemplate");
             if (string.IsNullOrWhiteSpace(EmailTemplate)) EmailTemplate = DefaultEmailTemplate;
 
-            CodeReviewTemplate = LoadUserSetting("CodeReviewTemplate") ?? "";
+            CodeReviewTemplate = LoadUserSetting("CodeReviewTemplate");
+            if (string.IsNullOrWhiteSpace(CodeReviewTemplate)) CodeReviewTemplate = DefaultCodeReviewTemplate;
 
             TicketsFolder = LoadUserSetting("TicketsFolder") ?? "";
 
@@ -87,26 +95,164 @@ namespace TicketConsolidator.Infrastructure.Services
         public string CodeReviewTemplate { get; set; }
         public string TicketsFolder { get; set; }
 
-        private const string DefaultEmailTemplate = @"<html><body>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'>Hi All,</p>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Product Release Notification [Build {BuildNumber}]:</b></p>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'>Please find the consolidated release deliverables as below:</p>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Folder:</b> <a href='{SolutionPath}'>{SolutionPath}</a></p>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>DB Scripts:</b></p>
-<ul>
-{FileList}
-</ul>
-<br/>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'><b>Release Includes:</b></p>
-<table border='1' style='border-collapse:collapse;font-family:Calibri,sans-serif;font-size:10pt;width:100%'>
-<tr style='background-color:#f2f2f2'><th>JIRA IDs</th><th>Summary</th></tr>
-{ReleaseDetails}
-</table>
-<br/>
-<p style='font-family:Calibri,sans-serif;font-size:11pt'>Regards,<br/>{UserName}</p>
-</body></html>";
+        public const string DefaultEmailTemplate = @"<html>
+<body>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>Hi All,</p>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    <b>Product Release Notification [Build {BuildNumber}]:</b>
+  </p>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    Please find the consolidated release deliverables as below:
+  </p>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    <b>Release Folder:</b>
+    <a href='{SolutionPath}'>{SolutionPath}</a>
+  </p>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    <b>DB Scripts:</b>
+  </p>
+
+  <ul>
+    {FileList}
+  </ul>
+
+  <br/>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    <b>Release Includes:</b>
+  </p>
+
+  <table border='1' style='border-collapse:collapse; font-family:Calibri,sans-serif; font-size:10pt; width:100%'>
+    <tr style='background-color:#f2f2f2'>
+      <th>JIRA IDs</th>
+      <th>Summary</th>
+    </tr>
+    {ReleaseDetails}
+  </table>
+
+  <br/>
+
+  <p style='font-family:Calibri,sans-serif; font-size:11pt'>
+    Regards,<br/>{UserName}
+  </p>
+
+</body>
+</html>";
 
         public bool IsDarkMode { get; private set; }
+
+        public const string DefaultCodeReviewTemplate = @"<html>
+<body style='font-family:Calibri,sans-serif; font-size:11pt'>
+
+  <p>Hi Team,</p>
+
+  <p>I've included the ticket's changeset details below for your review.</p>
+
+  <!-- Changeset Details Table -->
+  <table border='1' cellpadding='6' cellspacing='0'
+         style='border-collapse:collapse; font-family:Calibri; font-size:11pt'>
+    <tr style='background:#4472C4; color:white'>
+      <th>Ticket</th>
+      <th>Change Set</th>
+    </tr>
+    <tr>
+      <td rowspan='2'>
+        Ticket No:- <a href='{TicketUrl}'>{TicketKey} - {TicketTitle}</a>
+      </td>
+      <td>VS Commit: {VSCommitNumber}</td>
+    </tr>
+    <tr>
+      <td>DB Commit: {DBCommitNumber}</td>
+    </tr>
+    <tr>
+      <td rowspan='2'>Self-Code review Ticket No: NA</td>
+      <td>VS Commit: NA</td>
+    </tr>
+    <tr>
+      <td>DB Commit: NA</td>
+    </tr>
+  </table>
+
+  <br/>
+
+  <!-- DB Review Checklist -->
+  <p><b>DB Review Checklist:-</b></p>
+
+  <table border='1' cellpadding='6' cellspacing='0'
+         style='border-collapse:collapse; font-family:Calibri; font-size:11pt'>
+    <tr style='background:#4472C4; color:white'>
+      <th>Sr. No.</th>
+      <th>Name</th>
+      <th>Is the point considered during development</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>I have used meaningful variable and method names.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>I have enhanced the names of existing variables/methods based on a better understanding of the requirements.</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>I am not adding any unnecessary extra files, code/commented code.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>I am not committing any confidential information.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>I have followed the ""single responsibility principle"".</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>I have identified Unit Test Scenarios for the feature and at least documented them informally.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>I have added meaningful logs for the new code. I have also added exception handling in the code.</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>I have added the DB script of the config/data used. (Attach the DB script for data)</td>
+      <td>{HasDataScript}</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Is the requirement/issue fully understood?</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Is Self-code review done using Co-pilot?</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Has the co-pilot code review defect been raised?</td>
+      <td>NA</td>
+    </tr>
+  </table>
+
+  <br/>
+
+  <p>Best Regards,<br/>{UserName}</p>
+
+</body>
+</html>";
 
         public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath, string emailTemplate = null, bool? isDarkMode = null)
         {

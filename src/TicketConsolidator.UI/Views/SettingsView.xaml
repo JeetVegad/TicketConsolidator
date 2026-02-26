@@ -44,102 +44,6 @@
                                  Margin="0,0,0,40"
                                  FontSize="14"/>
 
-                        <!-- Email Template Editor Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="EmailEdit" 
-                                                     Foreground="{DynamicResource PrimaryHueMidBrush}" 
-                                                     Width="20" 
-                                                     Height="20" 
-                                                     VerticalAlignment="Center" 
-                                                     Margin="0,0,8,0"/>
-                            <TextBlock Text="Release Email Template" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="14" 
-                                       VerticalAlignment="Center" 
-                                       Foreground="{DynamicResource MaterialDesignBody}"/>
-                        </StackPanel>
-                        <TextBlock Text="Customize the HTML template used for generating release emails. Available placeholders: {BuildNumber}, {SolutionPath}, {FileList}, {ReleaseDetails}, {UserName}" 
-                                   TextWrapping="Wrap" 
-                                   FontSize="12" 
-                                   Opacity="0.7" 
-                                   Margin="0,0,0,10"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-
-                        <Border BorderThickness="1" BorderBrush="{DynamicResource MaterialDesignDivider}" CornerRadius="4" ClipToBounds="True" Margin="0,0,0,15" Background="{DynamicResource MaterialDesignPaper}">
-                            <avalonEdit:TextEditor Document="{Binding EmailTemplateDocument, UpdateSourceTrigger=PropertyChanged}"
-                                                   ShowLineNumbers="True"
-                                                   FontFamily="Consolas"
-                                                   FontSize="13"
-                                                   Height="280"
-                                                   SyntaxHighlighting="HTML">
-                                 <avalonEdit:TextEditor.Options>
-                                    <avalonEdit:TextEditorOptions ShowSpaces="False" HighlightCurrentLine="True"/>
-                                 </avalonEdit:TextEditor.Options>
-                            </avalonEdit:TextEditor>
-                        </Border>
-
-                        <!-- Placeholder Reference Guide -->
-                        <materialDesign:Card Padding="15" Margin="0,0,0,15" Background="{DynamicResource MaterialDesignCardBackground}">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <materialDesign:PackIcon Kind="InformationOutline" 
-                                                           Foreground="{DynamicResource PrimaryHueMidBrush}" 
-                                                           Width="18" 
-                                                           Height="18" 
-                                                           VerticalAlignment="Center" 
-                                                           Margin="0,0,8,0"/>
-                                    <TextBlock Text="Placeholder Reference" 
-                                             FontWeight="SemiBold" 
-                                             FontSize="13" 
-                                             VerticalAlignment="Center"/>
-                                </StackPanel>
-                                
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <!-- BuildNumber -->
-                                    <Border Grid.Row="0" Grid.Column="0" Background="#E3F2FD" CornerRadius="3" Padding="6,3" Margin="0,0,10,5" HorizontalAlignment="Left">
-                                        <TextBlock Text="{}{BuildNumber}" FontFamily="Consolas" FontSize="11" Foreground="#1565C0" FontWeight="SemiBold"/>
-                                    </Border>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Build/Run ID (e.g., 20260109_101530)" FontSize="11" VerticalAlignment="Center" Opacity="0.8" Margin="0,0,0,5"/>
-
-                                    <!-- SolutionPath -->
-                                    <Border Grid.Row="1" Grid.Column="0" Background="#E8F5E9" CornerRadius="3" Padding="6,3" Margin="0,0,10,5" HorizontalAlignment="Left">
-                                        <TextBlock Text="{}{SolutionPath}" FontFamily="Consolas" FontSize="11" Foreground="#2E7D32" FontWeight="SemiBold"/>
-                                    </Border>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="Full path to consolidated scripts folder" FontSize="11" VerticalAlignment="Center" Opacity="0.8" Margin="0,0,0,5"/>
-
-                                    <!-- FileList -->
-                                    <Border Grid.Row="2" Grid.Column="0" Background="#FFF3E0" CornerRadius="3" Padding="6,3" Margin="0,0,10,5" HorizontalAlignment="Left">
-                                        <TextBlock Text="{}{FileList}" FontFamily="Consolas" FontSize="11" Foreground="#E65100" FontWeight="SemiBold"/>
-                                    </Border>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="List of SQL script files (HTML &lt;li&gt; elements)" FontSize="11" VerticalAlignment="Center" Opacity="0.8" Margin="0,0,0,5"/>
-
-                                    <!-- ReleaseDetails -->
-                                    <Border Grid.Row="3" Grid.Column="0" Background="#F3E5F5" CornerRadius="3" Padding="6,3" Margin="0,0,10,5" HorizontalAlignment="Left">
-                                        <TextBlock Text="{}{ReleaseDetails}" FontFamily="Consolas" FontSize="11" Foreground="#6A1B9A" FontWeight="SemiBold"/>
-                                    </Border>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Ticket table rows with JIRA IDs and summaries (HTML &lt;tr&gt; elements)" FontSize="11" VerticalAlignment="Center" Opacity="0.8" Margin="0,0,0,5"/>
-
-                                    <!-- UserName -->
-                                    <Border Grid.Row="4" Grid.Column="0" Background="#FCE4EC" CornerRadius="3" Padding="6,3" Margin="0,0,10,0" HorizontalAlignment="Left">
-                                        <TextBlock Text="{}{UserName}" FontFamily="Consolas" FontSize="11" Foreground="#C2185B" FontWeight="SemiBold"/>
-                                    </Border>
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="Name of the user creating the release email" FontSize="11" VerticalAlignment="Center" Opacity="0.8"/>
-                                </Grid>
-                            </StackPanel>
-                        </materialDesign:Card>
-
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                              <Button Command="{Binding UpdateFolderCommand}"
                                      Content="SAVE SETTINGS"
@@ -147,12 +51,6 @@
                                      HorizontalAlignment="Left"
                                      Margin="0,0,15,0"
                                      ToolTip="Save configuration"/>
-
-                             <Button Command="{Binding PreviewTemplateCommand}"
-                                     Content="PREVIEW"
-                                     Style="{StaticResource MaterialDesignOutlinedButton}"
-                                     HorizontalAlignment="Left"
-                                     ToolTip="Preview template in browser"/>
                         </StackPanel>
                     </StackPanel>
                 </materialDesign:Card>

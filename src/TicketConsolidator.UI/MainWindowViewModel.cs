@@ -23,11 +23,13 @@ namespace TicketConsolidator.UI
 
         public string CurrentViewName { get; private set; }
 
-        public ICommand NavigateDashboardCommand { get; }
+
         public ICommand NavigateSettingsCommand { get; }
         public ICommand NavigateLogsCommand { get; }
         public ICommand NavigateHelpCommand { get; }
+        public ICommand NavigateDashboardCommand { get; }
         public ICommand NavigateCodeReviewCommand { get; }
+        public ICommand NavigateTemplateEditorCommand { get; }
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -35,11 +37,13 @@ namespace TicketConsolidator.UI
         {
             _serviceProvider = serviceProvider;
 
-            NavigateDashboardCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.DashboardView)));
+
             NavigateSettingsCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.SettingsView)));
             NavigateLogsCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.LogsView)));
             NavigateHelpCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.HelpView)));
+            NavigateDashboardCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.DashboardView)));
             NavigateCodeReviewCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.CodeReviewView)));
+            NavigateTemplateEditorCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.TemplateEditorView)));
             
             // Set initial view
             CurrentView = ResolveView(typeof(Views.DashboardView));

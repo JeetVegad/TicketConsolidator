@@ -27,6 +27,7 @@ namespace TicketConsolidator.UI
         private readonly JiraConfiguration _config;
         private readonly SettingsService _settingsService;
 
+
         public CodeReviewViewModel(
             IJiraService jiraService,
             IPerforceService p4Service,
@@ -41,6 +42,7 @@ namespace TicketConsolidator.UI
             _config = config;
             _settingsService = settingsService;
 
+
             LoginCommand = new RelayCommand(o => ShowBrowser(), o => !IsLoading);
             SearchCommand = new RelayCommand(async o => await ExecuteSearch(), o => !IsLoading && _jiraService.IsAuthenticated);
             DraftEmailCommand = new RelayCommand(async o => await ExecuteDraftEmail(), o => Ticket != null && !IsLoading);
@@ -48,6 +50,7 @@ namespace TicketConsolidator.UI
             AssignDBCommand = new RelayCommand(o => AssignLink(o, "DB"), o => true);
             RemoveVSCommand = new RelayCommand(o => RemoveAssignment(o, "VS"), o => true);
             RemoveDBCommand = new RelayCommand(o => RemoveAssignment(o, "DB"), o => true);
+
         }
 
         #region Properties
@@ -58,6 +61,8 @@ namespace TicketConsolidator.UI
             get => _ticketKey;
             set { _ticketKey = value; OnPropertyChanged(); }
         }
+
+
 
         public string JiraLoginUrl => _config.JiraBaseUrl.TrimEnd('/') + "/login.jsp";
 
@@ -158,6 +163,7 @@ namespace TicketConsolidator.UI
         public ICommand AssignDBCommand { get; }
         public ICommand RemoveVSCommand { get; }
         public ICommand RemoveDBCommand { get; }
+
 
         #endregion
 
@@ -292,6 +298,8 @@ namespace TicketConsolidator.UI
 
                 HasError = false;
                 _logger.LogSuccess($"Code Review: fetched {Ticket.Key} with {Ticket.SwarmLinks?.Count ?? 0} links.");
+
+
             }
             catch (Exception ex)
             {
@@ -480,6 +488,7 @@ namespace TicketConsolidator.UI
                 StatusMessage = $"Email draft created{attachMsg}!";
                 _logger.LogSuccess($"Code Review email drafted for {Ticket.Key}{attachMsg}");
 
+
                 await DialogHost.Show(new InfoDialog(
                     $"Code Review email draft has been created in Outlook{attachMsg}.",
                     "Email Created"), "RootDialog");
@@ -497,52 +506,110 @@ namespace TicketConsolidator.UI
         }
 
         private const string DefaultCodeReviewTemplate = @"<html>
-<body style='font-family:Calibri,sans-serif;font-size:11pt'>
-<p>Hi Team,</p>
-<p>I've included the ticket's changeset details below for your review.</p>
+<body style='font-family:Calibri,sans-serif; font-size:11pt'>
 
-<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;font-family:Calibri;font-size:11pt'>
-<tr style='background:#4472C4;color:white'>
-  <th>Ticket</th><th>Change Set</th>
-</tr>
-<tr>
-  <td rowspan='2'>Ticket No:- <a href='{TicketUrl}'>{TicketKey} - {TicketTitle}</a></td>
-  <td>VS Commit: {VSCommitNumber}</td>
-</tr>
-<tr>
-  <td>DB Commit: {DBCommitNumber}</td>
-</tr>
-<tr>
-  <td rowspan='2'>Self-Code review Ticket No: NA</td>
-  <td>VS Commit: NA</td>
-</tr>
-<tr>
-  <td>DB Commit: NA</td>
-</tr>
-</table>
+  <p>Hi Team,</p>
 
-<br/>
+  <p>I've included the ticket's changeset details below for your review.</p>
 
-<p><b>DB Review Checklist:-</b></p>
-<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;font-family:Calibri;font-size:11pt'>
-<tr style='background:#4472C4;color:white'>
-  <th>Sr. No.</th><th>Name</th><th>Is the point considered during development</th>
-</tr>
-<tr><td>1</td><td>I have used meaningful variable and method names.</td><td>Yes</td></tr>
-<tr><td>2</td><td>I have enhanced the names of existing variables/methods based on a better understanding of the requirements.</td><td>NA</td></tr>
-<tr><td>3</td><td>I am not adding any unnecessary extra files, code/commented code.</td><td>Yes</td></tr>
-<tr><td>4</td><td>I am not committing any confidential information.</td><td>Yes</td></tr>
-<tr><td>5</td><td>I have followed the ""single responsibility principle"".</td><td>NA</td></tr>
-<tr><td>6</td><td>I have identified Unit Test Scenarios for the feature and at least documented them informally.</td><td>Yes</td></tr>
-<tr><td>7</td><td>I have added meaningful logs for the new code. I have also added exception handling in the code.</td><td>NA</td></tr>
-<tr><td>8</td><td>I have added the DB script of the config/data used. (Attach the DB script for data)</td><td>{HasDataScript}</td></tr>
-<tr><td>9</td><td>Is the requirement/issue fully understood?</td><td>Yes</td></tr>
-<tr><td>10</td><td>Is Self-code review done using Co-pilot?</td><td>NA</td></tr>
-<tr><td>11</td><td>Has the co-pilot code review defect been raised?</td><td>NA</td></tr>
-</table>
+  <!-- Changeset Details Table -->
+  <table border='1' cellpadding='6' cellspacing='0'
+         style='border-collapse:collapse; font-family:Calibri; font-size:11pt'>
+    <tr style='background:#4472C4; color:white'>
+      <th>Ticket</th>
+      <th>Change Set</th>
+    </tr>
+    <tr>
+      <td rowspan='2'>
+        Ticket No:- <a href='{TicketUrl}'>{TicketKey} - {TicketTitle}</a>
+      </td>
+      <td>VS Commit: {VSCommitNumber}</td>
+    </tr>
+    <tr>
+      <td>DB Commit: {DBCommitNumber}</td>
+    </tr>
+    <tr>
+      <td rowspan='2'>Self-Code review Ticket No: NA</td>
+      <td>VS Commit: NA</td>
+    </tr>
+    <tr>
+      <td>DB Commit: NA</td>
+    </tr>
+  </table>
 
-<br/>
-<p>Best Regards,<br/>{UserName}</p>
+  <br/>
+
+  <!-- DB Review Checklist -->
+  <p><b>DB Review Checklist:-</b></p>
+
+  <table border='1' cellpadding='6' cellspacing='0'
+         style='border-collapse:collapse; font-family:Calibri; font-size:11pt'>
+    <tr style='background:#4472C4; color:white'>
+      <th>Sr. No.</th>
+      <th>Name</th>
+      <th>Is the point considered during development</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>I have used meaningful variable and method names.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>I have enhanced the names of existing variables/methods based on a better understanding of the requirements.</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>I am not adding any unnecessary extra files, code/commented code.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>I am not committing any confidential information.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>I have followed the ""single responsibility principle"".</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>I have identified Unit Test Scenarios for the feature and at least documented them informally.</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>I have added meaningful logs for the new code. I have also added exception handling in the code.</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>I have added the DB script of the config/data used. (Attach the DB script for data)</td>
+      <td>{HasDataScript}</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Is the requirement/issue fully understood?</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Is Self-code review done using Co-pilot?</td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Has the co-pilot code review defect been raised?</td>
+      <td>NA</td>
+    </tr>
+  </table>
+
+  <br/>
+
+  <p>Best Regards,<br/>{UserName}</p>
+
 </body>
 </html>";
 

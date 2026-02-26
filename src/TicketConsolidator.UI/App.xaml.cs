@@ -134,24 +134,29 @@ namespace TicketConsolidator.UI
             services.AddSingleton<IConsolidationService, ConsolidationService>();
             services.AddSingleton<ILoggerService, LoggerService>();
             services.AddSingleton<SettingsService>();
+
             services.AddSingleton<IJiraService, JiraService>();
             services.AddSingleton<IPerforceService, PerforceService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddSingleton<DashboardViewModel>();
+
             services.AddTransient<LogsViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<CodeReviewViewModel>();
+            services.AddTransient<TemplateEditorViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();
             services.AddSingleton<DashboardView>();
+
             services.AddSingleton<SettingsView>();
             services.AddSingleton<LogsView>();
             services.AddSingleton<HelpView>();
             services.AddSingleton<CodeReviewView>();
+            services.AddSingleton<TemplateEditorView>();
         }
     }
 }
