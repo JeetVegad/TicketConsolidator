@@ -50,8 +50,10 @@ Name: "{app}\Logs"; Permissions: users-modify
 [Code]
 var
   EmailObjPage: TInputQueryWizardPage;
+  TicketsFolderPage: TInputDirWizardPage;
   DbConfigPage: TInputOptionWizardPage;
   EmailFolder: String;
+  TicketsFolder: String;
   EnableDatabase: Boolean;
   DbConnectionString: String;
 
@@ -64,8 +66,15 @@ begin
   EmailObjPage.Add('Default Email Folder:', False);
   EmailObjPage.Values[0] := 'Inbox';
   
+  // Page 1.5: Tickets Folder
+  TicketsFolderPage := CreateInputDirPage(EmailObjPage.ID,
+    'Tickets Folder', 'Where do you store Jira or TFS tickets locally?',
+    'Select the folder where you want to store and retrieve your ticket automation artifacts. If left blank, it defaults to the Documents folder.',
+    False, '');
+  TicketsFolderPage.Add('Tickets Folder Path:');
+  
   // Page 2: Database Logging Configuration (Checkbox)
-  DbConfigPage := CreateInputOptionPage(EmailObjPage.ID,
+  DbConfigPage := CreateInputOptionPage(TicketsFolderPage.ID,
     'Database Logging (Optional)', 'Centralized Logging Configuration',
     'Select the logging options below:',
     False, False);
@@ -87,12 +96,15 @@ var
   EnableDbStr: String;
   DbConnStr: String;
   IsDbEnabled: Boolean;
+  UserSettingsDir: String;
+  UserSettingsPath: String;
 begin
   if CurStep = ssPostInstall then
   begin
     // Gather User Inputs
     BasePath := ExpandConstant('{app}');
     EmailFolder := EmailObjPage.Values[0];
+    TicketsFolder := TicketsFolderPage.Values[0];
     
     // Check if Checkbox is ticked
     IsDbEnabled := DbConfigPage.Values[0];
@@ -133,7 +145,7 @@ begin
     if FileExists(ConfigPath) then
       DeleteFile(ConfigPath);
 
-    // Generate appsettings.json with all configuration
+    // Generate appsettings.json with all configuration (Mainly Logging/DB here)
     JsonContent := '{' + #13#10 +
       '  "Logging": {' + #13#10 +
       '    "LogLevel": {' + #13#10 +
@@ -157,5 +169,25 @@ begin
       '}';
       
     SaveStringToFile(ConfigPath, JsonContent, False);
+
+    // --- SAVE userSettings.json in %APPDATA% ---
+    
+    // Construct AppData path for user settings
+    UserSettingsDir := ExpandConstant('{userappdata}\TicketConsolidator');
+    if not DirExists(UserSettingsDir) then
+      CreateDir(UserSettingsDir);
+      
+    UserSettingsPath := UserSettingsDir + '\userSettings.json';
+    
+    // Format JSON correctly by escaping backslashes in path
+    StringChange(TicketsFolder, '\', '\\');
+    
+    // Write user settings
+    JsonContent := '{' + #13#10 +
+      '  "OutlookFolder": "' + EmailFolder + '",' + #13#10 +
+      '  "TicketsFolder": "' + TicketsFolder + '"' + #13#10 +
+      '}';
+      
+    SaveStringToFile(UserSettingsPath, JsonContent, False);
   end;
 end;
