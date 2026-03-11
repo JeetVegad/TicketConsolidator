@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TicketConsolidator.Application.Configurations;
@@ -169,13 +170,7 @@ namespace TicketConsolidator.Infrastructure.Services
     <tr>
       <td>DB Commit: {DBCommitNumber}</td>
     </tr>
-    <tr>
-      <td rowspan='2'>Self-Code review Ticket No: NA</td>
-      <td>VS Commit: NA</td>
-    </tr>
-    <tr>
-      <td>DB Commit: NA</td>
-    </tr>
+{CodeReviewRows}
   </table>
 
   <br/>
@@ -266,20 +261,28 @@ namespace TicketConsolidator.Infrastructure.Services
              if (!string.IsNullOrWhiteSpace(ScriptsPath) && !Directory.Exists(ScriptsPath)) Directory.CreateDirectory(ScriptsPath);
              if (!string.IsNullOrWhiteSpace(ConsolidatedScriptsPath) && !Directory.Exists(ConsolidatedScriptsPath)) Directory.CreateDirectory(ConsolidatedScriptsPath);
 
-             var data = new System.Collections.Generic.Dictionary<string, string>
+             try 
              {
-                 ["OutlookFolder"] = outlookFolder,
-                 ["ScriptsPath"] = scriptsPath,
-                 ["ConsolidatedPath"] = consolidatedPath,
-                 ["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath), // Infer base
-                 ["EmailTemplate"] = EmailTemplate,
-                 ["CodeReviewTemplate"] = CodeReviewTemplate ?? "",
-                 ["TicketsFolder"] = TicketsFolder ?? "",
-                 ["IsDarkMode"] = IsDarkMode.ToString()
-             };
+                 string json = "{}";
+                 if (File.Exists(_settingsFilePath)) json = await File.ReadAllTextAsync(_settingsFilePath);
+                 var root = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(json) ?? new System.Collections.Generic.Dictionary<string, object>();
 
-             var options = new JsonSerializerOptions { WriteIndented = true };
-             await File.WriteAllTextAsync(_settingsFilePath, JsonSerializer.Serialize(data, options));
+                 root["OutlookFolder"] = outlookFolder;
+                 root["ScriptsPath"] = scriptsPath;
+                 root["ConsolidatedPath"] = consolidatedPath;
+                 root["StorageBasePath"] = Path.GetDirectoryName(ScriptsPath); // Infer base
+                 root["EmailTemplate"] = EmailTemplate;
+                 root["CodeReviewTemplate"] = CodeReviewTemplate ?? "";
+                 root["TicketsFolder"] = TicketsFolder ?? "";
+                 root["IsDarkMode"] = IsDarkMode.ToString();
+
+                 var options = new JsonSerializerOptions { WriteIndented = true };
+                 await File.WriteAllTextAsync(_settingsFilePath, JsonSerializer.Serialize(root, options));
+             }
+             catch(Exception ex)
+             {
+                 _logger.LogError($"Failed to update settings: {ex.Message}");
+             }
              
              _logger.LogInfo("Settings updated by user.");
         }
@@ -358,5 +361,116 @@ namespace TicketConsolidator.Infrastructure.Services
              // If we need to *Decrypt* for usage:
              return null; // Not strictly needed if we inject IConfiguration and IEncryptionService separately.
         }
+
+        public async Task SaveJiraSessionAsync(IEnumerable<SimpleCookie> cookies)
+        {
+            var sessionData = new JiraSessionData
+            {
+                LoggedInDate = DateTime.Now.Date,
+                Cookies = cookies.ToList()
+            };
+
+            var json = JsonSerializer.Serialize(sessionData);
+            var encrypted = _encryptionService.Encrypt(json);
+
+            try 
+            {
+                string fileJson = "{}";
+                if (File.Exists(_settingsFilePath)) fileJson = await File.ReadAllTextAsync(_settingsFilePath);
+                var root = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(fileJson) ?? new System.Collections.Generic.Dictionary<string, object>();
+                
+                root["JiraSessionData"] = encrypted;
+
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                await File.WriteAllTextAsync(_settingsFilePath, JsonSerializer.Serialize(root, options));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to save Jira session: {ex.Message}");
+            }
+        }
+
+        public IEnumerable<Cookie> LoadJiraSession()
+        {
+            try
+            {
+                string encrypted = LoadUserSetting("JiraSessionData");
+                if (string.IsNullOrEmpty(encrypted)) return null;
+
+                string decrypted = _encryptionService.Decrypt(encrypted);
+                if (string.IsNullOrEmpty(decrypted)) return null;
+
+                var sessionData = JsonSerializer.Deserialize<JiraSessionData>(decrypted);
+                if (sessionData == null) return null;
+
+                // Enforce daily login session as requested earlier
+                if (sessionData.LoggedInDate != DateTime.Now.Date)
+                {
+                    _logger.LogInfo("Jira session from a previous day expired.");
+                    return null;
+                }
+
+                if (sessionData.Cookies == null) return null;
+
+                var cookies = new List<Cookie>();
+                foreach (var sc in sessionData.Cookies)
+                {
+                    cookies.Add(new Cookie
+                    {
+                        Name = sc.Name,
+                        Value = sc.Value,
+                        Path = sc.Path,
+                        Domain = sc.Domain,
+                        Secure = sc.IsSecure,
+                        HttpOnly = sc.IsHttpOnly
+                    });
+                }
+
+                return cookies;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to load Jira session: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task ClearJiraSessionAsync()
+        {
+            try 
+            {
+                string fileJson = "{}";
+                if (File.Exists(_settingsFilePath)) fileJson = await File.ReadAllTextAsync(_settingsFilePath);
+                var root = JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(fileJson) ?? new System.Collections.Generic.Dictionary<string, object>();
+                
+                if (root.ContainsKey("JiraSessionData"))
+                {
+                    root.Remove("JiraSessionData");
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    await File.WriteAllTextAsync(_settingsFilePath, JsonSerializer.Serialize(root, options));
+                    _logger.LogInfo("Jira session cleared from settings.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to clear Jira session: {ex.Message}");
+            }
+        }
+    }
+
+    public class SimpleCookie
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public string Domain { get; set; }
+        public string Path { get; set; }
+        public bool IsSecure { get; set; }
+        public bool IsHttpOnly { get; set; }
+    }
+
+    public class JiraSessionData
+    {
+        public DateTime LoggedInDate { get; set; }
+        public System.Collections.Generic.List<SimpleCookie> Cookies { get; set; }
     }
 }

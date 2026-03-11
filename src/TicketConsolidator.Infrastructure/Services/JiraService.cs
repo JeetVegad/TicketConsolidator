@@ -166,30 +166,76 @@ namespace TicketConsolidator.Infrastructure.Services
                         relationship = inward.GetString() ?? "";
                 }
 
+                string summary = "";
+                string issueTypeName = "";
+                string key = null;
                 if (targetIssue.HasValue)
                 {
                     var ti = targetIssue.Value;
-                    string key = ti.TryGetProperty("key", out var k) ? k.GetString() ?? "" : "";
-                    string summary = "";
-                    if (ti.TryGetProperty("fields", out var f) && f.TryGetProperty("summary", out var sum))
-                        summary = sum.GetString() ?? "";
+                     key = ti.TryGetProperty("key", out var k) ? k.GetString() ?? "" : "";
+                    if (ti.TryGetProperty("fields", out var f))
+                    {
+                        if (f.TryGetProperty("summary", out var sum))
+                            summary = sum.GetString() ?? "";
+                            
+                        if (f.TryGetProperty("issuetype", out var it) && it.TryGetProperty("name", out var itName))
+                            issueTypeName = itName.GetString() ?? "";
+                    }
 
                     title = string.IsNullOrEmpty(summary) ? key : $"{key} - {summary}";
                     url = $"{_config.JiraBaseUrl.TrimEnd('/')}/browse/{key}";
                 }
 
+                // Check if this is a Code Review ticket
+                bool isCodeReview = false;
+                
+                string summaryLower = summary.ToLowerInvariant();
+                string typeLower = issueTypeName.ToLowerInvariant();
+
+                if (relationship.IndexOf("satisfies", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    typeLower.Contains("code review") || 
+                    summaryLower.Contains("code review") ||
+                    typeLower.Contains("self review") || 
+                    summaryLower.Contains("self review") ||
+                    typeLower.Contains("review defect") ||
+                    summaryLower.Contains("review defect"))
+                {
+                    isCodeReview = true;
+                }
+
+                if (!string.IsNullOrEmpty(key) && isCodeReview)
+                {
+                    bool isSelf = summaryLower.Contains("self") || typeLower.Contains("self");
+                    
+                    ticket.CodeReviewTickets.Add(new LinkedJiraTicket
+                    {
+                        Key = key,
+                        Summary = summary,
+                        Url = url,
+                        Type = isSelf ? "Self-Code Review" : "Code Review"
+                    });
+                }
+
                 // Check if this looks like a Swarm/changelist reference
+
                 if (!string.IsNullOrEmpty(title))
                 {
-                    // Try to extract changelist number from the title or key
-                    var changeNum = ExtractChangeNumber(title + " " + url);
+                    // Try to extract changelist number and comment from the title or key
+                    var details = ExtractChangeDetails(title + " " + url);
+
+                    string finalComment = string.IsNullOrWhiteSpace(summary) ? details.Comment : summary;
+                    if (string.IsNullOrWhiteSpace(finalComment)) 
+                    {
+                        finalComment = "RAW JSON: " + link.GetRawText();
+                    }
 
                     ticket.SwarmLinks.Add(new SwarmLink
                     {
                         Title = title,
                         Url = url,
                         Relationship = relationship,
-                        ChangeNumber = changeNum ?? ""
+                        ChangeNumber = details.ChangeNumber ?? "",
+                        Comment = finalComment
                     });
                 }
             }
@@ -212,6 +258,19 @@ namespace TicketConsolidator.Infrastructure.Services
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
+
+                try 
+                {
+                    string dumpPath = System.IO.Path.Combine(
+                        System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
+                        "TicketConsolidatorData",
+                        "Logs",
+                        "JiraRemoteLinksDump.txt"
+                    );
+                    System.IO.File.WriteAllText(dumpPath, json);
+                } 
+                catch { }
+
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
@@ -229,22 +288,32 @@ namespace TicketConsolidator.Infrastructure.Services
                         {
                             string title = "";
                             string url = "";
+                            string summary = "";
 
                             if (obj.TryGetProperty("title", out var t))
                                 title = t.GetString() ?? "";
                             if (obj.TryGetProperty("url", out var u))
                                 url = u.GetString() ?? "";
+                            if (obj.TryGetProperty("summary", out var s))
+                                summary = s.GetString() ?? "";
 
                             if (!string.IsNullOrEmpty(title) || !string.IsNullOrEmpty(url))
                             {
-                                var changeNum = ExtractChangeNumber(title + " " + url);
+                                var details = ExtractChangeDetails(title + " " + url);
+
+                                string finalComment = string.IsNullOrWhiteSpace(summary) ? details.Comment : summary;
+                                if (string.IsNullOrWhiteSpace(finalComment)) 
+                                {
+                                    finalComment = "RAW JSON: " + obj.GetRawText();
+                                }
 
                                 ticket.SwarmLinks.Add(new SwarmLink
                                 {
                                     Title = string.IsNullOrEmpty(title) ? url : title,
                                     Url = url,
                                     Relationship = relationship,
-                                    ChangeNumber = changeNum ?? ""
+                                    ChangeNumber = details.ChangeNumber ?? "",
+                                    Comment = finalComment
                                 });
                             }
                         }
@@ -264,26 +333,53 @@ namespace TicketConsolidator.Infrastructure.Services
         }
 
         /// <summary>
-        /// Try to extract a changelist/review number from text (title or URL).
-        /// Matches patterns like: "Review 12345", "Change 67890", "/reviews/12345", "/changes/67890"
+        /// Try to extract a changelist/review number and the remaining description from text (title or URL).
+        /// Matches patterns like: "Review 12345", "Change 67890", "Commit 12345 - some description"
+        /// Returns a tuple of (ChangeNumber, Comment).
         /// </summary>
-        private string ExtractChangeNumber(string text)
+        private (string ChangeNumber, string Comment) ExtractChangeDetails(string text)
         {
-            if (string.IsNullOrEmpty(text)) return null;
+            if (string.IsNullOrEmpty(text)) return (null, null);
 
-            // Match Swarm URL patterns: /reviews/NNNNN or /changes/NNNNN
-            var urlMatch = Regex.Match(text, @"/(?:reviews|changes)/(\d+)", RegexOptions.IgnoreCase);
-            if (urlMatch.Success) return urlMatch.Groups[1].Value;
+            string changeNum = null;
+            string comment = text;
 
-            // Match text patterns: "Review 12345", "Change 12345", "CL 12345", "#12345"
-            var textMatch = Regex.Match(text, @"(?:Review|Change|CL|Changelist)\s*#?\s*(\d+)", RegexOptions.IgnoreCase);
-            if (textMatch.Success) return textMatch.Groups[1].Value;
+            // Match text patterns: "Review 12345", "Change 12345", "CL 12345", "Commit 12345"
+            // Also optionally capture a dash or colon after the number
+            var textMatch = Regex.Match(text, @"(?:Review|Change|CL|Changelist|Commit)\s*#?\s*(\d+)(?:\s*[-:]\s*)?", RegexOptions.IgnoreCase);
+            if (textMatch.Success)
+            {
+                changeNum = textMatch.Groups[1].Value;
+                // The comment is everything after the matched prefix and number
+                comment = text.Substring(textMatch.Index + textMatch.Length).Trim();
+            }
+            else
+            {
+                // Match Swarm URL patterns: /reviews/NNNNN or /changes/NNNNN
+                var urlMatch = Regex.Match(text, @"/(?:reviews|changes)/(\d+)", RegexOptions.IgnoreCase);
+                if (urlMatch.Success)
+                {
+                    changeNum = urlMatch.Groups[1].Value;
+                }
+                else
+                {
+                    // Match standalone large numbers that are likely changelist numbers
+                    var numMatch = Regex.Match(text, @"\b(\d{4,})\b");
+                    if (numMatch.Success)
+                    {
+                        changeNum = numMatch.Groups[1].Value;
+                        comment = text.Substring(numMatch.Index + numMatch.Length).Trim();
+                        if (comment.StartsWith("-") || comment.StartsWith(":")) 
+                            comment = comment.TrimStart('-', ':', ' ');
+                    }
+                }
+            }
 
-            // Match standalone large numbers that are likely changelist numbers
-            var numMatch = Regex.Match(text, @"\b(\d{4,})\b");
-            if (numMatch.Success) return numMatch.Groups[1].Value;
+            // If the comment is just the URL or empty, return null so it doesn't clutter the UI
+            if (string.IsNullOrWhiteSpace(comment) || comment.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                comment = null;
 
-            return null;
+            return (changeNum, comment);
         }
     }
 }

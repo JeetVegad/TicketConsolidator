@@ -22,7 +22,13 @@ namespace TicketConsolidator.UI.Views
             // Initialize WebView2
             try
             {
-                await PreviewBrowser.EnsureCoreWebView2Async();
+                string userDataFolder = System.IO.Path.Combine(
+                    System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData),
+                    "TicketConsolidator",
+                    "WebView2"
+                );
+                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+                await PreviewBrowser.EnsureCoreWebView2Async(env);
                 _browserReady = true;
 
                 // Wire up ViewModel preview events

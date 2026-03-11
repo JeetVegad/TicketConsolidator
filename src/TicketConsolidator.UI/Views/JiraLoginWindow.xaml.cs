@@ -12,7 +12,7 @@ namespace TicketConsolidator.UI.Views
         private bool _browserInitialized;
 
         /// <summary>Cookies extracted from the browser session after the user clicks Done.</summary>
-        public List<Cookie> ExtractedCookies { get; private set; }
+        public List<Infrastructure.Services.SimpleCookie> ExtractedCookies { get; private set; }
 
         /// <summary>The base URL used for cookie extraction scope.</summary>
         public string CookieBaseUrl { get; set; }
@@ -33,7 +33,15 @@ namespace TicketConsolidator.UI.Views
                 NavigationProgress.Visibility = Visibility.Visible;
                 StatusText.Text = "Initializing browser...";
 
-                await JiraBrowser.EnsureCoreWebView2Async();
+                // Create a custom environment so the User Data Folder goes into LocalAppData
+                // This prevents write permission crashes when installed in Program Files.
+                string userDataFolder = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "TicketConsolidator",
+                    "WebView2"
+                );
+                var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+                await JiraBrowser.EnsureCoreWebView2Async(env);
                 _browserInitialized = true;
 
                 // Hook navigation events
@@ -118,10 +126,18 @@ namespace TicketConsolidator.UI.Views
                 var cookieManager = JiraBrowser.CoreWebView2.CookieManager;
                 var webCookies = await cookieManager.GetCookiesAsync(CookieBaseUrl);
 
-                ExtractedCookies = new List<Cookie>();
+                ExtractedCookies = new List<Infrastructure.Services.SimpleCookie>();
                 foreach (var wc in webCookies)
                 {
-                    ExtractedCookies.Add(new Cookie(wc.Name, wc.Value, wc.Path, wc.Domain));
+                    ExtractedCookies.Add(new Infrastructure.Services.SimpleCookie
+                    {
+                        Name = wc.Name,
+                        Value = wc.Value,
+                        Path = wc.Path,
+                        Domain = wc.Domain,
+                        IsSecure = wc.IsSecure,
+                        IsHttpOnly = wc.IsHttpOnly
+                    });
                 }
 
                 DialogResult = true;

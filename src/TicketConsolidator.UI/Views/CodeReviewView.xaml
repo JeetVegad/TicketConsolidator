@@ -204,6 +204,16 @@
                         <TextBlock Text="Click the buttons to assign each commit to VS Commits or DB Commits"
                                    FontSize="12" Opacity="0.6" Margin="0,0,0,15"/>
 
+                        <!-- Target Ticket Selection -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="Assigning to:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" FontSize="13"/>
+                            <ComboBox ItemsSource="{Binding TargetTickets}" 
+                                      SelectedItem="{Binding SelectedTargetTicket}" 
+                                      DisplayMemberPath="DisplayName" 
+                                      Width="350" 
+                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                        </StackPanel>
+
                         <ItemsControl ItemsSource="{Binding FoundLinks}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -216,9 +226,9 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
-                                                           TextTrimming="CharacterEllipsis"/>
+                                            <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding DisplayText}" FontWeight="SemiBold" FontSize="13"
+                                                           TextWrapping="Wrap" Margin="0,0,0,2"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                                     <TextBlock Text="{Binding Relationship}" FontSize="11" Opacity="0.5" 
                                                                Margin="0,0,10,0"/>
@@ -287,11 +297,10 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <StackPanel>
-                                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding ChangeNumber, StringFormat='CL #{0}'}" 
-                                                               FontSize="11" FontFamily="Consolas" Opacity="0.7"/>
+                                                <StackPanel Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding AssignedTicketKey}" FontSize="11" FontWeight="Bold" Foreground="#1976D2" Margin="0,0,0,2"/>
+                                                    <TextBlock Text="{Binding DisplayText}" FontSize="12" FontWeight="SemiBold"
+                                                               TextWrapping="Wrap" Margin="0,0,0,2"/>
                                                 </StackPanel>
                                                 <Button Grid.Column="1" 
                                                         Command="{Binding DataContext.RemoveVSCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -338,11 +347,10 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
-                                                <StackPanel>
-                                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Text="{Binding ChangeNumber, StringFormat='CL #{0}'}" 
-                                                               FontSize="11" FontFamily="Consolas" Opacity="0.7"/>
+                                                <StackPanel Margin="0,0,10,0">
+                                                    <TextBlock Text="{Binding AssignedTicketKey}" FontSize="11" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,2"/>
+                                                    <TextBlock Text="{Binding DisplayText}" FontSize="12" FontWeight="SemiBold"
+                                                               TextWrapping="Wrap" Margin="0,0,0,2"/>
                                                 </StackPanel>
                                                 <Button Grid.Column="1" 
                                                         Command="{Binding DataContext.RemoveDBCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"

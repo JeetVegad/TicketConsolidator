@@ -19,6 +19,13 @@ using TicketConsolidator.UI.Views.Dialogs;
 
 namespace TicketConsolidator.UI
 {
+    public class TicketOption
+    {
+        public string Key { get; set; }
+        public string DisplayName { get; set; }
+        public string Type { get; set; }
+    }
+
     public class CodeReviewViewModel : INotifyPropertyChanged
     {
         private readonly IJiraService _jiraService;
@@ -42,8 +49,15 @@ namespace TicketConsolidator.UI
             _config = config;
             _settingsService = settingsService;
 
+            var savedCookies = _settingsService.LoadJiraSession();
+            if (savedCookies != null && savedCookies.Any())
+            {
+                _jiraService.SetCookies(savedCookies);
+                AuthStatus = "Connected to Jira ✓";
+                _logger.LogSuccess("Restored today's Jira session.");
+            }
 
-            LoginCommand = new RelayCommand(o => ShowBrowser(), o => !IsLoading);
+            LoginCommand = new RelayCommand(o => ShowBrowser(), o => !IsLoading && !_jiraService.IsAuthenticated);
             SearchCommand = new RelayCommand(async o => await ExecuteSearch(), o => !IsLoading && _jiraService.IsAuthenticated);
             DraftEmailCommand = new RelayCommand(async o => await ExecuteDraftEmail(), o => Ticket != null && !IsLoading);
             AssignVSCommand = new RelayCommand(o => AssignLink(o, "VS"), o => true);
@@ -152,6 +166,20 @@ namespace TicketConsolidator.UI
             set { _selectedDBCommit = value; OnPropertyChanged(); }
         }
 
+        private ObservableCollection<TicketOption> _targetTickets = new();
+        public ObservableCollection<TicketOption> TargetTickets
+        {
+            get => _targetTickets;
+            set { _targetTickets = value; OnPropertyChanged(); }
+        }
+
+        private TicketOption _selectedTargetTicket;
+        public TicketOption SelectedTargetTicket
+        {
+            get => _selectedTargetTicket;
+            set { _selectedTargetTicket = value; OnPropertyChanged(); }
+        }
+
         #endregion
 
         #region Commands
@@ -169,7 +197,7 @@ namespace TicketConsolidator.UI
 
         #region Browser Login
 
-        private void ShowBrowser()
+        private async void ShowBrowser()
         {
             _logger.LogInfo("Opening Jira login window.");
             AuthStatus = "Opening Jira login window...";
@@ -187,14 +215,28 @@ namespace TicketConsolidator.UI
 
             if (result == true && loginWindow.ExtractedCookies != null)
             {
-                _jiraService.SetCookies(loginWindow.ExtractedCookies);
+                // We map from SimpleCookie (saved attributes) back to System.Net.Cookie
+                var netCookies = loginWindow.ExtractedCookies.Select(sc => new Cookie
+                {
+                    Name = sc.Name,
+                    Value = sc.Value,
+                    Path = sc.Path,
+                    Domain = sc.Domain,
+                    Secure = sc.IsSecure,
+                    HttpOnly = sc.IsHttpOnly
+                }).ToList();
+
+                _jiraService.SetCookies(netCookies);
+
+                // Persist session cookies securely maintaining the true WebView metadata
+                await _settingsService.SaveJiraSessionAsync(loginWindow.ExtractedCookies);
 
                 IsBrowserVisible = false;
                 AuthStatus = "Connected to Jira ✓";
                 OnPropertyChanged(nameof(IsAuthenticated));
                 CommandManager.InvalidateRequerySuggested();
 
-                _logger.LogSuccess("Jira session extracted from login window.");
+                _logger.LogSuccess("Jira session extracted from login window and saved reliably for today.");
             }
             else
             {
@@ -219,15 +261,18 @@ namespace TicketConsolidator.UI
                 FoundLinks.Remove(link);
                 OnPropertyChanged(nameof(HasFoundLinks));
 
+                // Assign the currently selected target ticket or default to Main Ticket
+                link.AssignedTicketKey = SelectedTargetTicket?.Key ?? Ticket?.Key;
+
                 if (type == "VS")
                 {
                     VSCommits.Add(link);
-                    _logger.LogInfo($"Assigned '{link.Title}' as VS Commit.");
+                    _logger.LogInfo($"Assigned '{link.Title}' as VS Commit for {link.AssignedTicketKey}.");
                 }
                 else
                 {
                     DBCommits.Add(link);
-                    _logger.LogInfo($"Assigned '{link.Title}' as DB Commit.");
+                    _logger.LogInfo($"Assigned '{link.Title}' as DB Commit for {link.AssignedTicketKey}.");
                 }
 
                 if (SelectedVSCommit == null && VSCommits.Count > 0) SelectedVSCommit = VSCommits[0];
@@ -276,6 +321,8 @@ namespace TicketConsolidator.UI
                 catch (UnauthorizedAccessException)
                 {
                     HasError = true;
+                    await _settingsService.ClearJiraSessionAsync();
+
                     AuthStatus = "Session expired — click LOGIN again";
                     StatusMessage = "Session expired. Please log in again.";
                     OnPropertyChanged(nameof(IsAuthenticated));
@@ -294,6 +341,20 @@ namespace TicketConsolidator.UI
                 else
                 {
                     StatusMessage = $"Found {Ticket.Key} — no linked commits found.";
+                }
+
+                TargetTickets.Clear();
+                if (Ticket != null)
+                {
+                    TargetTickets.Add(new TicketOption { Key = Ticket.Key, DisplayName = $"Main Ticket: {Ticket.Key}", Type = "Main" });
+                    if (Ticket.CodeReviewTickets != null)
+                    {
+                        foreach (var cr in Ticket.CodeReviewTickets)
+                        {
+                            TargetTickets.Add(new TicketOption { Key = cr.Key, DisplayName = $"{cr.Type}: {cr.Key}", Type = cr.Type });
+                        }
+                    }
+                    SelectedTargetTicket = TargetTickets.FirstOrDefault();
                 }
 
                 HasError = false;
@@ -441,27 +502,56 @@ namespace TicketConsolidator.UI
 
                 string dbScriptAnswer = hasDataScript ? "Yes" : "NA";
 
-                // Build commit rows for ALL VS and DB commits
-                string vsCommitRows = "";
-                if (VSCommits.Count > 0)
+                // Filter commits for the MAIN ticket
+                var mainVsCommits = VSCommits.Where(c => c.AssignedTicketKey == Ticket.Key).ToList();
+                var mainDbCommits = DBCommits.Where(c => c.AssignedTicketKey == Ticket.Key).ToList();
+
+                string vsCommitRows = mainVsCommits.Count > 0 
+                    ? string.Join(", ", mainVsCommits.Select(c => $"<a href='{c.Url}'>{c.ChangeNumber}</a>"))
+                    : "NA";
+
+                string dbCommitRows = mainDbCommits.Count > 0
+                    ? string.Join(", ", mainDbCommits.Select(c => $"<a href='{c.Url}'>{c.ChangeNumber}</a>"))
+                    : "NA";
+
+                string codeReviewRows = "";
+                if (Ticket.CodeReviewTickets == null || Ticket.CodeReviewTickets.Count == 0)
                 {
-                    vsCommitRows = string.Join(", ", VSCommits.Select(c =>
-                        $"<a href='{c.Url}'>{c.ChangeNumber}</a>"));
+                    codeReviewRows = @"    <tr>
+      <td rowspan='2'>Self-Code review Ticket No: NA</td>
+      <td>VS Commit: NA</td>
+    </tr>
+    <tr>
+      <td>DB Commit: NA</td>
+    </tr>";
                 }
                 else
                 {
-                    vsCommitRows = "NA";
+                    foreach (var crTicket in Ticket.CodeReviewTickets)
+                    {
+                        var crVsCommits = VSCommits.Where(c => c.AssignedTicketKey == crTicket.Key).ToList();
+                        var crDbCommits = DBCommits.Where(c => c.AssignedTicketKey == crTicket.Key).ToList();
+                        
+                        string crVsStr = crVsCommits.Count > 0 ? string.Join(", ", crVsCommits.Select(c => $"<a href='{c.Url}'>{c.ChangeNumber}</a>")) : "NA";
+                        string crDbStr = crDbCommits.Count > 0 ? string.Join(", ", crDbCommits.Select(c => $"<a href='{c.Url}'>{c.ChangeNumber}</a>")) : "NA";
+
+                        codeReviewRows += $@"    <tr>
+      <td rowspan='2'>{crTicket.Type} Ticket No:- <a href='{crTicket.Url}'>{crTicket.Key} - {crTicket.Summary}</a></td>
+      <td>VS Commit: {crVsStr}</td>
+    </tr>
+    <tr>
+      <td>DB Commit: {crDbStr}</td>
+    </tr>
+";
+                    }
                 }
 
-                string dbCommitRows = "";
-                if (DBCommits.Count > 0)
+                if (!template.Contains("{CodeReviewRows}"))
                 {
-                    dbCommitRows = string.Join(", ", DBCommits.Select(c =>
-                        $"<a href='{c.Url}'>{c.ChangeNumber}</a>"));
-                }
-                else
-                {
-                    dbCommitRows = "NA";
+                    // Fallback to replace the old hardcoded block if it exists
+                    template = System.Text.RegularExpressions.Regex.Replace(template, 
+                        @"<tr>\s*<td[^>]*>Self-Code review Ticket No: NA</td>\s*<td>VS Commit: NA</td>\s*</tr>\s*<tr>\s*<td>DB Commit: NA</td>\s*</tr>", 
+                        "{CodeReviewRows}", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                 }
 
                 string body = template
@@ -476,6 +566,7 @@ namespace TicketConsolidator.UI
                     .Replace("{DBCommitNumber}", dbCommitRows)
                     .Replace("{DBCommitUrl}", SelectedDBCommit?.Url ?? "#")
                     .Replace("{HasDataScript}", dbScriptAnswer)
+                    .Replace("{CodeReviewRows}", codeReviewRows)
                     .Replace("{UserName}", Environment.UserName)
                     .Replace("{Date}", DateTime.Now.ToString("yyyy-MM-dd"));
 
@@ -528,13 +619,7 @@ namespace TicketConsolidator.UI
     <tr>
       <td>DB Commit: {DBCommitNumber}</td>
     </tr>
-    <tr>
-      <td rowspan='2'>Self-Code review Ticket No: NA</td>
-      <td>VS Commit: NA</td>
-    </tr>
-    <tr>
-      <td>DB Commit: NA</td>
-    </tr>
+{CodeReviewRows}
   </table>
 
   <br/>

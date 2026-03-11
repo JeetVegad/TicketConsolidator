@@ -19,6 +19,17 @@ namespace TicketConsolidator.Application.DTOs
 
         // Swarm / remote links found on the Jira ticket
         public List<SwarmLink> SwarmLinks { get; set; } = new List<SwarmLink>();
+
+        // Code review / self code review tickets linked via 'satisfies'
+        public List<LinkedJiraTicket> CodeReviewTickets { get; set; } = new List<LinkedJiraTicket>();
+    }
+
+    public class LinkedJiraTicket
+    {
+        public string Key { get; set; }
+        public string Summary { get; set; }
+        public string Url { get; set; }
+        public string Type { get; set; } // e.g. "Self Code Review" or "Code Review"
     }
 
     public class PerforceChangelist
@@ -41,5 +52,19 @@ namespace TicketConsolidator.Application.DTOs
         public string ChangeNumber { get; set; }    // Extracted changelist or review number
         public string Relationship { get; set; }    // "links to", "is related to", etc.
         public bool IsDatabase { get; set; }        // True if auto-detected as a DB commit
+        public string Comment { get; set; }         // Commit description/comment 
+
+        public string AssignedTicketKey { get; set; } // The Jira ticket this commit belongs to
+
+
+        public string DisplayText 
+        {
+            get 
+            {
+                if (!string.IsNullOrWhiteSpace(Comment))
+                    return $"Commit {ChangeNumber} -- {Comment}";
+                return $"Commit {ChangeNumber}";
+            }
+        }
     }
 }

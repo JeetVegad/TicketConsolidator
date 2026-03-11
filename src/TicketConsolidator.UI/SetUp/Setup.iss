@@ -39,7 +39,7 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; Wo
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon; WorkingDir: "{app}"
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"
+Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent runasoriginaluser; WorkingDir: "{app}"
 
 [Dirs]
 Name: "{app}"; Permissions: users-modify
@@ -182,12 +182,14 @@ begin
     // Format JSON correctly by escaping backslashes in path
     StringChange(TicketsFolder, '\', '\\');
     
-    // Write user settings
-    JsonContent := '{' + #13#10 +
-      '  "OutlookFolder": "' + EmailFolder + '",' + #13#10 +
-      '  "TicketsFolder": "' + TicketsFolder + '"' + #13#10 +
-      '}';
-      
-    SaveStringToFile(UserSettingsPath, JsonContent, False);
+    // Write user settings ONLY if they don't exist to prevent wiping Jira session/templates
+    if not FileExists(UserSettingsPath) then
+    begin
+      JsonContent := '{' + #13#10 +
+        '  "OutlookFolder": "' + EmailFolder + '",' + #13#10 +
+        '  "TicketsFolder": "' + TicketsFolder + '"' + #13#10 +
+        '}';
+      SaveStringToFile(UserSettingsPath, JsonContent, False);
+    end;
   end;
 end;
