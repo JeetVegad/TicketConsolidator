@@ -30,7 +30,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\bin\Release\net10.0-windows\publish_final\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\bin\Release\net8.0-windows\publish_final\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 
 [Icons]
@@ -39,7 +39,7 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"; Wo
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon; WorkingDir: "{app}"
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"
+Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent runasoriginaluser; WorkingDir: "{app}"
 
 [Dirs]
 Name: "{app}"; Permissions: users-modify
@@ -50,10 +50,9 @@ Name: "{app}\Logs"; Permissions: users-modify
 [Code]
 var
   EmailObjPage: TInputQueryWizardPage;
-  DbConfigPage: TInputOptionWizardPage;
+  TicketsFolderPage: TInputDirWizardPage;
   EmailFolder: String;
-  EnableDatabase: Boolean;
-  DbConnectionString: String;
+  TicketsFolder: String;
 
 procedure InitializeWizard;
 begin
@@ -64,17 +63,12 @@ begin
   EmailObjPage.Add('Default Email Folder:', False);
   EmailObjPage.Values[0] := 'Inbox';
   
-  // Page 2: Database Logging Configuration (Checkbox)
-  DbConfigPage := CreateInputOptionPage(EmailObjPage.ID,
-    'Database Logging (Optional)', 'Centralized Logging Configuration',
-    'Select the logging options below:',
-    False, False);
-    
-  // Add Checkbox
-  DbConfigPage.Add('Enable Centralized Database Logging (SQL Server)');
-  
-  // Set default (Unchecked)
-  DbConfigPage.Values[0] := False;
+  // Page 1.5: Tickets Folder
+  TicketsFolderPage := CreateInputDirPage(EmailObjPage.ID,
+    'Tickets Folder', 'Where do you store Jira or TFS tickets locally?',
+    'Select the folder where you want to store and retrieve your ticket automation artifacts. If left blank, it defaults to the Documents folder.',
+    False, '');
+  TicketsFolderPage.Add('Tickets Folder Path:');
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
@@ -84,36 +78,19 @@ var
   ScriptsPath: String;
   ConsolidatedPath: String;
   BasePath: String;
-  EnableDbStr: String;
-  DbConnStr: String;
-  IsDbEnabled: Boolean;
+  UserSettingsDir: String;
+  UserSettingsPath: String;
 begin
   if CurStep = ssPostInstall then
   begin
     // Gather User Inputs
     BasePath := ExpandConstant('{app}');
     EmailFolder := EmailObjPage.Values[0];
-    
-    // Check if Checkbox is ticked
-    IsDbEnabled := DbConfigPage.Values[0];
+    TicketsFolder := TicketsFolderPage.Values[0];
     
     // Validate Email Folder Input (Default to Inbox if empty)
     if Length(EmailFolder) = 0 then
       EmailFolder := 'Inbox';
-
-    // DETERMINE DB SETTINGS
-    if IsDbEnabled then
-    begin
-      EnableDbStr := 'true';
-      // HARDCODED CONNECTION STRING (Default Localhost / Integrated Auth)
-      // User requested this to be hardcoded.
-      DbConnStr := 'Server=localhost;Database=TicketConsolidator;Trusted_Connection=True;'; 
-    end
-    else
-    begin
-      EnableDbStr := 'false';
-      DbConnStr := '';
-    end;
 
     // Construct Paths
     ScriptsPath := BasePath + '\Scripts';
@@ -124,8 +101,6 @@ begin
     StringChange(ScriptsPath, '\', '\\');
     StringChange(ConsolidatedPath, '\', '\\');
     
-    // Escape quotes in connection string for JSON
-    StringChange(DbConnStr, '"', '\"');
     
     ConfigPath := ExpandConstant('{app}\appsettings.json');
     
@@ -133,18 +108,14 @@ begin
     if FileExists(ConfigPath) then
       DeleteFile(ConfigPath);
 
-    // Generate appsettings.json with all configuration
+    // Generate appsettings.json with all configuration (Mainly Logging/DB here)
     JsonContent := '{' + #13#10 +
       '  "Logging": {' + #13#10 +
       '    "LogLevel": {' + #13#10 +
       '      "Default": "Information",' + #13#10 +
       '      "Microsoft": "Warning",' + #13#10 +
       '      "Microsoft.Hosting.Lifetime": "Information"' + #13#10 +
-      '    },' + #13#10 +
-      '    "EnableDatabase": ' + EnableDbStr + #13#10 +
-      '  },' + #13#10 +
-      '  "ConnectionStrings": {' + #13#10 +
-      '    "LogDatabase": "' + DbConnStr + '"' + #13#10 +
+      '    }' + #13#10 +
       '  },' + #13#10 +
       '  "EmailSettings": {' + #13#10 +
       '    "TargetFolder": "' + EmailFolder + '"' + #13#10 +
@@ -157,5 +128,27 @@ begin
       '}';
       
     SaveStringToFile(ConfigPath, JsonContent, False);
+
+    // --- SAVE userSettings.json in %APPDATA% ---
+    
+    // Construct AppData path for user settings
+    UserSettingsDir := ExpandConstant('{userappdata}\TicketConsolidator');
+    if not DirExists(UserSettingsDir) then
+      CreateDir(UserSettingsDir);
+      
+    UserSettingsPath := UserSettingsDir + '\userSettings.json';
+    
+    // Format JSON correctly by escaping backslashes in path
+    StringChange(TicketsFolder, '\', '\\');
+    
+    // Write user settings ONLY if they don't exist to prevent wiping Jira session/templates
+    if not FileExists(UserSettingsPath) then
+    begin
+      JsonContent := '{' + #13#10 +
+        '  "OutlookFolder": "' + EmailFolder + '",' + #13#10 +
+        '  "TicketsFolder": "' + TicketsFolder + '"' + #13#10 +
+        '}';
+      SaveStringToFile(UserSettingsPath, JsonContent, False);
+    end;
   end;
 end;

@@ -1,0 +1,198 @@
+<UserControl x:Class="TicketConsolidator.UI.Views.InternalReleaseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="900">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <md:BooleanToVisibilityConverter x:Key="InvertBoolToVis" TrueValue="Collapsed" FalseValue="Visible" xmlns:md="clr-namespace:MaterialDesignThemes.Wpf.Converters;assembly=MaterialDesignThemes.Wpf"/>
+    </UserControl.Resources>
+
+    <Grid Margin="20">        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+            <StackPanel x:Name="MainPanel">
+                <!-- Page Title -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <materialDesign:PackIcon Kind="AirplaneTakeoff" Width="28" Height="28" 
+                                             VerticalAlignment="Center" Margin="0,0,10,0"
+                                             Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                    <TextBlock Text="Internal Release" Style="{StaticResource MaterialDesignHeadline5TextBlock}" 
+                               Foreground="{DynamicResource MaterialDesignBody}"/>
+                </StackPanel>
+
+                <!-- Jira Login Card -->
+                <materialDesign:Card Padding="20" UniformCornerRadius="8" 
+                                     materialDesign:ShadowAssist.ShadowDepth="Depth2" Margin="0,0,0,15">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Status icon -->
+                        <materialDesign:PackIcon VerticalAlignment="Center" Width="24" Height="24" Margin="0,0,12,0">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Kind" Value="ShieldAlertOutline"/>
+                                    <Setter Property="Foreground" Value="#FF9800"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAuthenticated}" Value="True">
+                                            <Setter Property="Kind" Value="ShieldCheckOutline"/>
+                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+
+                        <!-- Status text -->
+                        <TextBlock Grid.Column="1" Text="{Binding AuthStatus}" VerticalAlignment="Center" FontSize="13">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#757575"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAuthenticated}" Value="True">
+                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- Login button -->
+                        <Button Grid.Column="2" Command="{Binding LoginCommand}" 
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                ToolTip="Open Jira login window"
+                                materialDesign:ButtonAssist.CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Login" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Text="LOGIN TO JIRA" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Search Card -->
+                <materialDesign:Card Padding="20" UniformCornerRadius="8" 
+                                     materialDesign:ShadowAssist.ShadowDepth="Depth2" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Search Ticket" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" 
+                                   FontWeight="SemiBold" Margin="0,0,0,15"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBox Grid.Column="0" 
+                                     Text="{Binding TicketKey, UpdateSourceTrigger=PropertyChanged}" 
+                                     materialDesign:HintAssist.Hint="Enter Jira Ticket (e.g., PROJ-1234)" 
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     VerticalAlignment="Center">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            
+                            <Button Grid.Column="1" 
+                                    Command="{Binding SearchCommand}" 
+                                    Margin="15,0,0,0" Height="48"
+                                    Style="{StaticResource MaterialDesignRaisedButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Magnify" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <TextBlock Text="SEARCH" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <!-- Error Message -->
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" Margin="5,10,0,0" 
+                                   Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}" 
+                                   TextWrapping="Wrap"/>
+                                   
+                        <!-- Loading Indicator -->
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                     Value="0" IsIndeterminate="True" Margin="0,20,0,0"
+                                     HorizontalAlignment="Center"
+                                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"/>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Ticket Details Card -->
+                <materialDesign:Card Padding="20" UniformCornerRadius="8" 
+                                     materialDesign:ShadowAssist.ShadowDepth="Depth2" Margin="0,0,0,15"
+                                     Visibility="{Binding Ticket, Converter={StaticResource NullableToVisibilityConverter}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <materialDesign:PackIcon Kind="TicketOutline" Width="24" Height="24" 
+                                                     VerticalAlignment="Center" Margin="0,0,10,0" 
+                                                     Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text="Ticket Details" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" 
+                                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Key -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Key:" FontWeight="Bold" Margin="0,0,10,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Ticket.Key}" Margin="0,0,0,10" FontWeight="SemiBold"/>
+                            
+                            <!-- Summary -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Summary:" FontWeight="Bold" Margin="0,0,10,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Ticket.Summary}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            
+                            <!-- UT Attachment -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="UT Att.:" FontWeight="Bold" Margin="0,0,10,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,10">
+                                <materialDesign:PackIcon Kind="CheckCircleOutline" Foreground="#4CAF50" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,5,0"
+                                        Visibility="{Binding Ticket.HasUTDocument, Converter={StaticResource BoolToVis}}"/>
+                                <TextBlock Text="Yes, UT document attached" VerticalAlignment="Center" Foreground="#4CAF50" FontWeight="SemiBold"
+                                        Visibility="{Binding Ticket.HasUTDocument, Converter={StaticResource BoolToVis}}"/>
+                                        
+                                <materialDesign:PackIcon Kind="AlertCircleOutline" Foreground="#FF9800" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,5,0"
+                                        Visibility="{Binding Ticket.HasUTDocument, Converter={StaticResource InvertBoolToVis}}"/>
+                                <TextBlock Text="No UT document found" VerticalAlignment="Center" Foreground="#FF9800" FontWeight="Medium"
+                                        Visibility="{Binding Ticket.HasUTDocument, Converter={StaticResource InvertBoolToVis}}"/>
+                            </StackPanel>
+
+                            <!-- DB Commits Info -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Scripts:" FontWeight="Bold" Margin="0,0,10,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,0,0,10" TextWrapping="Wrap"
+                                       Text="{Binding StringFormat='Detected {0} DB commit(s) and {1} VS commit(s)', Path=Ticket.DBCommits.Count, TargetNullValue='0'}"/>
+                            
+                            <!-- Draft Email Button -->
+                            <Button Grid.Row="4" Grid.ColumnSpan="2" 
+                                    Command="{Binding OpenDraftDialogCommand}" 
+                                    Margin="0,20,0,0" Height="48"
+                                    HorizontalAlignment="Left"
+                                    Style="{StaticResource MaterialDesignRaisedDarkButton}"
+                                    materialDesign:ButtonAssist.CornerRadius="6">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="EmailFastOutline" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock Text="PREPARE INTERNAL RELEASE" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </materialDesign:Card>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

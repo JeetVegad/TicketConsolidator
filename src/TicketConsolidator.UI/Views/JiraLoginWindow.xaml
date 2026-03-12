@@ -1,0 +1,247 @@
+<Window x:Class="TicketConsolidator.UI.Views.JiraLoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Jira Authentication"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Subtle pulse animation for the Done button -->
+        <Storyboard x:Key="PulseAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="DoneButtonGlow"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0.0" To="0.4" Duration="0:0:1.2"
+                             AutoReverse="True">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Fade-in entrance animation -->
+        <Storyboard x:Key="EntranceAnimation">
+            <DoubleAnimation Storyboard.TargetName="MainContainer"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="MainContainerScale"
+                             Storyboard.TargetProperty="ScaleX"
+                             From="0.95" To="1" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="MainContainerScale"
+                             Storyboard.TargetProperty="ScaleY"
+                             From="0.95" To="1" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </Window.Resources>
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource EntranceAnimation}"/>
+            <BeginStoryboard Storyboard="{StaticResource PulseAnimation}"/>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <!-- Semi-transparent backdrop -->
+    <Grid>
+        <Border Background="#99000000"/>
+
+        <!-- Main container — card-like overlay -->
+        <Border x:Name="MainContainer" Margin="40" CornerRadius="16"
+                Background="White" Opacity="0"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <ScaleTransform x:Name="MainContainerScale"/>
+            </Border.RenderTransform>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.35" Color="Black"/>
+            </Border.Effect>
+            <Border CornerRadius="16" ClipToBounds="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>   <!-- Header -->
+                        <RowDefinition Height="Auto"/>   <!-- Progress bar -->
+                        <RowDefinition Height="*"/>      <!-- Browser -->
+                        <RowDefinition Height="Auto"/>   <!-- Footer -->
+                    </Grid.RowDefinitions>
+
+                    <!-- ═══ HEADER BAR ═══ -->
+                    <Border Grid.Row="0" Padding="20,14">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#1A1A2E" Offset="0"/>
+                                <GradientStop Color="#16213E" Offset="0.5"/>
+                                <GradientStop Color="#0F3460" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>  <!-- Icon + Title -->
+                                <ColumnDefinition Width="*"/>     <!-- Address bar -->
+                                <ColumnDefinition Width="Auto"/>  <!-- Close button -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Jira branding -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                                <Border Background="#0052CC" CornerRadius="8" Padding="8,6" Margin="0,0,12,0">
+                                    <materialDesign:PackIcon Kind="Jira" Width="22" Height="22" Foreground="White"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Jira Authentication" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Sign in to your Atlassian account" FontSize="11" Foreground="#8899BB" Margin="0,1,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Address bar -->
+                            <Border Grid.Column="1" Background="#0D1B2A" CornerRadius="8" Padding="12,7"
+                                    VerticalAlignment="Center" Margin="10,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon Kind="Lock" Width="14" Height="14"
+                                                             Foreground="#4CAF50" VerticalAlignment="Center"
+                                                             Margin="0,0,8,0" x:Name="LockIcon"/>
+                                    <TextBlock x:Name="UrlDisplay" Grid.Column="1"
+                                               Text="Loading..."
+                                               Foreground="#8899BB" FontSize="12"
+                                               FontFamily="Consolas"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Close button -->
+                            <Button Grid.Column="2" Click="Cancel_Click"
+                                    Style="{StaticResource MaterialDesignFlatButton}"
+                                    Foreground="#8899BB" Padding="8"
+                                    ToolTip="Cancel and close">
+                                <materialDesign:PackIcon Kind="Close" Width="22" Height="22"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- ═══ PROGRESS BAR ═══ -->
+                    <Grid Grid.Row="1" Height="3">
+                        <Border Background="#E8EAF0"/>
+                        <ProgressBar x:Name="NavigationProgress"
+                                     IsIndeterminate="True"
+                                     Height="3" Visibility="Collapsed"
+                                     Foreground="#0052CC"
+                                     Background="Transparent"
+                                     BorderThickness="0"/>
+                    </Grid>
+
+                    <!-- ═══ BROWSER AREA ═══ -->
+                    <wv2:WebView2 x:Name="JiraBrowser" Grid.Row="2"/>
+
+                    <!-- ═══ FOOTER BAR ═══ -->
+                    <Border Grid.Row="3" Padding="20,12"
+                            BorderBrush="#E8EAF0" BorderThickness="0,1,0,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FAFBFD" Offset="0"/>
+                                <GradientStop Color="#F0F2F5" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>  <!-- Step indicator -->
+                                <ColumnDefinition Width="*"/>     <!-- Status text -->
+                                <ColumnDefinition Width="Auto"/>  <!-- Buttons -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Step indicators -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="Step1" Background="#0052CC" CornerRadius="12"
+                                        Padding="10,4" Margin="0,0,6,0">
+                                    <TextBlock Text="1  Open" FontSize="11" FontWeight="SemiBold" Foreground="White"/>
+                                </Border>
+                                <materialDesign:PackIcon Kind="ChevronRight" Width="16" Height="16" 
+                                                         Foreground="#BDBDBD" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border x:Name="Step2" Background="#E0E0E0" CornerRadius="12"
+                                        Padding="10,4" Margin="0,0,6,0">
+                                    <TextBlock x:Name="Step2Text" Text="2  Sign In" FontSize="11" FontWeight="SemiBold" Foreground="#757575"/>
+                                </Border>
+                                <materialDesign:PackIcon Kind="ChevronRight" Width="16" Height="16"
+                                                         Foreground="#BDBDBD" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <Border x:Name="Step3" Background="#E0E0E0" CornerRadius="12"
+                                        Padding="10,4">
+                                    <TextBlock x:Name="Step3Text" Text="3  Done" FontSize="11" FontWeight="SemiBold" Foreground="#757575"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Status text -->
+                            <TextBlock x:Name="StatusText" Grid.Column="1"
+                                       Text="Complete the Jira login, then click 'I'm Logged In'"
+                                       FontSize="12" Foreground="#616161"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+
+                            <!-- Action buttons -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="CANCEL" Click="Cancel_Click"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        Foreground="#9E9E9E" FontWeight="Bold"
+                                        Margin="0,0,12,0" Padding="16,8"
+                                        FontSize="12"/>
+                                
+                                <!-- Done button with glow -->
+                                <Grid>
+                                    <Border x:Name="DoneButtonGlow" CornerRadius="8"
+                                            Background="#0052CC" Opacity="0"
+                                            Margin="-4">
+                                        <Border.Effect>
+                                            <BlurEffect Radius="12"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <Button x:Name="DoneButton" Click="Done_Click"
+                                            Padding="20,10"
+                                            FontWeight="Bold" FontSize="13"
+                                            materialDesign:ButtonAssist.CornerRadius="8"
+                                            Background="#0052CC" Foreground="White"
+                                            BorderThickness="0">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                                                <Setter Property="Background" Value="#0052CC"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Background" Value="#0065FF"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="CheckCircle" Width="20" Height="20"
+                                                                     VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="I'M LOGGED IN" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Border>
+    </Grid>
+</Window>

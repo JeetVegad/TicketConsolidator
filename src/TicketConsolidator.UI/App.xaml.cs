@@ -37,6 +37,12 @@ namespace TicketConsolidator.UI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Force hardware acceleration and high framerate for smooth Material Design animations
+            System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
+                 typeof(System.Windows.Media.Animation.Timeline),
+                 new FrameworkPropertyMetadata { DefaultValue = 60 });
+            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+
             // Enable Multicore JIT Optimization to speed up startup and dialogs
             try
             {
@@ -66,13 +72,6 @@ namespace TicketConsolidator.UI
                 ConfigureServices(serviceCollection);
 
                 ServiceProvider = serviceCollection.BuildServiceProvider();
-
-                try
-                {
-                    var settings = ServiceProvider.GetRequiredService<TicketConsolidator.Infrastructure.Services.SettingsService>();
-                    // Theme logic reverted
-                }
-                catch { /* Ignored */ }
 
                 var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
@@ -131,6 +130,7 @@ namespace TicketConsolidator.UI
             // Configuration
             var emailConfig = Configuration.GetSection("EmailSettings").Get<EmailConfiguration>() ?? new EmailConfiguration();
             services.AddSingleton(emailConfig);
+            services.AddSingleton(new JiraConfiguration());
 
             // Core Services
             services.AddSingleton<IEncryptionService, EncryptionService>();
@@ -138,22 +138,33 @@ namespace TicketConsolidator.UI
             services.AddSingleton<ISqlParserService, SqlParserService>();
             services.AddSingleton<IScriptValidatorService, ScriptValidatorService>();
             services.AddSingleton<IConsolidationService, ConsolidationService>();
-            services.AddSingleton<ILoggerService, LoggerService>(); // NEW
+            services.AddSingleton<ILoggerService, LoggerService>();
             services.AddSingleton<SettingsService>();
+
+            services.AddSingleton<IJiraService, JiraService>();
+            services.AddSingleton<IPerforceService, PerforceService>();
 
             // ViewModels
             services.AddTransient<MainWindowViewModel>();
             services.AddSingleton<DashboardViewModel>();
-            services.AddTransient<LogsViewModel>(); // NEW
+
+            services.AddTransient<LogsViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<HelpViewModel>();
+            services.AddTransient<CodeReviewViewModel>();
+            services.AddTransient<InternalReleaseViewModel>();
+            services.AddTransient<TemplateEditorViewModel>();
 
             // Views
             services.AddSingleton<MainWindow>();
             services.AddSingleton<DashboardView>();
+
             services.AddSingleton<SettingsView>();
             services.AddSingleton<LogsView>();
             services.AddSingleton<HelpView>();
+            services.AddSingleton<CodeReviewView>();
+            services.AddSingleton<InternalReleaseView>();
+            services.AddSingleton<TemplateEditorView>();
         }
     }
 }

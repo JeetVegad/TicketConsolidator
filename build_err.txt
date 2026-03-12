@@ -1,0 +1,17 @@
+﻿C:\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.
+  TicketConsolidator.Domain -> C:\Apps\TicketConsolidator\src\TicketConsolidator.Domain\bin\Debug\net10.0\TicketConsolidator.Domain.dll
+  TicketConsolidator.Application -> C:\Apps\TicketConsolidator\src\TicketConsolidator.Application\bin\Debug\net10.0\TicketConsolidator.Application.dll
+  TicketConsolidator.Infrastructure -> C:\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\bin\Debug\net10.0-windows\TicketConsolidator.Infrastructure.dll
+C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\Views\HelpView.xaml(199,50): warning CS0108: 'HelpView.Cursor' hides inherited member 'FrameworkElement.Cursor'. Use the new keyword if hiding was intended. [C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\TicketConsolidator.UI_fuiof1m3_wpftmp.csproj]
+C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\Views\HelpView.xaml(199,50): warning CS0108: 'HelpView.Cursor' hides inherited member 'FrameworkElement.Cursor'. Use the new keyword if hiding was intended. [C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\TicketConsolidator.UI.csproj]
+  TicketConsolidator.UI -> C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\bin\Debug\net10.0-windows\TicketConsolidator.UI.dll
+
+Build succeeded.
+
+C:\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj : warning NU1510: PackageReference System.Security.Cryptography.ProtectedData will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.
+C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\Views\HelpView.xaml(199,50): warning CS0108: 'HelpView.Cursor' hides inherited member 'FrameworkElement.Cursor'. Use the new keyword if hiding was intended. [C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\TicketConsolidator.UI_fuiof1m3_wpftmp.csproj]
+C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\Views\HelpView.xaml(199,50): warning CS0108: 'HelpView.Cursor' hides inherited member 'FrameworkElement.Cursor'. Use the new keyword if hiding was intended. [C:\Apps\TicketConsolidator\src\TicketConsolidator.UI\TicketConsolidator.UI.csproj]
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.75

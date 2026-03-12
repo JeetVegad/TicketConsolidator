@@ -36,125 +36,59 @@ namespace TicketConsolidator.Infrastructure.Services
                 throw new Exception("Detected 'New Outlook' (olk.exe). This application requires 'Classic Outlook' (OUTLOOK.EXE). Please switch versions.");
             }
 
-            // 1. Establish Connection (Smart Strategy: Retry Attach -> Keep if good -> Else Restart Visible -> Force UI)
             _outlookApp = null;
-            Exception lastError = null;
 
-            // ATTEMPT 1: Attach to running instance (With Retry for Busy/Transient states)
-            for (int attemptMatch = 0; attemptMatch < 3; attemptMatch++) 
+            await Task.Run(() => 
             {
-                if (System.Diagnostics.Process.GetProcessesByName("OUTLOOK").Length > 0)
+                // ATTEMPT 1: Get running instance
+                try 
+                {
+                    _outlookApp = NativeMethods.GetActiveObject("Outlook.Application");
+                    string v = _outlookApp.Version; // Liveliness check
+                }
+                catch 
+                { 
+                    _outlookApp = null;
+                }
+
+                // ATTEMPT 2: Create new instance via COM
+                if (_outlookApp == null)
                 {
                     try 
                     {
-                        _outlookApp = NativeMethods.GetActiveObject("Outlook.Application");
-                        
-                        // Zombie/Busy Check
-                        try 
-                        { 
-                             // Just check a property. If Outlook is busy/stuck, this might throw or hang.
-                            string v = _outlookApp.Version; 
-                        } 
-                        catch 
-                        { 
-                            _outlookApp = null; // discard
+                        Type outlookType = Type.GetTypeFromProgID("Outlook.Application");
+                        if (outlookType != null)
+                        {
+                            _outlookApp = Activator.CreateInstance(outlookType);
                         }
                     }
-                    catch { /* Attach failed */ }
-                }
-                
-                if (_outlookApp != null) break; // Found it!
-                await Task.Delay(500); // Wait a bit before retrying attach
-            }
-
-            // ATTEMPT 2: Restart if Attach Failed (Permission Mismatch or Real Zombie)
-            if (_outlookApp == null)
-            {
-                var procs = System.Diagnostics.Process.GetProcessesByName("OUTLOOK");
-                if (procs.Length > 0)
-                {
-                    // If we reach here, Outlook IS running, but we couldn't attach after 3 tries.
-                    // This confirms a Hard Permission Mismatch (Admin vs User) or Hard Stuck.
-                    // We MUST Close it to proceed.
-                    foreach (var p in procs) { try { p.Kill(); } catch { } }
-                    await Task.Delay(2000); // Wait for release
-                }
-
-                // Start VISIBLE Outlook Application
-                try 
-                {
-                     // Use ShellExecute to behave like a User Double-Click (Best for visibility)
-                     var psi = new System.Diagnostics.ProcessStartInfo("OUTLOOK.EXE") { UseShellExecute = true };
-                     System.Diagnostics.Process.Start(psi);
-                }
-                catch
-                {
-                     // Fallback: Try CreateInstance (will be hidden initially, but we fix that below)
-                     Type outlookType = Type.GetTypeFromProgID("Outlook.Application");
-                     if (outlookType != null) _outlookApp = Activator.CreateInstance(outlookType);
-                }
-
-                // Wait for Registration
-                // Loop to grab the object from ROT (Active Object)
-                for(int i=0; i<15; i++)
-                {
-                    try 
+                    catch (Exception ex)
                     {
-                        _outlookApp = NativeMethods.GetActiveObject("Outlook.Application");
-                        if(_outlookApp != null) break;
+                        throw new Exception("Could not connect to or start Outlook via COM. If you are running as Administrator, please run as a normal user.", ex);
                     }
-                    catch { }
-                    
-                    // If we created it via Activator (and couldn't attach yet), we might already have it in _outlookApp?
-                    // No, simpler to just re-fetch to be consistent.
-                    if (_outlookApp == null && i > 5)
-                    {
-                         // If Process.Start failed to register, try CreateInstance as backup
-                         try 
-                         {
-                             Type outlookType = Type.GetTypeFromProgID("Outlook.Application");
-                             if (outlookType != null) _outlookApp = Activator.CreateInstance(outlookType);
-                         } catch {}
-                    }
-                    
-                    if (_outlookApp != null) break;
-                    await Task.Delay(1000);
                 }
-            }
 
-            // ATTEMPT 3: Last Ditch Creation
-            if (_outlookApp == null)
-            {
-                try 
+                if (_outlookApp == null)
                 {
-                     Type outlookType = Type.GetTypeFromProgID("Outlook.Application");
-                     if (outlookType != null) _outlookApp = Activator.CreateInstance(outlookType);
+                    throw new Exception("Could not instantiate Outlook.Application. Please ensure Classic Outlook is installed.");
                 }
-                catch (Exception ex) { lastError = ex; }
-            }
 
-            // CRITICAL STEP: Force Visibility
-            // If we started Outlook (via Process or CreateInstance), it might be hidden.
-            // We explicitily command it to show itself.
-            if (_outlookApp != null)
-            {
+                // CRITICAL STEP: Force Visibility if we had to create a new instance
                 try
                 {
                     _outlookNamespace = _outlookApp.GetNamespace("MAPI");
                     dynamic inbox = _outlookNamespace.GetDefaultFolder(olFolderInbox);
                     
-                    // Check if any UI is visible
                     int explorerCount = 0;
                     try { explorerCount = _outlookApp.Explorers.Count; } catch {}
                     
                     if (explorerCount == 0)
                     {
-                        // HIDDEN! Force Display.
                         inbox.Display();
                     }
                 }
                 catch { /* Post-connection UI tweak failed, but connection might still be good */ }
-            }
+            });
 
             if (_outlookApp == null)
             {
@@ -168,7 +102,7 @@ namespace TicketConsolidator.Infrastructure.Services
                 }
                 msg += "1. Close Outlook Manually and Try Again.\n";
                 msg += "2. Repair Office Installation (Control Panel)\n";
-                throw new Exception(msg, lastError);
+                throw new Exception(msg);
             }
 
             // 2. Initialize MAPI Session
@@ -581,7 +515,6 @@ namespace TicketConsolidator.Infrastructure.Services
                                 .ToList();
 
                 // Strategy: Find "Release Includes" OR "Product Release Notification"
-                // Then assume subsequent lines might be "TICKET DESCRIPTION"
                 int startIndex = -1;
                 for (int i = 0; i < lines.Count; i++)
                 {
@@ -593,18 +526,50 @@ namespace TicketConsolidator.Infrastructure.Services
                     }
                 }
 
-                if (startIndex == -1) return summaries; // Block not found
+                if (startIndex == -1) 
+                {
+                    // Fallback: If no header found, scan the whole body? 
+                    // The user said "parse description from mail body... do whatever make it accurate".
+                    // Scanning everything might catch false positives, but let's try scanning from top if no explicit header found,
+                    // OR just rely on the regex being specific enough. 
+                    // Let's stick to header first. If user insists on "whole body", we might default to 0. 
+                    // Risk: Picking up tickets from previous reply chain.
+                    // Decision: Default to 0 if no header found, but rely on regex quality.
+                    startIndex = -1; // Keep strictly header-based for now to avoid junk. 
+                                     // Actually, if they say "Product Release Notification" is there, we find it.
+                }
 
                 // Regex for "TicketID  Description"
-                // Matches "ENGAGE-1234  Some Text", "ENGAGE- 1234 : Some Text", etc.
-                // Enhanced to support bullet points, spaces in ID, and flexible separators
-                var ticketRegex = new Regex(@"^[\s•\-\*]*([A-Za-z]+\s*-\s*\d+|\d+)(?:\s*[\-:\|]\s*|\s+)(.+)$", RegexOptions.IgnoreCase);
+                // Supports:
+                // ENGAGE-123 Description
+                // [ENGAGE-123] Description
+                // [ENGAGE- 123] - Description
+                // * ENGAGE 123 : Description
+                
+                // 1. Start with optional bullets/brackets: ^[\s•\-\*\[]*
+                // 2. Capture ID (Alpha-Num with optional spaces): ([A-Za-z]+\s*-\s*\d+|\d+)
+                // 3. Optional closing bracket: [\]]*
+                // 4. Separator (hyphen, colon, space): (?:\s*[\-:\|]\s*|\s+)
+                // 5. Capture Description: (.+)$
+                var ticketRegex = new Regex(@"^[\s•\-\*\[]*([A-Za-z]+\s*-\s*\d+|\d+)[\]]*(?:\s*[\-:\|]\s*|\s+)(.+)$", RegexOptions.IgnoreCase);
 
-                for (int i = startIndex + 1; i < lines.Count; i++)
+                // Start loop from startIndex. If startIndex is -1, we skip (unless we want to support headerless).
+                // Let's support the header line itself by stripping the header text? 
+                // Simpler: Just loop from startIndex (or 0 if we decide to be loose).
+                // Given "Product Release Notification: [Ticket]...", line-based regex might fail if it starts with "Product...".
+                // Let's process startIndex separately if needed.
+                
+                int loopStart = (startIndex != -1) ? startIndex : 0; 
+                // Only scan if we found a header OR if we want to be aggressive. 
+                // Let's assume header is present based on user request "Product Release Notification:".
+                
+                if (startIndex == -1) return summaries; // Safest for now.
+
+                for (int i = startIndex; i < lines.Count; i++)
                 {
                     var line = lines[i];
                     
-                    // Stop if we hit typical footer markers
+                    // Stop markers
                     if (line.StartsWith("Regards", StringComparison.OrdinalIgnoreCase) || 
                         line.StartsWith("Thanks", StringComparison.OrdinalIgnoreCase) ||
                         line.StartsWith("From:", StringComparison.OrdinalIgnoreCase))
@@ -612,19 +577,30 @@ namespace TicketConsolidator.Infrastructure.Services
                         break;
                     }
 
+                    // Special handling for the header line itself to support "Header: [Ticket]..."
+                    if (i == startIndex)
+                    {
+                        // Remove the header text to see if a ticket remains
+                        string lowerLine = line.ToLowerInvariant();
+                        string cleanLine = line;
+                        if (lowerLine.Contains("product release notification")) 
+                            cleanLine = Regex.Replace(line, "product release notification[:\\s-]*", "", RegexOptions.IgnoreCase);
+                        else if (lowerLine.Contains("release includes")) 
+                            cleanLine = Regex.Replace(line, "release includes[:\\s-]*", "", RegexOptions.IgnoreCase);
+                            
+                        if (string.IsNullOrWhiteSpace(cleanLine)) continue; // Just a header
+                        line = cleanLine.Trim();
+                    }
+
                     var match = ticketRegex.Match(line);
                     if (match.Success)
                     {
-                        // Normalize: "ENGAGE - 123" -> "ENGAGE-123"
-                        string ticketId = match.Groups[1].Value
-                                            .Replace(" ", "")
-                                            .Replace("\t", "")
-                                            .Trim()
-                                            .ToUpperInvariant(); 
-                        
+                        // Clean ID: "ENGAGE - 123" -> "ENGAGE-123"
+                        string rawId = match.Groups[1].Value;
+                        string ticketId = rawId.Replace(" ", "").Replace("\t", "").Trim().ToUpperInvariant();
                         
                         string summary = match.Groups[2].Value.Trim();
-                        // Filter out if summary is just a date or simple junk
+                        
                         if (summary.Length > 2 && !summaries.ContainsKey(ticketId))
                         {
                             summaries[ticketId] = summary;

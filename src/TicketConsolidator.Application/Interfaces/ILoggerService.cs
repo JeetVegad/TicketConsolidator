@@ -7,13 +7,10 @@ namespace TicketConsolidator.Application.Interfaces
     {
         ObservableCollection<LogSession> Sessions { get; }
         void StartSession(string sessionName);
-        void Log(string message, LogLevel level = LogLevel.Info);
-        void LogInfo(string message);
-        void LogWarning(string message);
-        void LogError(string message);
-        void LogSuccess(string message);
-        
-        System.Threading.Tasks.Task<System.Collections.Generic.List<LogEntry>> GetLogsFromDatabaseAsync(string userNameFilter = null, int daysToLoad = 5);
-        System.Threading.Tasks.Task LoadHistoryAsync();
+        void Log(string message, LogLevel level = LogLevel.Info, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "");
+        void LogInfo(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "");
+        void LogWarning(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "");
+        void LogError(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "");
+        void LogSuccess(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "");
     }
 }

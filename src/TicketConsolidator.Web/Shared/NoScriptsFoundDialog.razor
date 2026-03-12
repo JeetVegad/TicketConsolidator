@@ -1,0 +1,161 @@
+@using Microsoft.AspNetCore.Components.Web
+
+@if (IsVisible)
+{
+    <div class="dialog-overlay animated-overlay">
+        <div class="glass-dialog animate-scale-in">
+            <div class="dialog-icon-wrapper">
+                <div class="searching-scene">
+                    <svg class="magnifier" viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <div class="searching-particles">
+                        <span class="p1">?</span>
+                        <span class="p2">?</span>
+                        <span class="p3">?</span>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="dialog-title">No Tickets Found</h3>
+            
+            <div class="dialog-body">
+                <p>We couldn't find any SQL scripts in the scanned emails.</p>
+                <p class="sub-text">Please check the ticket numbers and try again.</p>
+            </div>
+
+            <div class="dialog-actions">
+                <button class="glass-button full-width" @onclick="Close">
+                    Okay, Got It
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .dialog-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .glass-dialog {
+        background: rgba(24, 24, 27, 0.95); /* Matte Zinc 900 */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        width: 320px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+    }
+
+    .dialog-icon-wrapper {
+        width: 60px; height: 60px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dialog-icon {
+        font-size: 2rem;
+    }
+
+    .dialog-title {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .dialog-body {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .sub-text {
+        font-size: 0.85rem;
+        opacity: 0.7;
+        margin-top: 0.5rem;
+    }
+
+    .dialog-actions {
+        width: 100%;
+    }
+
+    .full-width { width: 100%; justify-content: center; }
+
+    /* Animated Searching Scene */
+    .searching-scene {
+        position: relative;
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .magnifier {
+        color: var(--primary);
+        filter: drop-shadow(0 0 8px var(--primary-glow));
+        animation: searchMove 3s ease-in-out infinite;
+        transform-origin: center;
+    }
+
+    .searching-particles span {
+        position: absolute;
+        color: var(--accent);
+        font-size: 1rem;
+        font-weight: bold;
+        opacity: 0;
+    }
+
+    .p1 { animation: particlePop 3s infinite 0.5s; top: 10px; right: 10px; }
+    .p2 { animation: particlePop 3s infinite 1.5s; bottom: 10px; left: 10px; }
+    .p3 { animation: particlePop 3s infinite 2.5s; top: 0px; left: 20px; }
+
+    @@keyframes searchMove {
+        0% { transform: translate(-5px, -5px) rotate(0deg); }
+        50% { transform: translate(5px, 5px) rotate(15deg) scale(1.1); }
+        100% { transform: translate(-5px, -5px) rotate(0deg); }
+    }
+
+    @@keyframes particlePop {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(1); opacity: 0; }
+    }
+
+    .animate-scale-in {
+        animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Elastic Pop */
+    }
+
+    @@keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.8) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+}

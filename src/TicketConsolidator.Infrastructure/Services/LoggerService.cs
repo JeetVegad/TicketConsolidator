@@ -12,8 +12,6 @@ namespace TicketConsolidator.Infrastructure.Services
         public ObservableCollection<LogSession> Sessions { get; } = new ObservableCollection<LogSession>();
         private LogSession _currentSession;
         private readonly string _logDirectory;
-        private readonly string _connectionString; 
-        private readonly bool _enableDatabase; // Feature Flag
         private readonly object _lock = new object();
 
         public LoggerService(Microsoft.Extensions.Configuration.IConfiguration configuration)
@@ -28,20 +26,81 @@ namespace TicketConsolidator.Infrastructure.Services
              
              if (!System.IO.Directory.Exists(_logDirectory))
                  System.IO.Directory.CreateDirectory(_logDirectory);
+                 
+             LoadHistoricalLogs();
+        }
 
-             // DB Configuration
-             _connectionString = configuration.GetConnectionString("LogDatabase");
-             
-             // Check flag (default to false if missing)
-             var enableDbVal = configuration["Logging:EnableDatabase"];
-             if (bool.TryParse(enableDbVal, out bool enabled))
-             {
-                 _enableDatabase = enabled;
-             }
-             else
-             {
-                 _enableDatabase = false; 
-             }
+        private void DispatchToUI(System.Action action)
+        {
+            if (System.Windows.Application.Current != null)
+            {
+                if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+                    action();
+                else
+                    System.Windows.Application.Current.Dispatcher.Invoke(action);
+            }
+            else
+            {
+                lock(_lock) { action(); }
+            }
+        }
+
+        private void LoadHistoricalLogs()
+        {
+            for (int i = 1; i >= 0; i--) // Yesterday then Today
+            {
+                var date = System.DateTime.Now.AddDays(-i);
+                string fileName = $"Log_{date:yyyy-MM-dd}.txt";
+                string fullPath = System.IO.Path.Combine(_logDirectory, fileName);
+                
+                if (System.IO.File.Exists(fullPath))
+                {
+                    try
+                    {
+                        var lines = System.IO.File.ReadAllLines(fullPath);
+                        LogSession currentHistSession = null;
+                        
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith("--- SESSION STARTED:"))
+                            {
+                                string name = line.Replace("--- SESSION STARTED:", "").Replace("---", "").Trim();
+                                string displayDate = i == 1 ? "Yesterday" : "Today";
+                                
+                                // Do not append (Today) if it's already there
+                                if (i == 1) name = $"{name} (Yesterday)";
+                                
+                                currentHistSession = new LogSession(name, isExpanded: false);
+                                currentHistSession.StartTime = date.Date;
+                                
+                                DispatchToUI(() => Sessions.Insert(0, currentHistSession));
+                            }
+                            else if (currentHistSession != null)
+                            {
+                                var m = System.Text.RegularExpressions.Regex.Match(line, @"^\[(.*?)\] \[(.*?)\] (.*)$");
+                                if (m.Success)
+                                {
+                                    if (System.Enum.TryParse<LogLevel>(m.Groups[2].Value, out var level))
+                                    {
+                                        var logEntry = new LogEntry(m.Groups[3].Value, level);
+                                        if (System.DateTime.TryParse(m.Groups[1].Value, out var ts))
+                                        {
+                                            logEntry.Timestamp = date.Date + ts.TimeOfDay;
+                                            
+                                            // The first log parsed in the session will set the hour/minute of the session
+                                            if (currentHistSession.Logs.Count == 0 || logEntry.Timestamp < currentHistSession.StartTime)
+                                                currentHistSession.StartTime = logEntry.Timestamp;
+                                        }
+                                        
+                                        DispatchToUI(() => currentHistSession.Logs.Insert(0, logEntry));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+            }
         }
 
         public void StartSession(string sessionName)
@@ -52,129 +111,44 @@ namespace TicketConsolidator.Infrastructure.Services
                 s.IsExpanded = false;
             }
 
-            if (System.Windows.Application.Current != null)
+            DispatchToUI(() =>
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    _currentSession = new LogSession(sessionName, isExpanded: true);
-                    Sessions.Insert(0, _currentSession); // Newest on top
-                });
-            }
-            else
-            {
-                 // Non-WPF context (e.g. Blazor)
-                 // Just update the collection directly if we are on the right thread, 
-                 // or ignore if this collection is only for WPF binding.
-                 // For now, let's update it directly assuming Blazor services are single-threaded or robust enough.
                 _currentSession = new LogSession(sessionName, isExpanded: true);
-                lock(_lock) { Sessions.Insert(0, _currentSession); }
-            }
+                Sessions.Insert(0, _currentSession); // Newest on top
+            });
             
             var msg = $"--- SESSION STARTED: {sessionName} ---";
             LogToFile(msg);
         }
 
-        public void Log(string message, LogLevel level = LogLevel.Info)
+        public void Log(string message, LogLevel level = LogLevel.Info, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "")
         {
             if (_currentSession == null)
             {
                 StartSession("General Application Log");
             }
-
-            if (System.Windows.Application.Current != null)
+            
+            string context = System.IO.Path.GetFileNameWithoutExtension(callerPath ?? "");
+            if (context.EndsWith("ViewModel")) context = context.Substring(0, context.Length - 9);
+            if (context.EndsWith("Service")) context = context.Substring(0, context.Length - 7);
+            
+            if (!string.IsNullOrEmpty(context) && context != "Logger")
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    _currentSession.Logs.Insert(0, new LogEntry(message, level));
-                });
+                // Add spaces between PascalCase words
+                context = System.Text.RegularExpressions.Regex.Replace(context, "([a-z])([A-Z])", "$1 $2").Trim();
+                message = $"[{context}] {message}";
             }
-            else
+
+            DispatchToUI(() =>
             {
-                // Non-WPF context
                 if (_currentSession != null)
                 {
-                    lock(_lock) { _currentSession.Logs.Insert(0, new LogEntry(message, level)); }
+                    _currentSession.Logs.Insert(0, new LogEntry(message, level));
                 }
-            }
+            });
             
             string timestamped = $"[{System.DateTime.Now:HH:mm:ss}] [{level}] {message}";
             LogToFile(timestamped);
-
-            // Log to Database (Async, Fire-and-Forget) -> Only if Enabled
-            if (_enableDatabase && !string.IsNullOrWhiteSpace(_connectionString))
-            {
-                System.Threading.Tasks.Task.Run(() => LogToDatabase(message, level));
-            }
-        }
-
-        private void LogToDatabase(string message, LogLevel level)
-        {
-            try
-            {
-                // Simple parsing for StackTrace if it exists in message
-                string stackTrace = null;
-                string cleanMessage = message;
-                
-                if (message.Contains("Stack Trace:"))
-                {
-                    var parts = message.Split(new[] { "Stack Trace:" }, System.StringSplitOptions.None);
-                    if (parts.Length > 1) 
-                    {
-                        cleanMessage = parts[0].Trim();
-                        stackTrace = parts[1].Trim();
-                    }
-                }
-
-                using (var conn = new System.Data.SqlClient.SqlConnection(_connectionString))
-                {
-                     conn.Open();
-                     string sql = @"INSERT INTO AppLogs (MachineName, UserName, LogLevel, Message, StackTrace) 
-                                    VALUES (@Machine, @User, @Level, @Msg, @Trace)";
-                     
-                     using (var cmd = new System.Data.SqlClient.SqlCommand(sql, conn))
-                     {
-                         // ENHANCED IDENTITY: Append IP and Domain
-                         string machineInfo = $"{System.Environment.MachineName} ({GetLocalIpAddress()})";
-                         string userInfo = $"{System.Environment.UserDomainName}\\{System.Environment.UserName}";
-
-                         cmd.Parameters.AddWithValue("@Machine", machineInfo);
-                         cmd.Parameters.AddWithValue("@User", userInfo);
-                         cmd.Parameters.AddWithValue("@Level", level.ToString());
-                         cmd.Parameters.AddWithValue("@Msg", cleanMessage ?? "");
-                         cmd.Parameters.AddWithValue("@Trace", stackTrace ?? (object)System.DBNull.Value);
-                         cmd.ExecuteNonQuery();
-                     }
-                }
-            }
-            catch (System.Exception ex)
-            {
-                // Fallback to file if DB fails
-                LogToFile($"[DB-FAIL] {ex.Message}"); 
-            }
-        }
-
-        private string GetLocalIpAddress()
-        {
-            try
-            {
-                foreach (var netInterface in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
-                {
-                    if (netInterface.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
-                        netInterface.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback)
-                    {
-                        var ipProps = netInterface.GetIPProperties();
-                        foreach (var ip in ipProps.UnicastAddresses)
-                        {
-                            if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                            {
-                                return ip.Address.ToString();
-                            }
-                        }
-                    }
-                }
-            }
-            catch { /* Ignore network errors */ }
-            return "Unknown IP";
         }
 
         private void LogToFile(string line)
@@ -195,87 +169,10 @@ namespace TicketConsolidator.Infrastructure.Services
             }
         }
 
-        // Feature: Get Logs from Database
-        public async System.Threading.Tasks.Task<System.Collections.Generic.List<LogEntry>> GetLogsFromDatabaseAsync(string userNameFilter = null, int daysToLoad = 5)
-        {
-             var results = new System.Collections.Generic.List<LogEntry>();
-             if (!_enableDatabase || string.IsNullOrWhiteSpace(_connectionString)) return results; 
 
-             try 
-             {
-                 using (var conn = new System.Data.SqlClient.SqlConnection(_connectionString))
-                 {
-                     await conn.OpenAsync();
-                     // Filter by User AND Time (Last N Days)
-                     string sql = @"SELECT LogDate, LogLevel, Message 
-                                    FROM AppLogs 
-                                    WHERE LogDate >= DATEADD(day, @Days, GETDATE())";
-                                    
-                     if (!string.IsNullOrWhiteSpace(userNameFilter))
-                     {
-                         sql += " AND UserName = @User";
-                     }
-                     
-                     sql += " ORDER BY LogDate DESC";
-
-                     using (var cmd = new System.Data.SqlClient.SqlCommand(sql, conn))
-                     {
-                         cmd.Parameters.AddWithValue("@Days", -daysToLoad); // Negative for past
-                         
-                         if (!string.IsNullOrWhiteSpace(userNameFilter))
-                            cmd.Parameters.AddWithValue("@User", userNameFilter);
-
-                         using (var reader = await cmd.ExecuteReaderAsync())
-                         {
-                             while (await reader.ReadAsync())
-                             {
-                                 string lvlStr = reader["LogLevel"].ToString();
-                                 LogLevel lvl = LogLevel.Info;
-                                 if (System.Enum.TryParse(lvlStr, out LogLevel parsed)) lvl = parsed;
-                                 
-                                 // Format message to include date clearly
-                                 System.DateTime date = (System.DateTime)reader["LogDate"];
-                                 string msg = reader["Message"].ToString() + $" ({date:g})";
-                                 
-                                 results.Add(new LogEntry(msg, lvl));
-                             }
-                         }
-                     }
-                 }
-             }
-             catch (System.Exception ex)
-             {
-                 // Keep this silent or log to file only to prevent recursion loops
-                 LogToFile($"[DB-READ-FAIL] {ex.Message}");
-             }
-             return results;
-        }
-
-        public async System.Threading.Tasks.Task LoadHistoryAsync()
-        {
-            if (!_enableDatabase || string.IsNullOrWhiteSpace(_connectionString)) return;
-
-            var historyLogs = await GetLogsFromDatabaseAsync(System.Environment.UserName, 5);
-            if (historyLogs.Count > 0)
-            {
-                if (System.Windows.Application.Current != null)
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        var historySession = new LogSession("History (Last 5 Days)", isExpanded: false);
-                        foreach (var log in historyLogs)
-                        {
-                            historySession.Logs.Add(log);
-                        }
-                        Sessions.Add(historySession); 
-                    });
-                }
-            }
-        }
-
-        public void LogInfo(string message) => Log(message, LogLevel.Info);
-        public void LogWarning(string message) => Log(message, LogLevel.Warning);
-        public void LogError(string message) => Log(message, LogLevel.Error);
-        public void LogSuccess(string message) => Log(message, LogLevel.Success);
+        public void LogInfo(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "") => Log(message, LogLevel.Info, callerPath);
+        public void LogWarning(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "") => Log(message, LogLevel.Warning, callerPath);
+        public void LogError(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "") => Log(message, LogLevel.Error, callerPath);
+        public void LogSuccess(string message, [System.Runtime.CompilerServices.CallerFilePath] string callerPath = "") => Log(message, LogLevel.Success, callerPath);
     }
 }

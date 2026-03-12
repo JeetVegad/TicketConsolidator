@@ -6,7 +6,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="False" PanningMode="VerticalOnly">
         <StackPanel Margin="20">
             
             <!-- HEADER / ABOUT -->
@@ -17,10 +17,10 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     
-                    <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                    <materialDesign:PackIcon Kind="InformationOutline" Width="48" Height="48" Foreground="{DynamicResource PrimaryHueLightBrush}" VerticalAlignment="Center" Margin="0,0,20,0"/>
                     
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Ticket Consolidator" Style="{StaticResource MaterialDesignHeadline5TextBlock}" FontWeight="Bold"/>
+                        <TextBlock Text="Ticket Consolidator" Style="{StaticResource MaterialDesignHeadline5TextBlock}" FontWeight="Bold" Foreground="{DynamicResource MaterialDesignBody}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="Version: " Foreground="Gray"/>
                             <TextBlock Text="{Binding AppVersion, FallbackValue='v1.0.0'}" FontWeight="Bold" Margin="0,0,15,0"/>
@@ -33,14 +33,39 @@
 
             <!-- USER GUIDE -->
             <TextBlock Text="User Guide" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" UniformCornerRadius="8">
+            <materialDesign:Card Margin="0,0,0,20" UniformCornerRadius="8" x:Name="UserGuideCard">
+                <materialDesign:Card.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="UserGuideCard" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </materialDesign:Card.Triggers>
                 <StackPanel>
                     <Grid Margin="20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric1Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric1Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.5">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.5">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Enter Ticket Numbers (e.g. TICKET-123, TICKET-456) in the Dashboard input." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -49,7 +74,23 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric2Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric2Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.7">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.7">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Click 'SCAN' to search your Outlook emails for attachments." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -58,7 +99,23 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric3Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric3Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.9">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:0.9">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Review found scripts. Use Up/Down arrows to reorder them if needed." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                     <Separator/>
@@ -67,83 +124,575 @@
                             <ColumnDefinition Width="40"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <materialDesign:PackIcon Kind="Numeric4Circle" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="Numeric4Circle" Foreground="{DynamicResource PrimaryHueLightBrush}" Width="24" Height="24" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <materialDesign:PackIcon.RenderTransform> <ScaleTransform ScaleX="0" ScaleY="0"/> </materialDesign:PackIcon.RenderTransform>
+                            <materialDesign:PackIcon.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.4" BeginTime="0:0:1.1">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.4" BeginTime="0:0:1.1">
+                                                 <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </materialDesign:PackIcon.Triggers>
+                        </materialDesign:PackIcon>
                         <TextBlock Grid.Column="1" Text="Click 'CONSOLIDATE' to merge them into final SQL files." VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </Grid>
                 </StackPanel>
             </materialDesign:Card>
 
-            <!-- VISUAL WORKFLOW (New) -->
-            <TextBlock Text="Workflow Overview" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" Padding="20" UniformCornerRadius="8">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+            <!-- CONSOLIDATE SCRIPT WORKFLOW -->
+            <TextBlock Text="Consolidate Script Workflow" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,5"/>
+            <TextBlock Text="Watch how the application processes your tickets from input to consolidation" FontSize="12" Opacity="0.7" Margin="0,0,0,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
 
-                    <!-- Step 1: Input -->
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                        <Border Background="#E3F2FD" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="TicketOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#1565C0"/>
-                        </Border>
-                        <TextBlock Text="1. Input" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Enter Ticket #s" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" ClipToBounds="False">
+                <StackPanel>
 
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="1" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+                    <!-- Step 1: Input Tickets -->
+                    <Border Background="{DynamicResource MaterialDesignDivider}" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="InputAnimation" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="Cursor" Storyboard.TargetProperty="Opacity"
+                                                   From="1" To="0" Duration="0:0:0.8" AutoReverse="True"/>
+                                    <DoubleAnimation Storyboard.TargetName="Ticket1" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.5"/>
+                                    <DoubleAnimation Storyboard.TargetName="Ticket2" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.2"/>
+                                    <DoubleAnimation Storyboard.TargetName="Ticket3" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.9"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource InputAnimation}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="KeyboardOutline" Width="36" Height="36" 
+                                                   Foreground="{DynamicResource PrimaryHueMidBrush}" 
+                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 1: Enter Ticket Numbers" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="Ticket1" Background="{DynamicResource PrimaryHueLightBrush}" CornerRadius="10" 
+                                          Padding="6,2" Margin="0,0,4,0" Opacity="0">
+                                        <TextBlock Text="TICKET-123" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border x:Name="Ticket2" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="10" 
+                                          Padding="6,2" Margin="0,0,4,0" Opacity="0">
+                                        <TextBlock Text="TICKET-456" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border x:Name="Ticket3" Background="{DynamicResource SecondaryHueLightBrush}" CornerRadius="10" 
+                                          Padding="6,2" Margin="0,0,4,0" Opacity="0">
+                                        <TextBlock Text="TICKET-789" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                    <Rectangle x:Name="Cursor" Width="2" Height="14" Fill="{DynamicResource PrimaryHueMidBrush}" 
+                                             VerticalAlignment="Center" Margin="3,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <!-- Step 2: Scan -->
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                        <Border Background="#E8F5E9" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="EmailSearchOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#2E7D32"/>
-                        </Border>
-                        <TextBlock Text="2. Scan" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Find Emails" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+                    <!-- Step 2: Email Scanning -->
+                    <Border Background="#E3F2FD" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="ScanAnimation" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="Email1" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:0"/>
+                                    <DoubleAnimation Storyboard.TargetName="Email2" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:0.4"/>
+                                    <DoubleAnimation Storyboard.TargetName="Email3" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:0.8"/>
+                                    <DoubleAnimation Storyboard.TargetName="SearchRadar" Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                   From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource ScanAnimation}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid VerticalAlignment="Center" Margin="0,0,12,0">
+                                <materialDesign:PackIcon Kind="EmailSearch" Width="36" Height="36" Foreground="#1976D2"/>
+                                <materialDesign:PackIcon x:Name="SearchRadar" Kind="Radar" Width="18" Height="18" 
+                                                       Foreground="#2196F3" Opacity="0.6" RenderTransformOrigin="0.5,0.5">
+                                    <materialDesign:PackIcon.RenderTransform><RotateTransform Angle="0"/></materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                            </Grid>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 2: Scan Outlook Emails" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon x:Name="Email1" Kind="Email" Width="18" Height="18" 
+                                                           Foreground="#1976D2" Margin="0,0,6,0" Opacity="0"/>
+                                    <materialDesign:PackIcon x:Name="Email2" Kind="Email" Width="18" Height="18" 
+                                                           Foreground="#42A5F5" Margin="0,0,6,0" Opacity="0"/>
+                                    <materialDesign:PackIcon x:Name="Email3" Kind="Email" Width="18" Height="18" 
+                                                           Foreground="#64B5F6" Margin="0,0,6,0" Opacity="0"/>
+                                    <TextBlock Text="Finding attachments..." FontStyle="Italic" FontSize="10" VerticalAlignment="Center" Foreground="#1976D2"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="3" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+                    <!-- Step 3: Script Categorization -->
+                    <Border Background="#FFF3E0" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="60">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CategoryAnimation" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="ScriptToTable" Storyboard.TargetProperty="Opacity"
+                                                   From="1" To="0" Duration="0:0:0.6" BeginTime="0:0:0.5"/>
+                                    <DoubleAnimation Storyboard.TargetName="ScriptToSP" Storyboard.TargetProperty="Opacity"
+                                                   From="1" To="0" Duration="0:0:0.6" BeginTime="0:0:1"/>
+                                    <DoubleAnimation Storyboard.TargetName="ScriptToTrigger" Storyboard.TargetProperty="Opacity"
+                                                   From="1" To="0" Duration="0:0:0.6" BeginTime="0:0:1.5"/>
+                                    <DoubleAnimation Storyboard.TargetName="ScriptToData" Storyboard.TargetProperty="Opacity"
+                                                   From="1" To="0" Duration="0:0:0.6" BeginTime="0:0:2"/>
+                                    <DoubleAnimation Storyboard.TargetName="TableBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="1" To="1.2" Duration="0:0:0.2" BeginTime="0:0:1.2" AutoReverse="True"/>
+                                    <DoubleAnimation Storyboard.TargetName="TableBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="1" To="1.2" Duration="0:0:0.2" BeginTime="0:0:1.2" AutoReverse="True"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CategoryAnimation}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="FileTree" Width="36" Height="36" 
+                                                   Foreground="#FF6F00" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 3: Extract &amp; Categorize Scripts" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="TableBadge" Background="#4CAF50" CornerRadius="3" Padding="5,2" Margin="0,0,3,0" RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
+                                        <TextBlock Text="Tables" FontSize="8" Foreground="White" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border Background="#2196F3" CornerRadius="3" Padding="5,2" Margin="0,0,3,0">
+                                        <TextBlock Text="SPs" FontSize="8" Foreground="White" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border Background="#FF9800" CornerRadius="3" Padding="5,2" Margin="0,0,3,0">
+                                        <TextBlock Text="Triggers" FontSize="8" Foreground="White" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border Background="#9C27B0" CornerRadius="3" Padding="5,2" Margin="0,0,8,0">
+                                        <TextBlock Text="Data" FontSize="8" Foreground="White" FontWeight="Bold"/>
+                                    </Border>
+                                    <materialDesign:PackIcon x:Name="ScriptToTable" Kind="FileDocument" Width="14" Height="14" Foreground="#4CAF50" Margin="0,0,2,0" Opacity="1"/>
+                                    <materialDesign:PackIcon x:Name="ScriptToSP" Kind="FileDocument" Width="14" Height="14" Foreground="#2196F3" Margin="0,0,2,0" Opacity="1"/>
+                                    <materialDesign:PackIcon x:Name="ScriptToTrigger" Kind="FileDocument" Width="14" Height="14" Foreground="#FF9800" Margin="0,0,2,0" Opacity="1"/>
+                                    <materialDesign:PackIcon x:Name="ScriptToData" Kind="FileDocument" Width="14" Height="14" Foreground="#9C27B0" Opacity="1"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <!-- Step 3: Sort -->
-                    <StackPanel Grid.Column="4" HorizontalAlignment="Center">
-                        <Border Background="#FFF3E0" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="SortVariant" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#EF6C00"/>
-                        </Border>
-                        <TextBlock Text="3. Sort" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Review Scripts" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
+                    <!-- Step 4: Consolidation & Output -->
+                    <Border Background="#E8F5E9" CornerRadius="6" Padding="10">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="OutputAnimation" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="Gear1" Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                   From="0" To="360" Duration="0:0:3"/>
+                                    <DoubleAnimation Storyboard.TargetName="Gear2" Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                   From="360" To="0" Duration="0:0:3"/>
+                                    <DoubleAnimation Storyboard.TargetName="OutputFile" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:2">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="OutputFile" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:2">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="OutputFile" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:2"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource OutputAnimation}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid VerticalAlignment="Center" Margin="0,0,12,0">
+                                <materialDesign:PackIcon x:Name="Gear1" Kind="Cog" Width="28" Height="28" 
+                                                       Foreground="#2E7D32" RenderTransformOrigin="0.5,0.5">
+                                    <materialDesign:PackIcon.RenderTransform><RotateTransform Angle="0"/></materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                                <materialDesign:PackIcon x:Name="Gear2" Kind="Cog" Width="16" Height="16" 
+                                                       Foreground="#43A047" RenderTransformOrigin="0.5,0.5" Margin="18,18,0,0">
+                                    <materialDesign:PackIcon.RenderTransform><RotateTransform Angle="0"/></materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                            </Grid>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 4: Consolidate &amp; Generate Output" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Merging scripts with headers/footers..." FontSize="10" Foreground="#2E7D32" FontStyle="Italic" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <materialDesign:PackIcon x:Name="OutputFile" Grid.Column="2" Kind="FileCheck" Width="36" Height="36" 
+                                                   Foreground="#4CAF50" VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                                <materialDesign:PackIcon.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0"/></materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Grid>
+                    </Border>
 
-                    <!-- Arrow -->
-                    <materialDesign:PackIcon Grid.Column="5" Kind="ArrowRight" VerticalAlignment="Center" Foreground="LightGray" Width="24" Height="24"/>
+                </StackPanel>
+            </materialDesign:Card>
 
-                    <!-- Step 4: Consolidate -->
-                    <StackPanel Grid.Column="6" HorizontalAlignment="Center">
-                        <Border Background="#F3E5F5" CornerRadius="50" Width="60" Height="60" Margin="0,0,0,10">
-                            <materialDesign:PackIcon Kind="FolderZipOutline" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#7B1FA2"/>
-                        </Border>
-                        <TextBlock Text="4. Merge" FontWeight="Bold" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Save Files" FontSize="11" Foreground="Gray" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
+            <!-- CODE REVIEW WORKFLOW -->
+            <TextBlock Text="Code Review Email Workflow" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,10,0,5"/>
+            <TextBlock Text="How the Code Review tab helps you draft a professional code review email" FontSize="12" Opacity="0.7" Margin="0,0,0,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" ClipToBounds="False">
+                <StackPanel>
+
+                    <!-- CR Step 1: Select Ticket -->
+                    <Border Background="#EDE7F6" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CRStep1Anim" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="CRSearchIcon" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="1" To="1.15" Duration="0:0:0.6" AutoReverse="True"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRSearchIcon" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="1" To="1.15" Duration="0:0:0.6" AutoReverse="True"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRTicketBadge" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                   From="40" To="0" Duration="0:0:0.6" BeginTime="0:0:0.6">
+                                        <DoubleAnimation.EasingFunction><QuadraticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="CRTicketBadge" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.6" BeginTime="0:0:0.6"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CRStep1Anim}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon x:Name="CRSearchIcon" Kind="TicketConfirmation" Width="36" Height="36" 
+                                                   Foreground="#7E57C2" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                <materialDesign:PackIcon.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 1: Search &amp; Select a Ticket" FontWeight="Bold" FontSize="13"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                    <TextBlock Text="Enter a JIRA ticket key" FontSize="11" Foreground="#5E35B1" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <Border x:Name="CRTicketBadge" Background="#7E57C2" CornerRadius="10" Padding="8,2" Opacity="0">
+                                        <Border.RenderTransform><TranslateTransform X="0"/></Border.RenderTransform>
+                                        <TextBlock Text="ENGAGE-1234" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- CR Step 2: Commit Details -->
+                    <Border Background="#E8EAF6" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="65">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CRStep2Anim" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="CRVSCommit" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:0.3"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRDBCommit" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:0.8"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRCheckmark" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.4"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRCheckmark" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.4">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="CRCheckmark" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.4">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CRStep2Anim}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="SourceBranch" Width="36" Height="36" 
+                                                   Foreground="#3949AB" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 2: Enter Commit Details" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <WrapPanel>
+                                    <Border x:Name="CRVSCommit" Background="#5C6BC0" CornerRadius="3" Padding="6,2" Margin="0,0,4,2" Opacity="0">
+                                        <TextBlock Text="VS: CS-9901" Foreground="White" FontSize="10"/>
+                                    </Border>
+                                    <Border x:Name="CRDBCommit" Background="#283593" CornerRadius="3" Padding="6,2" Margin="0,0,4,2" Opacity="0">
+                                        <TextBlock Text="DB: CS-8801" Foreground="White" FontSize="10"/>
+                                    </Border>
+                                    <materialDesign:PackIcon x:Name="CRCheckmark" Kind="CheckboxMarkedCircle" Width="16" Height="16" 
+                                                           Foreground="#2E7D32" VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                                        <materialDesign:PackIcon.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0"/></materialDesign:PackIcon.RenderTransform>
+                                    </materialDesign:PackIcon>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- CR Step 3: Attach Scripts -->
+                    <Border Background="#FFF8E1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CRStep3Anim" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="CRFile1" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.3"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRFile2" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.7"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRFile3" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.1"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CRStep3Anim}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="Paperclip" Width="36" Height="36" 
+                                                   Foreground="#F57F17" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 3: Attach SQL Scripts" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border x:Name="CRFile1" Background="#FF8F00" CornerRadius="3" Padding="6,2" Margin="0,0,4,0" Opacity="0">
+                                        <TextBlock Text="Tables.sql" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border x:Name="CRFile2" Background="#EF6C00" CornerRadius="3" Padding="6,2" Margin="0,0,4,0" Opacity="0">
+                                        <TextBlock Text="SP.sql" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border x:Name="CRFile3" Background="#E65100" CornerRadius="3" Padding="6,2" Opacity="0">
+                                        <TextBlock Text="Data.sql" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- CR Step 4: Build Email -->
+                    <Border Background="#E0F2F1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="70">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CRStep4Anim" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="CRTemplateRow1" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.3"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRTemplateRow2" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.6"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRTemplateRow3" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:0.9"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRTableCheck" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.3" BeginTime="0:0:1.4"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRTableCheck" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:1.4">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="CRTableCheck" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="0" To="1" Duration="0:0:0.4" BeginTime="0:0:1.4">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CRStep4Anim}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="TableEdit" Width="36" Height="36" 
+                                                   Foreground="#00796B" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 4: Build Email with DB Checklist" FontWeight="Bold" FontSize="13" Margin="0,0,0,4"/>
+                                <Border Background="White" CornerRadius="3" Padding="4" BorderBrush="#B2DFDB" BorderThickness="1">
+                                    <StackPanel>
+                                        <Border x:Name="CRTemplateRow1" Background="#4472C4" CornerRadius="2" Padding="4,2" Margin="0,0,0,1" Opacity="0">
+                                            <TextBlock Text="Ticket | Change Set" Foreground="White" FontSize="8" FontWeight="Bold"/>
+                                        </Border>
+                                        <Border x:Name="CRTemplateRow2" Background="#F5F5F5" CornerRadius="2" Padding="4,2" Margin="0,0,0,1" Opacity="0">
+                                            <TextBlock Text="ENGAGE-1234 | VS: CS-9901" Foreground="#333" FontSize="8"/>
+                                        </Border>
+                                        <Border x:Name="CRTemplateRow3" Background="#FAFAFA" CornerRadius="2" Padding="4,2" Opacity="0">
+                                            <TextBlock Text="DB Checklist: 11 items" Foreground="#2E7D32" FontSize="8" FontWeight="Bold"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <materialDesign:PackIcon x:Name="CRTableCheck" Grid.Column="2" Kind="CheckCircle" 
+                                                   Width="28" Height="28" Foreground="#4CAF50" 
+                                                   VerticalAlignment="Center" Margin="10,0,0,0"
+                                                   Opacity="0" RenderTransformOrigin="0.5,0.5">
+                                <materialDesign:PackIcon.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0"/></materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Grid>
+                    </Border>
+
+                    <!-- CR Step 5: Draft in Outlook -->
+                    <Border Background="#E8F5E9" CornerRadius="6" Padding="10">
+                        <Grid Height="50">
+                            <Grid.Resources>
+                                <Storyboard x:Key="CRStep5Anim" RepeatBehavior="Forever">
+                                    <DoubleAnimation Storyboard.TargetName="CROutlookIcon" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                   From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.5">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="CROutlookIcon" 
+                                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                   From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.5">
+                                        <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetName="CROutlookIcon" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:0.5"/>
+                                    <DoubleAnimation Storyboard.TargetName="CRSuccessText" Storyboard.TargetProperty="Opacity"
+                                                   From="0" To="1" Duration="0:0:0.5" BeginTime="0:0:1.2"/>
+                                </Storyboard>
+                            </Grid.Resources>
+                            <Grid.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard Storyboard="{StaticResource CRStep5Anim}"/>
+                                </EventTrigger>
+                            </Grid.Triggers>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="EmailSend" Width="36" Height="36" 
+                                                   Foreground="#2E7D32" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 5: Draft Email in Outlook" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Changeset table + DB checklist + SQL attachments" FontSize="10" Foreground="#2E7D32" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <materialDesign:PackIcon x:Name="CROutlookIcon" Grid.Column="2" Kind="EmailOutline" 
+                                                   Width="36" Height="36" Foreground="#0078D4" 
+                                                   VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                                <materialDesign:PackIcon.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0"/></materialDesign:PackIcon.RenderTransform>
+                            </materialDesign:PackIcon>
+                        </Grid>
+                    </Border>
+
+                    <!-- Done Banner -->
+                    <Border x:Name="CRSuccessText" Background="#A5D6A7" CornerRadius="6" Padding="8" Margin="0,8,0,0" Opacity="0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="CheckDecagram" Width="16" Height="16" 
+                                                   Foreground="#1B5E20" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Done! Code review email is ready in Outlook Drafts." 
+                                     FontWeight="SemiBold" FontSize="12" Foreground="#1B5E20" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- INTERNAL RELEASE WORKFLOW -->
+            <TextBlock Text="Internal Release Workflow" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,10,0,5"/>
+            <TextBlock Text="How the Internal Release tab helps you draft internal release emails" FontSize="12" Opacity="0.7" Margin="0,0,0,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" ClipToBounds="False">
+                <StackPanel>
+
+                    <!-- IR Step 1: Search Ticket -->
+                    <Border Background="#FCE4EC" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="AirplaneTakeoff" Width="36" Height="36" 
+                                                   Foreground="#D81B60" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 1: Search &amp; Select a Ticket" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Enter a Jira ticket key to pull its data" FontSize="11" Foreground="#C2185B"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- IR Step 2: Verification -->
+                    <Border Background="#F3E5F5" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="FileDocumentCheck" Width="36" Height="36" 
+                                                   Foreground="#8E24AA" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 2: Auto-Verification" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Automatically checks for _UT document attachments and code review tickets" FontSize="11" Foreground="#7B1FA2"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- IR Step 3: Draft Output -->
+                    <Border Background="#E8EAF6" CornerRadius="6" Padding="10">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="EmailArrowRight" Width="36" Height="36" 
+                                                   Foreground="#3949AB" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 3: Generate the Internal Release Email" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Automatically attaches scripts and builds the templated internal release mail" FontSize="11" Foreground="#303F9F"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
             </materialDesign:Card>
 
             <!-- SCRIPT FORMATTING RULES -->
             <TextBlock Text="Script Formatting Rules" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" Background="#FAFAFA">
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="Ensure your .sql attachments use this format so the parser can identify them:" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                    <Border Background="#EEEEEE" Padding="10" CornerRadius="4" BorderBrush="#E0E0E0" BorderThickness="1">
+                    <Border Background="{DynamicResource MaterialDesignDivider}" Padding="10" CornerRadius="4">
                         <TextBlock FontFamily="Consolas" FontSize="13" TextWrapping="Wrap">
-                            <Run Foreground="Green">-- &lt;TICKET-123&gt; START</Run><LineBreak/>
+                            <Run Foreground="#2E7D32">-- &lt;TICKET-123&gt; START</Run><LineBreak/>
                             INSERT INTO Users (Name) VALUES ('John');<LineBreak/>
-                            <Run Foreground="Green">-- &lt;TICKET-123&gt; END</Run>
+                            <Run Foreground="#2E7D32">-- &lt;TICKET-123&gt; END</Run>
                         </TextBlock>
                     </Border>
                     <TextBlock Text="* Replace TICKET-123 with your actual ticket number." FontStyle="Italic" FontSize="12" Margin="0,8,0,0"/>
@@ -152,14 +701,28 @@
 
             <!-- FAQ -->
             <TextBlock Text="Troubleshooting / FAQ" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
-            <StackPanel>
-                <Expander Header="Why is my ticket not found?" Background="White" Margin="0,0,0,5">
+            <StackPanel x:Name="FaqPanel">
+                <StackPanel.Triggers>
+                     <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="FaqPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.8" BeginTime="0:0:0.5"/>
+                                <ThicknessAnimation Storyboard.TargetName="FaqPanel" Storyboard.TargetProperty="Margin" From="0,30,0,0" To="0,0,0,0" Duration="0:0:0.8" BeginTime="0:0:0.5">
+                                     <ThicknessAnimation.EasingFunction>
+                                        <QuadraticEase EasingMode="EaseOut"/>
+                                    </ThicknessAnimation.EasingFunction>
+                                </ThicknessAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </StackPanel.Triggers>
+                <Expander Header="Why is my ticket not found?" Margin="0,0,0,5">
                     <TextBlock Text="1. Ensure the email Subject contains the ticket number.&#x0a;2. Check if the email is in the folder specified in Settings (Default: Inbox).&#x0a;3. If it's in a subfolder, update the folder name in Settings." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
-                <Expander Header="Outlook connection error?" Background="White" Margin="0,0,0,5">
+                <Expander Header="Outlook connection error?" Margin="0,0,0,5">
                     <TextBlock Text="Ensure you are running 'Outlook Classic' application on this machine. The 'New Outlook' (webwrapper) is not supported. Also check that both this app and Outlook are running with the same permissions (e.g. both as Admin or both as User)." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
-                <Expander Header="How are duplicate scripts handled?" Background="White" Margin="0,0,0,5">
+                <Expander Header="How are duplicate scripts handled?" Margin="0,0,0,5">
                     <TextBlock Text="The application processes emails for a ticket in 'Newest First' order. Once a script is found for a ticket in a newer email (e.g. a Reply), any older emails for that same ticket are ignored." TextWrapping="Wrap" Margin="20"/>
                 </Expander>
             </StackPanel>

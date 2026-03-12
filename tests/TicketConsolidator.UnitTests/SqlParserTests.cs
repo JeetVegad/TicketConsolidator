@@ -28,7 +28,7 @@ Footer info
             ";
 
             // Act
-            var result = _parser.ParseScript(content, "file.sql", ticket);
+            var result = _parser.ParseScript(content, "file.sql", ticket, System.DateTime.Now);
 
             // Assert
             Assert.Single(result);
@@ -54,7 +54,7 @@ Proc 2
             ";
 
             // Act
-            var result = _parser.ParseScript(content, "file.sql", ticket);
+            var result = _parser.ParseScript(content, "file.sql", ticket, System.DateTime.Now);
 
             // Assert
             Assert.Equal(2, result.Count);
@@ -69,7 +69,7 @@ Proc 2
             string content = "<T-1> START CREATE PROCEDURE dbo.Test AS BEGIN END <T-1> END";
 
             // Act
-            var result = _parser.ParseScript(content, "unknown.sql", "T-1");
+            var result = _parser.ParseScript(content, "unknown.sql", "T-1", System.DateTime.Now);
 
             // Assert
             Assert.Single(result);
@@ -83,7 +83,7 @@ Proc 2
             string content = "<T-1> START INSERT INTO Tbl (A) VALUES (1) <T-1> END";
 
             // Act
-            var result = _parser.ParseScript(content, "MyScript_Data.sql", "T-1");
+            var result = _parser.ParseScript(content, "MyScript_Data.sql", "T-1", System.DateTime.Now);
 
             // Assert
             Assert.Single(result);

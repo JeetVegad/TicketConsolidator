@@ -11,7 +11,8 @@ namespace TicketConsolidator.Application.Interfaces
         /// <param name="fileContent">The raw string content of the SQL file.</param>
         /// <param name="fileName">The name of the file (for metadata and fallback detection).</param>
         /// <param name="ticketNumber">The specific ticket number to look for.</param>
+        /// <param name="sourceDate">The timestamp when the source file was received/created.</param>
         /// <returns>A list of extracted SQL Script blocks.</returns>
-        List<SqlScript> ParseScript(string fileContent, string fileName, string ticketNumber);
+        List<SqlScript> ParseScript(string fileContent, string fileName, string ticketNumber, System.DateTime sourceDate);
     }
 }

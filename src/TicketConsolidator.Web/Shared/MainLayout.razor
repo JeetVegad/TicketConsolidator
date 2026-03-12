@@ -1,15 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="app-layout">
-    <div class="background-orb orb-1"></div>
-    <div class="background-orb orb-2"></div>
-    
     <header class="app-header glass-panel">
-        <div class="brand">
-            <span class="brand-icon">✨</span>
+        <div class="brand animate-fade-in delay-1">
+            <span class="brand-icon live-icon">✨</span>
             <span class="brand-text">TicketConsolidator</span>
         </div>
-        <nav class="top-nav">
+        <nav class="top-nav animate-fade-in delay-2">
             <NavLink href="" Match="NavLinkMatch.All" class="nav-link">
                 <span class="icon">📊</span> Dashboard
             </NavLink>
@@ -41,38 +38,19 @@
         height: 100vh;
         overflow: hidden;
         position: relative;
-        background: radial-gradient(ellipse at top, #0f0728 0%, #030014 100%);
+        background-color: var(--bg-app);
     }
     
-    /* Animated Background Orbs */
-    .background-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.4;
-        z-index: 0;
-        animation: floatOrb 20s infinite ease-in-out;
-    }
-    .orb-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: 20%; animation-delay: 0s; }
-    .orb-2 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; right: 10%; animation-delay: -5s; }
-    
-    @@keyframes floatOrb {
-        0%, 100% { transform: translate(0, 0); }
-        50% { transform: translate(30px, 50px); }
-    }
-
     .app-header {
         position: relative;
-        z-index: 10;
+        z-index: 100; /* Increased z-index for safety */
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 0 1.5rem;
         height: var(--header-height);
         flex-shrink: 0;
-        background: rgba(15, 7, 40, 0.6); /* Semi-transparent */
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        /* Background handled by .glass-panel */
     }
 
     .brand {
@@ -92,7 +70,7 @@
         color: rgba(255,255,255,0.6);
         text-decoration: none;
         padding: 0.4rem 0.8rem;
-        border-radius: 8px;
+        border-radius: var(--radius-sm); /* Use variable */
         transition: all 0.3s;
         font-size: 0.85rem;
         font-weight: 500;
@@ -121,14 +99,11 @@
         z-index: 1;
     }
     
+    /* Ensure page transitions work smoothly with new animations */
     .page-transition-wrapper {
-        height: 100%;
+        height: 100%; /* Fixed height to force scroll container */
         width: 100%;
-        animation: pageFadeIn 0.4s ease-out;
-    }
-    
-    @@keyframes pageFadeIn {
-        from { opacity: 0; transform: scale(0.98); }
-        to { opacity: 1; transform: scale(1); }
+        position: relative;
+        overflow: hidden;
     }
 </style>

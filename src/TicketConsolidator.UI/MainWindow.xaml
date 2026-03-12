@@ -6,14 +6,19 @@
         xmlns:local="clr-namespace:TicketConsolidator.UI"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/Assets/app_icon.png"
+        Title="Ticket Consolidator" Height="800" Width="1200"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
+        RenderOptions.BitmapScalingMode="HighQuality"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True"
-        TextOptions.TextFormattingMode="Display"
-        TextOptions.TextRenderingMode="ClearType"
-        RenderOptions.ClearTypeHint="Enabled"
-        Title="Ticket Consolidator" Height="600" Width="900">
+        SnapsToDevicePixels="True">
     <materialDesign:DialogHost Identifier="RootDialog"
                                DialogTheme="Inherit" 
                                OverlayBackground="{DynamicResource PrimaryHueDarkBrush}" 
@@ -21,39 +26,116 @@
                                CloseOnClickAway="True">
 
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <!-- Sidebar -->
-            <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}">
-                <StackPanel Margin="10">
-                    <TextBlock Text="Ticket Consolidator" Foreground="White" FontSize="20" FontWeight="Bold" Margin="10,20,10,20"/>
-                    
-                    <Button Command="{Binding NavigateDashboardCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="DASHBOARD" />
-                    <Button Command="{Binding NavigateSettingsCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="SETTINGS" />
-                    <Button Command="{Binding NavigateLogsCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="LOGS" />
-                    <Button Command="{Binding NavigateHelpCommand}" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" HorizontalAlignment="Left" Margin="0,5" Content="HELP" />
-                </StackPanel>
+            <!-- Top Navigation Bar -->
+            <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Height="50" Padding="15,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/> <!-- Title -->
+                        <ColumnDefinition Width="*"/>    <!-- Spacer -->
+                        <ColumnDefinition Width="Auto"/> <!-- Menu -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="DatabaseCheck" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueDarkBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="TicketConsolidator" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Navigation Menu -->
+                    <Menu Grid.Column="2" Background="Transparent" VerticalAlignment="Center" Margin="10,0">
+                        <Menu.Resources>
+                            <!-- Explicit Style for Dropdown items so they don't inherit white text -->
+                            <Style x:Key="DropdownMenuItem" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                            </Style>
+                        </Menu.Resources>
+                        
+                        <!-- WORKFLOWS MENU -->
+                        <MenuItem Header="WORKFLOWS" Background="Transparent" FontSize="14" FontWeight="SemiBold" Foreground="White" Padding="10,0" VerticalAlignment="Center" materialDesign:RippleAssist.Feedback="White">
+                            <MenuItem Header="Consolidate Scripts" Command="{Binding NavigateDashboardCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Code Review" Command="{Binding NavigateCodeReviewCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="CodeTagsCheck" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Internal Release" Command="{Binding NavigateInternalReleaseCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="AirplaneTakeoff" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                        
+                        <!-- SYSTEM MENU -->
+                        <MenuItem Header="SYSTEM" Background="Transparent" FontSize="14" FontWeight="SemiBold" Foreground="White" Padding="10,0" VerticalAlignment="Center" Margin="10,0,0,0" materialDesign:RippleAssist.Feedback="White">
+                            <MenuItem Header="Email Templates" Command="{Binding NavigateTemplateEditorCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="TextBoxEditOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Settings" Command="{Binding NavigateSettingsCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="CogOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="View Logs" Command="{Binding NavigateLogsCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="FormatListBulleted" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="Help &amp; Guide" Command="{Binding NavigateHelpCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="HelpCircleOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                    </Menu>
+                </Grid>
             </Border>
-
             <!-- Main Content Area -->
-            <Grid Grid.Column="1" Background="{DynamicResource MaterialDesignPaper}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <!-- Top Header -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20">
-                    <TextBlock VerticalAlignment="Center" Margin="10,0" Text="{Binding CurrentView.DataContext.StatusMessage, FallbackValue='Status: Ready'}" FontStyle="Italic"/>
-                </StackPanel>
-
-                <!-- Content Placeholder -->
-                <ContentControl Grid.Row="1" Content="{Binding CurrentView}" Margin="20"/>
+            <Grid Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}">
+                <!-- Views Stacked Concurrently for Instant Navigation -->
+                <Grid.Resources>
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <TranslateTransform Y="0"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="Visibility" Value="Visible">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="25" To="0" Duration="0:0:0.25" DecelerationRatio="0.9"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Resources>
                 
-                <materialDesign:Snackbar x:Name="MainSnackbar" Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" VerticalAlignment="Bottom" Margin="10"/>
+                <ContentControl Content="{Binding DashboardView}" Visibility="{Binding IsDashboardVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding CodeReviewView}" Visibility="{Binding IsCodeReviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding InternalReleaseView}" Visibility="{Binding IsInternalReleaseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding TemplateEditorView}" Visibility="{Binding IsTemplateEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding SettingsView}" Visibility="{Binding IsSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding LogsView}" Visibility="{Binding IsLogsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding HelpView}" Visibility="{Binding IsHelpVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                
+                <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" VerticalAlignment="Bottom" Margin="10"/>
             </Grid>
         </Grid>
     </materialDesign:DialogHost>

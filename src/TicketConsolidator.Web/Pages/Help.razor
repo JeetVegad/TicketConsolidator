@@ -2,61 +2,192 @@
 
 <PageTitle>Help | TicketConsolidator</PageTitle>
 
-<div class="help-container animate-fade-in">
-    <div class="glass-panel content-card">
-        <h2 class="page-title">Help & Documentation</h2>
+<div class="page-container animate-fade-in">
+    <div class="glass-panel content-card" style="max-width: 1000px; margin: 0 auto;">
+        <h2 class="page-title">Documentation & Workflow</h2>
         
-        <div class="help-section">
-            <h3>Overview</h3>
-            <p>TicketConsolidator helps you package SQL scripts from Outlook emails into a release-ready format.</p>
+        <!-- Live Workflow Section -->
+        <div class="workflow-grid">
+            
+            <!-- Step 1: Scan -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.1s">
+                <div class="step-visual">
+                    <div class="scan-scene">
+                        <div class="scene-doc">
+                            <div class="doc-line"></div>
+                            <div class="doc-line"></div>
+                            <div class="doc-line short"></div>
+                        </div>
+                        <div class="scene-magnifier">
+                             <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                             </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">1</div>
+                    <h4>Scan Tickets</h4>
+                    <p>Enter ID (e.g. <code>12345</code>). The app scans Outlook emails & extracts SQL attachments.</p>
+                </div>
+            </div>
+
+            <!-- Step 2: Consolidate -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.2s">
+                <div class="step-visual">
+                    <div class="merge-scene">
+                        <div class="file-icon f1"><div class="f-band"></div></div>
+                        <div class="file-icon f2"><div class="f-band"></div></div>
+                        <div class="file-icon f3"><div class="f-band"></div></div>
+                        <div class="merge-arrow">➔</div>
+                        <div class="file-icon f-final">SQL</div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">2</div>
+                    <h4>Consolidate</h4>
+                    <p>Review scripts, then click "Consolidate". Files merge into a single master SQL script.</p>
+                </div>
+            </div>
+
+            <!-- Step 3: Release -->
+            <div class="workflow-step-card animate-slide-up" style="animation-delay: 0.3s">
+                <div class="step-visual">
+                    <div class="release-scene">
+                        <div class="envelope">
+                            <div class="env-flap"></div>
+                            <div class="env-body"></div>
+                        </div>
+                        <div class="fly-trail"></div>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-badge">3</div>
+                    <h4>Release</h4>
+                    <p>Generate a release email with attachments, ready to send to your team.</p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="help-section">
-            <h3>How to Use</h3>
-            <ol class="steps-list">
-                <li class="animate-slide-right" style="animation-delay: 0.1s">
-                    <span class="step-marker animate-pulse">1</span>
-                    <div class="step-content">
-                        <strong>Find Scripts:</strong> Enter a Ticket Number (e.g. <code>12345</code> or <code>ABC-123</code>) and click "Scan".
-                        <p class="step-desc">The app searches your configured Outlook folder for emails with that ticket number and extracts attached SQL files.</p>
+        <div class="divider"></div>
+
+        <h2 class="section-title" style="margin-top: 3rem;">Deep Dive: How it Works</h2>
+
+        <div class="details-grid">
+            <!-- Filter Logic -->
+            <div class="detail-card glass-card">
+                <h3><span class="icon">🔍</span> Email Filtering Logic</h3>
+                
+                <div class="visual-stage filter-stage">
+                    <div class="filter-gate">
+                        <div class="gate-line"></div>
+                        <div class="gate-scanner"></div>
                     </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.2s">
-                    <span class="step-marker animate-pulse">2</span>
-                    <div class="step-content">
-                        <strong>Review & Reorder:</strong> The extracted scripts appear in lists (Tables, PROCs, Data).
-                        <p class="step-desc">Drag and drop or use arrows to reorder them if execution order matters.</p>
+                    <!-- Animated Items -->
+                    <div class="email-item e-match">
+                        <span class="e-sub">ID: 123</span>
+                        <span class="e-status">✓</span>
                     </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.3s">
-                    <span class="step-marker animate-pulse">3</span>
-                    <div class="step-content">
-                        <strong>Manual Upload:</strong> Drag scripts directly from your desktop into the upload zone effectively adding them to the list.
+                    <div class="email-item e-fail">
+                        <span class="e-sub">Re: Hello</span>
+                        <span class="e-status">✕</span>
                     </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.4s">
-                    <span class="step-marker animate-pulse">4</span>
-                    <div class="step-content">
-                        <strong>Consolidate:</strong> Click "Consolidate & Save" to merge all scripts into one master SQL file.
+                    <div class="email-item e-match-2">
+                        <span class="e-sub">ID: 456</span>
+                        <span class="e-status">✓</span>
                     </div>
-                </li>
-                <li class="animate-slide-right" style="animation-delay: 0.5s">
-                    <span class="step-marker animate-pulse">5</span>
-                    <div class="step-content">
-                        <strong>Release:</strong> Click "Create Release Email" to generate a draft email in Outlook with the consolidated scripts attached.
+                </div>
+
+                <ul class="detail-list">
+                    <li><strong>Reverse Scan:</strong> The app scans your Outlook folder (Newest First) to find the most recent matches quickly.</li>
+                    <li><strong>Subject Match:</strong> It uses strict text matching to find the exact Ticket ID in the subject line.</li>
+                    <li><strong>Attachment Check:</strong> Only emails containing valid <code>.sql</code> or <code>.txt</code> scripts are accepted.</li>
+                </ul>
+            </div>
+
+            <!-- Consolidation Logic -->
+            <div class="detail-card glass-card">
+                <h3><span class="icon">🧱</span> Consolidation Process</h3>
+
+                <div class="visual-stage processing-stage">
+                    <div class="script_stack">
+                        <div class="script-block b1">A</div>
+                        <div class="script-block b2">B</div>
+                        <div class="script-block b3">C</div>
                     </div>
-                </li>
-            </ol>
+                    <div class="process-arrow">➔</div>
+                    <div class="wrapper-zone">
+                        <div class="wrap-bracket">[ ]</div>
+                        <div class="wrap-text">Safe Wrap</div>
+                    </div>
+                    <div class="process-arrow">➔</div>
+                    <div class="final-stack">Master.sql</div>
+                </div>
+
+                <ul class="detail-list">
+                    <li><strong>Ordering:</strong> Scripts are merged in the exact order shown on the dashboard (Top to Bottom).</li>
+                    <li><strong>Safety Wrapping:</strong> Each script is wrapped in <code>PRINT</code> markers to help debug the final output.</li>
+                    <li><strong>Single Transaction:</strong> The final consolidated file is built to be run as a single atomic execution.</li>
+                </ul>
+            </div>
+
+            <!-- Drafting Process -->
+            <div class="detail-card glass-card">
+                <h3><span class="icon">✍️</span> Drafting Process</h3>
+
+                <div class="visual-stage draft-stage">
+                    <div class="msg-window">
+                        <div class="msg-header">
+                            <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                        </div>
+                        <div class="msg-body">
+                            <div class="att-row"><div class="paperclip"></div> Master.sql</div>
+                            <div class="msg-line w80"></div>
+                            <div class="msg-line w60"></div>
+                            <div class="msg-line w40"></div>
+                            <div class="cursor"></div>
+                        </div>
+                        <div class="pop-stamp">REVIEW</div>
+                    </div>
+                </div>
+
+                <ul class="detail-list">
+                    <li><strong>Local Outlook:</strong> The app commands your local Outlook to create a new window. It never sends silently.</li>
+                    <li><strong>Auto-Attach:</strong> The consolidated file is automatically attached to this new window.</li>
+                    <li><strong>User Control:</strong> You get full control to edit recipients or body text before clicking "Send".</li>
+                </ul>
+            </div>
         </div>
-        
-        <div class="help-section">
-             <h3>Troubleshooting</h3>
-             <ul class="trouble-list">
-                 <li><strong>Outlook Error:</strong> Ensure default Outlook (Desktop) is running. "New Outlook" (Web wrapper) is not supported.</li>
-                 <li><strong>Scan Failed:</strong> Check "Settings" to ensure the Target Folder name matches your Outlook folder exactly.</li>
-             </ul>
+
+        <div class="divider"></div>
+
+        <!-- Troubleshooting Accordion -->
+        <h3 class="section-title">Common Issues</h3>
+        <div class="accordion">
+            <details class="glass-card accordion-item">
+                <summary>Outlook isn't finding emails</summary>
+                <div class="accordion-content">
+                    <p>Ensure you are using <strong>Classic Outlook (Desktop)</strong>. The "New Outlook" (web wrapper) does not support automation. Also verify the "Target Folder" in Settings matches your Outlook folder name exactly.</p>
+                </div>
+            </details>
+            
+            <details class="glass-card accordion-item">
+                <summary>Scripts are out of order</summary>
+                <div class="accordion-content">
+                    <p>Use the <strong>Up/Down arrows</strong> in the script list to reorder them before consolidating. The final file respects this order.</p>
+                </div>
+            </details>
+            
+            <details class="glass-card accordion-item">
+                <summary>How do I add manual scripts?</summary>
+                <div class="accordion-content">
+                    <p>Drag and drop SQL files from your desktop directly into the "File Upload" zone on the dashboard.</p>
+                </div>
+            </details>
         </div>
-        
+
         <div class="footer-info">
             <p>Version 2.0.0 (Blazor Edition)</p>
         </div>
@@ -64,80 +195,406 @@
 </div>
 
 <style>
-    .help-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding-top: 2rem;
-    }
+    .content-card { padding: 2rem; }
     
-    .content-card { padding: 3rem; }
+    .page-title { margin-bottom: 2rem; color: #fff; font-size: 1.25rem; }
+    .section-title { margin: 2rem 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
     
-    .help-section { margin-bottom: 2.5rem; }
-    
-    h3 { 
-        color: var(--primary); 
-        border-bottom: 1px solid rgba(255,255,255,0.1); 
-        padding-bottom: 0.5rem; 
-        margin-bottom: 1rem;
-        font-weight: 500;
-    }
-    
-    p { line-height: 1.6; color: var(--text-primary); }
-    
-    .steps-list { 
-        padding-left: 0; 
-        list-style: none;
-        display: flex;
-        flex-direction: column;
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 2rem 0; }
+
+    /* Workflow Grid */
+    .workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 1.5rem;
     }
-    
-    .steps-list li { 
-        display: flex;
-        gap: 1rem;
-        color: var(--text-primary);
-        opacity: 0; /* Starts hidden for animation */
+
+    .workflow-step-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: transform 0.3s;
     }
-    
-    .step-marker {
-        background: var(--primary);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+    .workflow-step-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.1); }
+
+    .step-visual {
+        height: 120px;
+        background: rgba(0,0,0,0.2);
         display: flex;
         align-items: center;
         justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .step-info { padding: 1.2rem; position: relative; }
+    
+    .step-badge {
+        position: absolute;
+        top: -16px;
+        right: 1.2rem;
+        width: 32px; height: 32px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
         font-weight: bold;
-        flex-shrink: 0;
-        box-shadow: 0 0 10px var(--primary-glow);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        border: 2px solid #18181b; /* Match bg to cut overlapping */
     }
     
-    .step-content { flex: 1; padding-top: 0.25rem; }
+    .step-info h4 { margin: 0 0 0.5rem 0; color: #fff; font-size: 1rem; }
+    .step-info p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
     
-    .steps-list strong { color: #a5b4fc; } /* Lighter accent */
+    code { background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 4px; color: #a5b4fc; }
+
+    /* --- ANIMATION SCENES --- */
     
-    .step-desc { 
-        margin-top: 0.25rem; 
-        font-size: 0.9rem; 
-        color: var(--text-secondary); 
+    /* Scene 1: Scan */
+    .scene-doc {
+        width: 60px; height: 80px;
+        background: #27272a;
+        border-radius: 4px;
+        padding: 8px;
+        display: flex; flex-direction: column; gap: 6px;
+    }
+    .doc-line { height: 4px; background: #3f3f46; border-radius: 2px; }
+    .doc-line.short { width: 60%; }
+    
+    .scene-magnifier {
+        position: absolute;
+        color: var(--accent);
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        animation: scanMove 3s ease-in-out infinite;
+    }
+    @@keyframes scanMove {
+        0% { transform: translate(-20px, -20px) rotate(0deg); }
+        50% { transform: translate(20px, 20px) rotate(10deg); }
+        100% { transform: translate(-20px, -20px) rotate(0deg); }
+    }
+
+    /* Scene 2: Merge */
+    .file-icon {
+        width: 24px; height: 32px;
+        background: #3f3f46;
+        border-radius: 3px;
+        position: absolute;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .f-band { width: 100%; height: 6px; background: var(--primary); opacity: 0.5; }
+    .f1 { left: 30px; animation: mergeLeft 3s infinite; }
+    .f2 { left: 60px; z-index: 2; animation: mergeCenter 3s infinite; }
+    .f3 { left: 90px; animation: mergeRight 3s infinite; }
+    
+    .f-final {
+        width: 40px; height: 50px;
+        background: var(--primary);
+        color: white; font-size: 10px; font-weight: bold;
+        left: 55px; opacity: 0;
+        animation: mergeFinal 3s infinite;
+        z-index: 10;
+        box-shadow: 0 0 15px var(--primary-glow);
     }
     
-    .trouble-list li { margin-bottom: 0.5rem; color: var(--text-secondary); }
-    .trouble-list strong { color: #f87171; }
-    
-    .footer-info {
-        border-top: 1px solid rgba(255,255,255,0.05);
-        padding-top: 1rem;
-        text-align: center;
-        font-size: 0.8rem;
-        color: rgba(255,255,255,0.3);
+    @@keyframes mergeLeft { 0%, 40% { transform: translateX(0); opacity: 1; } 50%, 100% { transform: translateX(30px); opacity: 0; } }
+    @@keyframes mergeCenter { 0%, 40% { transform: scale(1); opacity: 1; } 50%, 100% { transform: scale(0.5); opacity: 0; } }
+    @@keyframes mergeRight { 0%, 40% { transform: translateX(0); opacity: 1; } 50%, 100% { transform: translateX(-30px); opacity: 0; } }
+    @@keyframes mergeFinal { 0%, 45% { opacity: 0; transform: scale(0.8); } 55% { opacity: 1; transform: scale(1.1); } 65%, 100% { opacity: 1; transform: scale(1); } }
+
+    /* Scene 3: Release */
+    .envelope {
+        width: 60px; height: 40px;
+        background: #e4e4e7;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+        animation: envFly 3s infinite;
+    }
+    .env-flap {
+        position: absolute; top: 0; left: 0; right: 0; height: 20px;
+        background: #d4d4d8;
+        clip-path: polygon(0 0, 50% 100%, 100% 0);
+        transform-origin: top;
+        animation: flapClose 3s infinite;
     }
     
-    code { 
-        background: rgba(0,0,0,0.3); 
-        padding: 0.1rem 0.4rem; 
-        border-radius: 4px; 
-        font-family: monospace;
+    @@keyframes flapClose { 0% { transform: rotateX(180deg); } 20% { transform: rotateX(0deg); } 100% { transform: rotateX(0deg); } }
+    @@keyframes envFly { 
+        0%, 30% { transform: translate(0, 0) scale(1); opacity: 1; } 
+        40% { transform: translate(-10px, 10px) rotate(-5deg); }
+        100% { transform: translate(100px, -50px) rotate(15deg) scale(0.8); opacity: 0; } 
+    }
+
+    /* Accordion */
+    .accordion { display: flex; flex-direction: column; gap: 0.8rem; }
+    
+    .accordion-item { overflow: hidden; }
+    
+    summary {
+        padding: 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text-primary);
+        transition: background 0.2s;
+    }
+    summary:hover { background: rgba(255,255,255,0.03); }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; font-size: 1.2rem; color: var(--text-secondary); font-weight: 300; }
+    details[open] summary::after { content: '−'; }
+    details[open] summary { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    
+    .accordion-content { padding: 1rem; color: var(--text-secondary); line-height: 1.6; font-size: 0.9rem; }
+    
+    .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+    @@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    .footer-info { margin-top: 3rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); opacity: 0.6; }
+
+    /* --- Deep Dive Section --- */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .detail-card h3 { 
+        margin-top: 0; 
+        font-size: 1.1rem; 
+        color: var(--text-primary); 
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0 0 0;
+    }
+
+    .detail-list li {
+        margin-bottom: 0.8rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .detail-list li::before {
+        content: "•";
+        color: var(--primary);
+        position: absolute; left: 0; font-weight: bold;
+    }
+
+    .visual-stage {
+        height: 140px;
+        background: rgba(0,0,0,0.3);
+        border-radius: var(--radius-sm);
+        margin: 1rem 0;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Filter Animation */
+    .filter-stage { display: flex; align-items: center; justify-content: flex-start; padding-left: 20px; }
+    
+    .filter-gate {
+        position: absolute; left: 50%; top: 20px; bottom: 20px; width: 4px;
+        background: #3f3f46;
+        z-index: 10;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .gate-scanner {
+        width: 100%; height: 20px; background: var(--accent);
+        opacity: 0.8;
+        animation: gateScan 1s ease-in-out infinite alternate;
+        box-shadow: 0 0 10px var(--accent);
+    }
+
+    .email-item {
+        position: absolute;
+        left: -80px;
+        width: 70px; height: 40px;
+        background: #27272a;
+        border: 1px solid #3f3f46;
+        border-radius: 4px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        font-size: 10px; color: white;
+        z-index: 5;
+    }
+    .e-status { font-size: 14px; font-weight: bold; display: none; }
+
+    /* Matches */
+    .e-match { animation: filterPass 4s infinite linear; top: 30px; }
+    .e-match-2 { animation: filterPass 4s infinite linear; top: 30px; animation-delay: 2s; }
+    
+    /* Fail */
+    .e-fail { animation: filterFail 4s infinite linear; top: 80px; animation-delay: 1s; }
+
+    @@keyframes gateScan { from { transform: translateY(0); } to { transform: translateY(80px); } }
+
+    @@keyframes filterPass {
+        0% { transform: translateX(0); opacity: 0; }
+        10% { opacity: 1; }
+        40% { transform: translateX(180px); border-color: #3f3f46; box-shadow: none; }
+        45% { transform: translateX(200px); border-color: var(--success); box-shadow: 0 0 15px var(--success); background: #064e3b; }
+        50% { .e-status { display: block; color: var(--success); } }
+        100% { transform: translateX(450px); opacity: 0; }
+    }
+
+    @@keyframes filterFail {
+        0% { transform: translateX(0); opacity: 0; }
+        10% { opacity: 1; }
+        40% { transform: translateX(180px); }
+        45% { transform: translateX(200px); border-color: var(--error); background: #7f1d1d; }
+        60% { transform: translateX(220px) translateY(20px) rotate(10deg); opacity: 0; }
+        100% { opacity: 0; }
+    }
+
+    /* Consolidation Animation */
+    .processing-stage {
+        display: flex; align-items: center; justify-content: center; gap: 15px;
+    }
+
+    .script_stack { position: relative; width: 40px; height: 60px; }
+    .script-block {
+        width: 30px; height: 20px; background: #3f3f46;
+        border: 1px solid #52525b;
+        position: absolute;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 9px; color: #fff;
+    }
+    .b1 { top: 0; animation: blockMove 3s infinite; }
+    .b2 { top: 20px; animation: blockMove 3s infinite 0.2s; }
+    .b3 { top: 40px; animation: blockMove 3s infinite 0.4s; }
+
+    .wrapper-zone {
+        width: 60px; height: 60px;
+        border: 1px dashed var(--text-muted);
+        border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column;
+        animation: wrapPulse 3s infinite;
+        color: var(--accent);
+    }
+    .wrap-bracket { font-size: 24px; font-weight: bold; }
+    .wrap-text { font-size: 8px; text-transform: uppercase; }
+
+    .final-stack {
+        width: 50px; height: 70px;
+        background: var(--primary);
+        color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 10px;
+        border-radius: 4px;
+        box-shadow: 0 0 20px var(--primary-glow);
+        transform: scale(0);
+        animation: finalPulse 3s infinite;
+    }
+
+    @@keyframes blockMove {
+        0% { transform: translateX(0) scale(1); opacity: 1; }
+        40% { transform: translateX(60px) scale(0.5); opacity: 0.5; }
+        100% { transform: translateX(60px) scale(0); opacity: 0; }
+    }
+
+    @@keyframes wrapPulse {
+        0%, 30% { border-color: var(--text-muted); transform: scale(1); }
+        40%, 60% { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 10px rgba(213, 0, 249, 0.2); }
+        100% { border-color: var(--text-muted); transform: scale(1); }
+    }
+
+    @@keyframes finalPulse {
+        0%, 60% { transform: scale(0); opacity: 0; }
+        70% { transform: scale(1.2); opacity: 1; }
+        80% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Draft Animation */
+    .draft-stage { display: flex; align-items: center; justify-content: center; }
+
+    .msg-window {
+        width: 140px; height: 100px;
+        background: #27272a;
+        border: 1px solid #52525b;
+        border-radius: 6px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: flex; flex-direction: column;
+        overflow: hidden;
+        animation: popWindow 4s infinite ease-in-out;
+        position: relative;
+    }
+
+    .msg-header {
+        height: 20px; background: #3f3f46;
+        display: flex; align-items: center; gap: 4px; padding-left: 8px;
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .red { background: #ef4444; } .yellow { background: #f59e0b; } .green { background: #10b981; }
+
+    .msg-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+    
+    .att-row {
+        font-size: 8px; color: var(--accent); display: flex; align-items: center; gap: 4px;
+        background: rgba(213, 0, 249, 0.1); padding: 2px 4px; border-radius: 2px;
+        width: fit-content;
+        transform: translateX(-150%);
+        animation: slideAtt 4s infinite ease-out;
+    }
+    .paperclip { width: 4px; height: 4px; border: 1px solid currentColor; border-radius: 2px; }
+
+    .msg-line { height: 4px; background: #52525b; border-radius: 2px; opacity: 0; }
+    .w80 { width: 80%; animation: typeLine 4s infinite 1s; }
+    .w60 { width: 60%; animation: typeLine 4s infinite 1.2s; }
+    .w40 { width: 40%; animation: typeLine 4s infinite 1.4s; }
+
+    .cursor {
+        position: absolute; bottom: 12px; left: 45%; 
+        width: 2px; height: 8px; background: var(--primary);
+        animation: blink 1s infinite;
+    }
+
+    .pop-stamp {
+        position: absolute;
+        top: 50%; left: 50%; width: 100%;
+        transform: translate(-50%, -50%) rotate(-15deg) scale(0);
+        color: var(--success);
+        font-weight: 900; font-size: 1.5rem; letter-spacing: 0.1em;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        opacity: 0;
+        animation: stampFade 4s infinite;
+        text-align: center; pointer-events: none;
+    }
+
+    @@keyframes popWindow {
+        0% { transform: translateY(20px) scale(0.9); opacity: 0; }
+        20% { transform: translateY(0) scale(1); opacity: 1; }
+        90% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-10px); opacity: 0; }
+    }
+
+    @@keyframes slideAtt {
+        0%, 20% { transform: translateX(-150%); }
+        30%, 100% { transform: translateX(0); }
+    }
+
+    @@keyframes typeLine {
+        0% { width: 0; opacity: 1; }
+        100% { opacity: 1; } /* Keeps width from class definition */
+    }
+
+    @@keyframes blink { 50% { opacity: 0; } }
+
+    @@keyframes stampFade {
+        0%, 60% { transform: translate(-50%, -50%) rotate(-15deg) scale(2); opacity: 0; }
+        70% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+        90% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1.5); opacity: 0; }
     }
 </style>
