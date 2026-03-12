@@ -203,7 +203,7 @@
         }
         
         // Initial Fetch
-        await LoggerService.LoadHistoryAsync();
+        UpdateSessions();
         UpdateSessions();
         
         // Polling for live updates

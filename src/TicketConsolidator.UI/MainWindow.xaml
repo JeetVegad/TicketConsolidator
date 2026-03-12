@@ -47,24 +47,93 @@
                     </StackPanel>
 
                     <!-- Navigation Menu -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Command="{Binding NavigateDashboardCommand}" Content="DASHBOARD" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                        <Button Command="{Binding NavigateCodeReviewCommand}" Content="CODE REVIEW" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                        <Button Command="{Binding NavigateSettingsCommand}" Content="SETTINGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                        <Button Command="{Binding NavigateTemplateEditorCommand}" Content="TEMPLATE" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                        <Button Command="{Binding NavigateLogsCommand}" Content="LOGS" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                        <Button Command="{Binding NavigateHelpCommand}" Content="HELP" Foreground="White" Margin="10,0" Style="{StaticResource MaterialDesignFlatButton}"/>
-                    </StackPanel>
+                    <Menu Grid.Column="2" Background="Transparent" VerticalAlignment="Center" Margin="10,0">
+                        <Menu.Resources>
+                            <!-- Explicit Style for Dropdown items so they don't inherit white text -->
+                            <Style x:Key="DropdownMenuItem" TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                            </Style>
+                        </Menu.Resources>
+                        
+                        <!-- WORKFLOWS MENU -->
+                        <MenuItem Header="WORKFLOWS" Background="Transparent" FontSize="14" FontWeight="SemiBold" Foreground="White" Padding="10,0" VerticalAlignment="Center" materialDesign:RippleAssist.Feedback="White">
+                            <MenuItem Header="Consolidate Scripts" Command="{Binding NavigateDashboardCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Code Review" Command="{Binding NavigateCodeReviewCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="CodeTagsCheck" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Internal Release" Command="{Binding NavigateInternalReleaseCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="AirplaneTakeoff" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                        
+                        <!-- SYSTEM MENU -->
+                        <MenuItem Header="SYSTEM" Background="Transparent" FontSize="14" FontWeight="SemiBold" Foreground="White" Padding="10,0" VerticalAlignment="Center" Margin="10,0,0,0" materialDesign:RippleAssist.Feedback="White">
+                            <MenuItem Header="Email Templates" Command="{Binding NavigateTemplateEditorCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="TextBoxEditOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Settings" Command="{Binding NavigateSettingsCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="CogOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="View Logs" Command="{Binding NavigateLogsCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="FormatListBulleted" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="Help &amp; Guide" Command="{Binding NavigateHelpCommand}" Style="{StaticResource DropdownMenuItem}">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="HelpCircleOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                    </Menu>
                 </Grid>
             </Border>
             <!-- Main Content Area -->
             <Grid Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}">
-                <!-- Content Placeholder -->
-                <materialDesign:TransitioningContent Content="{Binding CurrentView}" Margin="5">
-                    <materialDesign:TransitioningContent.OpeningEffects>
-                        <materialDesign:TransitionEffect Kind="FadeIn" Duration="0:0:0.08"/>
-                    </materialDesign:TransitioningContent.OpeningEffects>
-                </materialDesign:TransitioningContent>
+                <!-- Views Stacked Concurrently for Instant Navigation -->
+                <Grid.Resources>
+                    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    <Style TargetType="ContentControl">
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <TranslateTransform Y="0"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="Visibility" Value="Visible">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="25" To="0" Duration="0:0:0.25" DecelerationRatio="0.9"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Resources>
+                
+                <ContentControl Content="{Binding DashboardView}" Visibility="{Binding IsDashboardVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding CodeReviewView}" Visibility="{Binding IsCodeReviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding InternalReleaseView}" Visibility="{Binding IsInternalReleaseVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding TemplateEditorView}" Visibility="{Binding IsTemplateEditorVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding SettingsView}" Visibility="{Binding IsSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding LogsView}" Visibility="{Binding IsLogsVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ContentControl Content="{Binding HelpView}" Visibility="{Binding IsHelpVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 
                 <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" VerticalAlignment="Bottom" Margin="10"/>
             </Grid>

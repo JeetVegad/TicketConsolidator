@@ -1,0 +1,1 @@
+﻿   1:7>c:\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\Services\EmailService.cs(105,42): error CS0103: The name 'lastError' does not exist in the current context [c:\Apps\TicketConsolidator\src\TicketConsolidator.Infrastructure\TicketConsolidator.Infrastructure.csproj]

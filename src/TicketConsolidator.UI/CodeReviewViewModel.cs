@@ -57,6 +57,8 @@ namespace TicketConsolidator.UI
                 _logger.LogSuccess("Restored today's Jira session.");
             }
 
+            _jiraService.AuthenticationStatusChanged += OnAuthenticationStatusChanged;
+
             LoginCommand = new RelayCommand(o => ShowBrowser(), o => !IsLoading && !_jiraService.IsAuthenticated);
             SearchCommand = new RelayCommand(async o => await ExecuteSearch(), o => !IsLoading && _jiraService.IsAuthenticated);
             DraftEmailCommand = new RelayCommand(async o => await ExecuteDraftEmail(), o => Ticket != null && !IsLoading);
@@ -65,6 +67,16 @@ namespace TicketConsolidator.UI
             RemoveVSCommand = new RelayCommand(o => RemoveAssignment(o, "VS"), o => true);
             RemoveDBCommand = new RelayCommand(o => RemoveAssignment(o, "DB"), o => true);
 
+        }
+
+        private void OnAuthenticationStatusChanged()
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                AuthStatus = _jiraService.IsAuthenticated ? "Connected to Jira ✓" : "Not logged in — click LOGIN to authenticate via Jira";
+                OnPropertyChanged(nameof(IsAuthenticated));
+                CommandManager.InvalidateRequerySuggested();
+            });
         }
 
         #region Properties
@@ -232,9 +244,6 @@ namespace TicketConsolidator.UI
                 await _settingsService.SaveJiraSessionAsync(loginWindow.ExtractedCookies);
 
                 IsBrowserVisible = false;
-                AuthStatus = "Connected to Jira ✓";
-                OnPropertyChanged(nameof(IsAuthenticated));
-                CommandManager.InvalidateRequerySuggested();
 
                 _logger.LogSuccess("Jira session extracted from login window and saved reliably for today.");
             }
@@ -303,6 +312,9 @@ namespace TicketConsolidator.UI
         {
             if (string.IsNullOrWhiteSpace(TicketKey)) return;
 
+            string runId = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            _logger.StartSession($"Code Review Search [ID: {runId}] - Ticket: {TicketKey.Trim().ToUpperInvariant()}");
+
             IsLoading = true;
             HasError = false;
             StatusMessage = "Fetching ticket from Jira...";
@@ -321,12 +333,10 @@ namespace TicketConsolidator.UI
                 catch (UnauthorizedAccessException)
                 {
                     HasError = true;
+                    _jiraService.ClearCookies();
                     await _settingsService.ClearJiraSessionAsync();
 
-                    AuthStatus = "Session expired — click LOGIN again";
                     StatusMessage = "Session expired. Please log in again.";
-                    OnPropertyChanged(nameof(IsAuthenticated));
-                    CommandManager.InvalidateRequerySuggested();
                     IsLoading = false;
                     return;
                 }
@@ -371,6 +381,7 @@ namespace TicketConsolidator.UI
             finally
             {
                 IsLoading = false;
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -404,6 +415,9 @@ namespace TicketConsolidator.UI
         private async Task ExecuteDraftEmail()
         {
             if (Ticket == null) return;
+
+            string runId = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            _logger.StartSession($"Code Review Draft Email [ID: {runId}] - Ticket: {Ticket.Key}");
 
             IsLoading = true;
             StatusMessage = "Creating email draft...";

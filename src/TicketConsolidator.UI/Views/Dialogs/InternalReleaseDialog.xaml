@@ -1,0 +1,61 @@
+<UserControl x:Class="TicketConsolidator.UI.Views.Dialogs.InternalReleaseDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             Width="500">
+
+    <Grid Margin="20" Background="{DynamicResource MaterialDesignPaper}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Internal Release Details" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,20" Foreground="{DynamicResource MaterialDesignBody}"/>
+
+        <!-- Ticket Key Display -->
+        <TextBlock Grid.Row="1" Text="{Binding Ticket.Key, StringFormat='Drafting release for {0}'}" FontWeight="SemiBold" Margin="0,0,0,15" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+        <!-- Reviewer Name -->
+        <TextBox Grid.Row="2" materialDesign:HintAssist.Hint="Review Name / Reviewer" Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                 Text="{Binding Reviewer, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
+
+        <!-- Task Description -->
+        <TextBox Grid.Row="3" materialDesign:HintAssist.Hint="Task Description" Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                 Text="{Binding TaskDescription, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="60" Margin="0,0,0,15"/>
+
+        <!-- Resolution -->
+        <TextBox Grid.Row="4" materialDesign:HintAssist.Hint="Resolution" Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                 Text="{Binding Resolution, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="60" Margin="0,0,0,15"/>
+
+        <!-- Impacted Artifact -->
+        <TextBox Grid.Row="5" materialDesign:HintAssist.Hint="Impacted Artifact" Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                 Text="{Binding ImpactedArtifact, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
+
+        <!-- DB Config Note -->
+        <TextBlock Grid.Row="6" Margin="0,0,0,20" FontSize="11" Foreground="#757575" TextWrapping="Wrap"
+                   Text="Note: DB Configuration status and UT attachment tracking are determined automatically based on ticket context."/>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+            <Button IsDefault="True" Command="{Binding GenerateDraftCommand}" 
+                    CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"
+                    Content="DRAFT EMAIL" Style="{StaticResource MaterialDesignRaisedButton}" Margin="0,0,10,0"/>
+            <Button IsCancel="True" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" 
+                    Content="CANCEL" Style="{StaticResource MaterialDesignFlatButton}"/>
+        </StackPanel>
+        
+        <!-- Error Message -->
+        <TextBlock Grid.Row="8" Text="{Binding ErrorMessage}" Foreground="{DynamicResource SecondaryHueMidBrush}" FontWeight="SemiBold" TextWrapping="Wrap" />
+    </Grid>
+</UserControl>

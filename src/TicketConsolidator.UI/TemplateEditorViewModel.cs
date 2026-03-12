@@ -26,7 +26,7 @@ namespace TicketConsolidator.UI
             };
 
             // Initialize with Release template
-            _selectedTemplateType = "Release Email";
+            _selectedTemplateType = "Product Release Mail";
             Document = new TextDocument(GetTemplateOrFormattedDefault(
                 _settingsService.EmailTemplate, SettingsService.DefaultEmailTemplate));
             Document.TextChanged += OnDocumentTextChanged;
@@ -60,9 +60,10 @@ namespace TicketConsolidator.UI
             }
         }
 
-        public string[] TemplateTypes { get; } = { "Release Email", "Code Review Email" };
+        public string[] TemplateTypes { get; } = { "Product Release Mail", "Code Review Mail", "Internal Release Mail" };
 
-        private bool IsCodeReview => SelectedTemplateType == "Code Review Email";
+        private bool IsCodeReview => SelectedTemplateType == "Code Review Mail";
+        private bool IsInternalRelease => SelectedTemplateType == "Internal Release Mail";
 
         // ── Placeholder chips (shown in the UI) ─────────────────────
         private string[] _availablePlaceholders = ReleasePlaceholders;
@@ -78,6 +79,9 @@ namespace TicketConsolidator.UI
 
         private static readonly string[] CodeReviewPlaceholders =
             { "{TicketKey}", "{TicketTitle}", "{TicketUrl}", "{VSCommitNumber}", "{DBCommitNumber}", "{HasDataScript}", "{UserName}", "{Date}" };
+
+        private static readonly string[] InternalReleasePlaceholders =
+            { "{TicketKey}", "{TicketUrl}", "{TicketSummary}", "{TicketDescription}", "{TaskDescription}", "{Resolution}", "{ImpactedArtifact}", "{Coder}", "{Reviewer}", "{IsUTAttached}", "{DbConfiguration}", "{UserName}", "{AttachmentsListHtml}", "{SelfCodeReviewStatus}", "{CodeReviewDefectStatus}", "{DbCommitDoneStatus}", "{DataScriptApplicableStatus}" };
 
         // ── Preview HTML (bound to WebView2 via code-behind) ────────
         private string _previewHtml = "";
@@ -115,6 +119,13 @@ namespace TicketConsolidator.UI
                     _settingsService.CodeReviewTemplate,
                     SettingsService.DefaultCodeReviewTemplate);
                 AvailablePlaceholders = CodeReviewPlaceholders;
+            }
+            else if (IsInternalRelease)
+            {
+                Document.Text = GetTemplateOrFormattedDefault(
+                    _settingsService.InternalReleaseTemplate,
+                    SettingsService.DefaultInternalReleaseTemplate);
+                AvailablePlaceholders = InternalReleasePlaceholders;
             }
             else
             {
@@ -184,6 +195,27 @@ namespace TicketConsolidator.UI
                     .Replace("{UserName}", Environment.UserName)
                     .Replace("{Date}", DateTime.Now.ToString("yyyy-MM-dd"));
             }
+            else if (IsInternalRelease)
+            {
+                html = html
+                    .Replace("{TicketKey}", "ENGAGE-12345")
+                    .Replace("{TicketSummary}", "Sample ticket — Fix login timeout issue")
+                    .Replace("{TicketUrl}", "https://jira.example.com/browse/ENGAGE-12345")
+                    .Replace("{TicketDescription}", "Users experience session timeout during peak hours.")
+                    .Replace("{TaskDescription}", "Fixed timeout loop")
+                    .Replace("{Resolution}", "Done")
+                    .Replace("{ImpactedArtifact}", "App.js")
+                    .Replace("{Coder}", Environment.UserName)
+                    .Replace("{Reviewer}", "Jane Doe")
+                    .Replace("{IsUTAttached}", "Yes")
+                    .Replace("{DbConfiguration}", "NA")
+                    .Replace("{UserName}", Environment.UserName)
+                    .Replace("{SelfCodeReviewStatus}", "Yes")
+                    .Replace("{CodeReviewDefectStatus}", "NA")
+                    .Replace("{DbCommitDoneStatus}", "Yes")
+                    .Replace("{DataScriptApplicableStatus}", "Yes")
+                    .Replace("{AttachmentsListHtml}", "<ul><li>UT Document – attached</li><li>Data Script – attached</li></ul>");
+            }
             else
             {
                 html = html
@@ -226,12 +258,16 @@ namespace TicketConsolidator.UI
                 {
                     _settingsService.CodeReviewTemplate = Document.Text;
                 }
+                else if (IsInternalRelease)
+                {
+                    _settingsService.InternalReleaseTemplate = Document.Text;
+                }
 
                 await _settingsService.UpdateSettingsAsync(
                     _settingsService.CurrentTargetFolder,
                     _settingsService.ScriptsPath,
                     _settingsService.ConsolidatedScriptsPath,
-                    IsCodeReview ? null : Document.Text);
+                    (IsCodeReview || IsInternalRelease) ? null : Document.Text);
 
                 StatusMessage = $"✓ {SelectedTemplateType} saved at {DateTime.Now:HH:mm:ss}";
             }
@@ -249,6 +285,11 @@ namespace TicketConsolidator.UI
             {
                 Document.Text = SettingsService.DefaultCodeReviewTemplate;
                 AvailablePlaceholders = CodeReviewPlaceholders;
+            }
+            else if (IsInternalRelease)
+            {
+                Document.Text = SettingsService.DefaultInternalReleaseTemplate;
+                AvailablePlaceholders = InternalReleasePlaceholders;
             }
             else
             {

@@ -25,11 +25,20 @@ namespace TicketConsolidator.UI
                  EmailTemplate = EmailTemplateDocument.Text;
             };
 
+            // Initialize Internal Release Template Document
+            InternalReleaseTemplateDocument = new ICSharpCode.AvalonEdit.Document.TextDocument(_settingsService.InternalReleaseTemplate ?? "");
+            InternalReleaseTemplate = _settingsService.InternalReleaseTemplate ?? "";
+            InternalReleaseTemplateDocument.TextChanged += (s, e) => 
+            {
+                 InternalReleaseTemplate = InternalReleaseTemplateDocument.Text;
+            };
+
             UpdateFolderCommand = new RelayCommand(ExecuteUpdateSettings);
             PreviewTemplateCommand = new RelayCommand(ExecutePreviewTemplate);
         }
 
         public ICSharpCode.AvalonEdit.Document.TextDocument EmailTemplateDocument { get; }
+        public ICSharpCode.AvalonEdit.Document.TextDocument InternalReleaseTemplateDocument { get; }
 
         private string _targetFolder;
         public string TargetFolder
@@ -54,6 +63,20 @@ namespace TicketConsolidator.UI
                 if (_emailTemplate != value)
                 {
                     _emailTemplate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string _internalReleaseTemplate;
+        public string InternalReleaseTemplate
+        {
+            get => _internalReleaseTemplate;
+            set
+            {
+                if (_internalReleaseTemplate != value)
+                {
+                    _internalReleaseTemplate = value;
                     OnPropertyChanged();
                 }
             }
@@ -109,6 +132,8 @@ namespace TicketConsolidator.UI
         private async void ExecuteUpdateSettings(object obj)
         {
             _settingsService.TicketsFolder = TicketsFolder;
+
+            _settingsService.InternalReleaseTemplate = InternalReleaseTemplate;
 
             await _settingsService.UpdateSettingsAsync(
                 TargetFolder, 

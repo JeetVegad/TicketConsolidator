@@ -10,6 +10,7 @@ namespace TicketConsolidator.UI.Views
     {
         private readonly string _loginUrl;
         private bool _browserInitialized;
+        private bool _isClosing;
 
         /// <summary>Cookies extracted from the browser session after the user clicks Done.</summary>
         public List<Infrastructure.Services.SimpleCookie> ExtractedCookies { get; private set; }
@@ -86,7 +87,18 @@ namespace TicketConsolidator.UI.Views
         {
             if (JiraBrowser.CoreWebView2 != null)
             {
-                UpdateUrlDisplay(JiraBrowser.CoreWebView2.Source);
+                string sourceUrl = JiraBrowser.CoreWebView2.Source;
+                UpdateUrlDisplay(sourceUrl);
+
+                if (!_isClosing && !string.IsNullOrEmpty(sourceUrl) && 
+                    (sourceUrl.Contains("Dashboard.jspa", StringComparison.OrdinalIgnoreCase) ||
+                     sourceUrl.EndsWith("/secure/Dashboard", StringComparison.OrdinalIgnoreCase)))
+                {
+                    _isClosing = true;
+                    StatusText.Text = "Login successful. Extracting session automatically...";
+                    JiraBrowser.CoreWebView2.Stop();
+                    Done_Click(null, null);
+                }
             }
         }
 
@@ -114,9 +126,12 @@ namespace TicketConsolidator.UI.Views
         {
             if (!_browserInitialized || JiraBrowser.CoreWebView2 == null)
             {
-                StatusText.Text = "Browser not ready yet — please wait.";
+                if (!_isClosing)
+                    StatusText.Text = "Browser not ready yet — please wait.";
                 return;
             }
+
+            _isClosing = true;
 
             try
             {

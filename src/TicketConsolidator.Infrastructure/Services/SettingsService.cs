@@ -72,6 +72,9 @@ namespace TicketConsolidator.Infrastructure.Services
             CodeReviewTemplate = LoadUserSetting("CodeReviewTemplate");
             if (string.IsNullOrWhiteSpace(CodeReviewTemplate)) CodeReviewTemplate = DefaultCodeReviewTemplate;
 
+            InternalReleaseTemplate = LoadUserSetting("InternalReleaseTemplate");
+            if (string.IsNullOrWhiteSpace(InternalReleaseTemplate)) InternalReleaseTemplate = DefaultInternalReleaseTemplate;
+
             TicketsFolder = LoadUserSetting("TicketsFolder") ?? "";
 
             IsDarkMode = bool.TryParse(LoadUserSetting("IsDarkMode"), out bool dm) ? dm : false;
@@ -94,6 +97,7 @@ namespace TicketConsolidator.Infrastructure.Services
         public string ConsolidatedScriptsPath { get; private set; }
         public string EmailTemplate { get; private set; }
         public string CodeReviewTemplate { get; set; }
+        public string InternalReleaseTemplate { get; set; }
         public string TicketsFolder { get; set; }
 
         public const string DefaultEmailTemplate = @"<html>
@@ -249,6 +253,95 @@ namespace TicketConsolidator.Infrastructure.Services
 </body>
 </html>";
 
+        public const string DefaultInternalReleaseTemplate = @"<html>
+<body style='font-family:Calibri,sans-serif; font-size:11pt'>
+
+  <p>Hi Team,</p>
+
+  <p><b>Product Release Notification:</b></p>
+  <ul>
+    <li><a href='{TicketUrl}'>[{TicketKey}] - {TicketSummary}</a></li>
+  </ul>
+
+  <p><b>Release Notes:</b></p>
+
+  <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; font-family:Calibri; font-size:11pt; width:100%'>
+    <tr>
+      <td style='width:40%'>Task description</td>
+      <td>{TaskDescription}</td>
+    </tr>
+    <tr>
+      <td>Resolution</td>
+      <td><b>{Resolution}</b></td>
+    </tr>
+    <tr>
+      <td>Impacted Artifact</td>
+      <td>{ImpactedArtifact}</td>
+    </tr>
+    <tr>
+      <td>Coder</td>
+      <td>{Coder}</td>
+    </tr>
+    <tr>
+      <td>Reviewer</td>
+      <td>{Reviewer}</td>
+    </tr>
+    <tr>
+      <td>Is UT document attached with the ticket?</td>
+      <td>{IsUTAttached}</td>
+    </tr>
+    <tr>
+      <td>DB Configuration, If Any ?</td>
+      <td>{DbConfiguration}</td>
+    </tr>
+  </table>
+
+  <br/>
+
+  <p><b>Attachments:</b></p>
+{AttachmentsListHtml}
+
+  <table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse; font-family:Calibri; font-size:11pt; width:400px'>
+    <tr>
+      <td style='width:70%'><b>1. Self-Code Review using co-pilot</b></td>
+      <td>{SelfCodeReviewStatus}</td>
+    </tr>
+    <tr>
+      <td><b>2. Code Review Defect Raised</b></td>
+      <td>{CodeReviewDefectStatus}</td>
+    </tr>
+    <tr>
+      <td><b>3. Peer Code Review Done</b></td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td><b>4. DB Commit Done</b></td>
+      <td>{DbCommitDoneStatus}</td>
+    </tr>
+    <tr>
+      <td><b>5. Data Script Applicable?</b></td>
+      <td>{DataScriptApplicableStatus}</td>
+    </tr>
+    <tr>
+      <td><b>6. Permission Script Applicable?</b></td>
+      <td>NA</td>
+    </tr>
+    <tr>
+      <td><b>7. UT Document attached to JIRA</b></td>
+      <td>{IsUTAttached}</td>
+    </tr>
+  </table>
+
+  <br/>
+
+  <p>Thanks,</p>
+
+  <p><b>Best Regards,</b><br/>
+  {UserName}</p>
+
+</body>
+</html>";
+
         public async Task UpdateSettingsAsync(string outlookFolder, string scriptsPath, string consolidatedPath, string emailTemplate = null, bool? isDarkMode = null)
         {
              CurrentTargetFolder = outlookFolder;
@@ -364,11 +457,24 @@ namespace TicketConsolidator.Infrastructure.Services
 
         public async Task SaveJiraSessionAsync(IEnumerable<SimpleCookie> cookies)
         {
+            var cookieList = cookies.ToList();
             var sessionData = new JiraSessionData
             {
                 LoggedInDate = DateTime.Now.Date,
-                Cookies = cookies.ToList()
+                Cookies = cookieList
             };
+
+            // Update cache immediately
+            _cachedJiraSession = cookieList.Select(sc => new Cookie
+            {
+                Name = sc.Name,
+                Value = sc.Value,
+                Path = sc.Path,
+                Domain = sc.Domain,
+                Secure = sc.IsSecure,
+                HttpOnly = sc.IsHttpOnly
+            }).ToList();
+            _cachedSessionDate = DateTime.Now.Date;
 
             var json = JsonSerializer.Serialize(sessionData);
             var encrypted = _encryptionService.Encrypt(json);
@@ -390,10 +496,18 @@ namespace TicketConsolidator.Infrastructure.Services
             }
         }
 
+        private IEnumerable<Cookie> _cachedJiraSession;
+        private DateTime? _cachedSessionDate;
+
         public IEnumerable<Cookie> LoadJiraSession()
         {
             try
             {
+                if (_cachedJiraSession != null && _cachedSessionDate == DateTime.Now.Date)
+                {
+                    return _cachedJiraSession;
+                }
+
                 string encrypted = LoadUserSetting("JiraSessionData");
                 if (string.IsNullOrEmpty(encrypted)) return null;
 
@@ -426,6 +540,9 @@ namespace TicketConsolidator.Infrastructure.Services
                     });
                 }
 
+                _cachedJiraSession = cookies;
+                _cachedSessionDate = sessionData.LoggedInDate;
+
                 return cookies;
             }
             catch (Exception ex)
@@ -450,6 +567,8 @@ namespace TicketConsolidator.Infrastructure.Services
                     await File.WriteAllTextAsync(_settingsFilePath, JsonSerializer.Serialize(root, options));
                     _logger.LogInfo("Jira session cleared from settings.");
                 }
+                _cachedJiraSession = null;
+                _cachedSessionDate = null;
             }
             catch (Exception ex)
             {

@@ -11,18 +11,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
 
-    <Grid Margin="20">
-        <Grid.Triggers>
-            <EventTrigger RoutedEvent="Loaded">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Storyboard.TargetName="MainPanel" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.15"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-        </Grid.Triggers>
-
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+    <Grid Margin="20">        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
             <StackPanel x:Name="MainPanel">
                 <!-- Page Title -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,20">

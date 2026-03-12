@@ -18,10 +18,37 @@ namespace TicketConsolidator.UI
                 CurrentViewName = _currentView?.GetType().Name; 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(CurrentViewName));
+                
+                // Triggers to update the grid visibility
+                OnPropertyChanged(nameof(IsDashboardVisible));
+                OnPropertyChanged(nameof(IsCodeReviewVisible));
+                OnPropertyChanged(nameof(IsInternalReleaseVisible));
+                OnPropertyChanged(nameof(IsTemplateEditorVisible));
+                OnPropertyChanged(nameof(IsSettingsVisible));
+                OnPropertyChanged(nameof(IsLogsVisible));
+                OnPropertyChanged(nameof(IsHelpVisible));
             }
         }
 
         public string CurrentViewName { get; private set; }
+
+        // Cached View Instances (resolved from DI Singleton container)
+        public object DashboardView => ResolveView(typeof(Views.DashboardView));
+        public object CodeReviewView => ResolveView(typeof(Views.CodeReviewView));
+        public object InternalReleaseView => ResolveView(typeof(Views.InternalReleaseView));
+        public object TemplateEditorView => ResolveView(typeof(Views.TemplateEditorView));
+        public object SettingsView => ResolveView(typeof(Views.SettingsView));
+        public object LogsView => ResolveView(typeof(Views.LogsView));
+        public object HelpView => ResolveView(typeof(Views.HelpView));
+
+        // Visibility Flags
+        public bool IsDashboardVisible => CurrentView == DashboardView;
+        public bool IsCodeReviewVisible => CurrentView == CodeReviewView;
+        public bool IsInternalReleaseVisible => CurrentView == InternalReleaseView;
+        public bool IsTemplateEditorVisible => CurrentView == TemplateEditorView;
+        public bool IsSettingsVisible => CurrentView == SettingsView;
+        public bool IsLogsVisible => CurrentView == LogsView;
+        public bool IsHelpVisible => CurrentView == HelpView;
 
 
         public ICommand NavigateSettingsCommand { get; }
@@ -29,6 +56,7 @@ namespace TicketConsolidator.UI
         public ICommand NavigateHelpCommand { get; }
         public ICommand NavigateDashboardCommand { get; }
         public ICommand NavigateCodeReviewCommand { get; }
+        public ICommand NavigateInternalReleaseCommand { get; }
         public ICommand NavigateTemplateEditorCommand { get; }
 
         private readonly IServiceProvider _serviceProvider;
@@ -43,6 +71,7 @@ namespace TicketConsolidator.UI
             NavigateHelpCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.HelpView)));
             NavigateDashboardCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.DashboardView)));
             NavigateCodeReviewCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.CodeReviewView)));
+            NavigateInternalReleaseCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.InternalReleaseView)));
             NavigateTemplateEditorCommand = new RelayCommand(o => CurrentView = ResolveView(typeof(Views.TemplateEditorView)));
             
             // Set initial view

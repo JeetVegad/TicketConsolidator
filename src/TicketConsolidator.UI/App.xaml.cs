@@ -37,6 +37,12 @@ namespace TicketConsolidator.UI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Force hardware acceleration and high framerate for smooth Material Design animations
+            System.Windows.Media.Animation.Timeline.DesiredFrameRateProperty.OverrideMetadata(
+                 typeof(System.Windows.Media.Animation.Timeline),
+                 new FrameworkPropertyMetadata { DefaultValue = 60 });
+            System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
+
             // Enable Multicore JIT Optimization to speed up startup and dialogs
             try
             {
@@ -146,6 +152,7 @@ namespace TicketConsolidator.UI
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<HelpViewModel>();
             services.AddTransient<CodeReviewViewModel>();
+            services.AddTransient<InternalReleaseViewModel>();
             services.AddTransient<TemplateEditorViewModel>();
 
             // Views
@@ -156,6 +163,7 @@ namespace TicketConsolidator.UI
             services.AddSingleton<LogsView>();
             services.AddSingleton<HelpView>();
             services.AddSingleton<CodeReviewView>();
+            services.AddSingleton<InternalReleaseView>();
             services.AddSingleton<TemplateEditorView>();
         }
     }

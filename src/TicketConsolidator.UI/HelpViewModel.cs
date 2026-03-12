@@ -16,7 +16,17 @@ namespace TicketConsolidator.UI
         {
             _logger = logger;
             AppVersion = $"v{Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}";
-            BuildDate = "December 2025"; 
+            
+            try
+            {
+                var filePath = Assembly.GetExecutingAssembly().Location;
+                var buildDate = System.IO.File.GetLastWriteTime(filePath);
+                BuildDate = buildDate.ToString("MMMM yyyy");
+            }
+            catch
+            {
+                BuildDate = "March 2026";
+            }
         }
 
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;

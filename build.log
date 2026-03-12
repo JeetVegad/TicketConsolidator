@@ -1,0 +1,1 @@
+﻿     5>c:\Apps\TicketConsolidator\src\TicketConsolidator.UI\InternalReleaseViewModel.cs(37,41): error CS0019: Operator '>' cannot be applied to operands of type 'method group' and 'int' [c:\Apps\TicketConsolidator\src\TicketConsolidator.UI\TicketConsolidator.UI_zwjicfpw_wpftmp.csproj]

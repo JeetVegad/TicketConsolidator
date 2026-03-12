@@ -20,6 +20,7 @@ namespace TicketConsolidator.Infrastructure.Services
         private bool _isAuthenticated;
 
         public bool IsAuthenticated => _isAuthenticated;
+        public event Action AuthenticationStatusChanged;
 
         public JiraService(JiraConfiguration config, ILoggerService logger)
         {
@@ -34,7 +35,8 @@ namespace TicketConsolidator.Infrastructure.Services
             var handler = new HttpClientHandler
             {
                 CookieContainer = _cookieContainer,
-                UseCookies = true
+                UseCookies = true,
+                UseProxy = false // Fixes the 30-second initial timeout caused by Windows proxy auto-discovery
             };
 
             _httpClient = new HttpClient(handler)
@@ -62,8 +64,27 @@ namespace TicketConsolidator.Infrastructure.Services
             }
 
             RebuildHttpClient();
+            bool wasAuthenticated = _isAuthenticated;
             _isAuthenticated = true;
             _logger.LogSuccess($"Jira cookies loaded ({_cookieContainer.Count} cookies).");
+            
+            if (!wasAuthenticated)
+            {
+                AuthenticationStatusChanged?.Invoke();
+            }
+        }
+
+        public void ClearCookies()
+        {
+            _cookieContainer = new CookieContainer();
+            RebuildHttpClient();
+            bool wasAuthenticated = _isAuthenticated;
+            _isAuthenticated = false;
+            
+            if (wasAuthenticated)
+            {
+                AuthenticationStatusChanged?.Invoke();
+            }
         }
 
         public async Task<JiraTicketInfo> GetTicketAsync(string ticketKey)
@@ -74,12 +95,17 @@ namespace TicketConsolidator.Infrastructure.Services
             _logger.LogInfo($"Fetching ticket {ticketKey} from Jira...");
 
             var response = await _httpClient.GetAsync(
-                $"rest/api/2/issue/{ticketKey}?fields=summary,description,status,assignee,issuelinks");
+                $"rest/api/2/issue/{ticketKey}?fields=summary,description,status,assignee,issuelinks,attachment");
 
             if (response.StatusCode == HttpStatusCode.Unauthorized ||
                 response.StatusCode == HttpStatusCode.Forbidden)
             {
+                bool wasAuthenticated = _isAuthenticated;
                 _isAuthenticated = false;
+                if (wasAuthenticated)
+                {
+                    AuthenticationStatusChanged?.Invoke();
+                }
                 throw new UnauthorizedAccessException(
                     "Session expired. Please log in again via the browser panel.");
             }
@@ -133,6 +159,24 @@ namespace TicketConsolidator.Infrastructure.Services
                 foreach (var link in links.EnumerateArray())
                 {
                     ParseIssueLink(link, ticket);
+                }
+            }
+
+            // Parse attachments for UT documents and other files
+            if (fields.TryGetProperty("attachment", out var attachments) && attachments.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var attachment in attachments.EnumerateArray())
+                {
+                    if (attachment.TryGetProperty("filename", out var filenameProp))
+                    {
+                        string filename = filenameProp.GetString() ?? "";
+                        ticket.Attachments.Add(filename);
+
+                        if (filename.Contains("UT", StringComparison.OrdinalIgnoreCase))
+                        {
+                            ticket.HasUTDocument = true;
+                        }
+                    }
                 }
             }
 

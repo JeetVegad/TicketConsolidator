@@ -22,6 +22,10 @@ namespace TicketConsolidator.Application.DTOs
 
         // Code review / self code review tickets linked via 'satisfies'
         public List<LinkedJiraTicket> CodeReviewTickets { get; set; } = new List<LinkedJiraTicket>();
+
+        // Attachments and UT Tracking
+        public bool HasUTDocument { get; set; }
+        public List<string> Attachments { get; set; } = new List<string>();
     }
 
     public class LinkedJiraTicket

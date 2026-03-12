@@ -625,6 +625,64 @@
                 </StackPanel>
             </materialDesign:Card>
 
+            <!-- INTERNAL RELEASE WORKFLOW -->
+            <TextBlock Text="Internal Release Workflow" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,10,0,5"/>
+            <TextBlock Text="How the Internal Release tab helps you draft internal release emails" FontSize="12" Opacity="0.7" Margin="0,0,0,10" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+
+            <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8" ClipToBounds="False">
+                <StackPanel>
+
+                    <!-- IR Step 1: Search Ticket -->
+                    <Border Background="#FCE4EC" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="AirplaneTakeoff" Width="36" Height="36" 
+                                                   Foreground="#D81B60" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 1: Search &amp; Select a Ticket" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Enter a Jira ticket key to pull its data" FontSize="11" Foreground="#C2185B"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- IR Step 2: Verification -->
+                    <Border Background="#F3E5F5" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="FileDocumentCheck" Width="36" Height="36" 
+                                                   Foreground="#8E24AA" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 2: Auto-Verification" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Automatically checks for _UT document attachments and code review tickets" FontSize="11" Foreground="#7B1FA2"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- IR Step 3: Draft Output -->
+                    <Border Background="#E8EAF6" CornerRadius="6" Padding="10">
+                        <Grid Height="50">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="EmailArrowRight" Width="36" Height="36" 
+                                                   Foreground="#3949AB" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Step 3: Generate the Internal Release Email" FontWeight="Bold" FontSize="13"/>
+                                <TextBlock Text="Automatically attaches scripts and builds the templated internal release mail" FontSize="11" Foreground="#303F9F"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+            </materialDesign:Card>
+
             <!-- SCRIPT FORMATTING RULES -->
             <TextBlock Text="Script Formatting Rules" Style="{StaticResource MaterialDesignHeadline6TextBlock}" Margin="0,0,0,10"/>
             <materialDesign:Card Margin="0,0,0,20" Padding="15" UniformCornerRadius="8">
